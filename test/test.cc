@@ -42,6 +42,7 @@ int main() {
   assert (ret == kSucc);
 
   ret = engine->Write("ccd", "cbbbbbbbbbbbb");
+  ret = engine->Write("c++", "c++ ok!");
   std::string value;
   ret = engine->Read("aaa", &value);
   printf("Read aaa value: %s\n", value.c_str());
@@ -49,6 +50,11 @@ int main() {
   ret = engine->Read("bbb", &value);
   assert (ret == kSucc);
   printf("Read bbb value: %s\n", value.c_str());
+  #
+  ret = engine->Read("c++", &value);
+  assert (ret == kSucc);
+  printf("Read c++ value: %s\n", value.c_str());
+
 
   int key_cnt = 0;
   DumpVisitor vistor(&key_cnt);

@@ -6,6 +6,7 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 
 public class EngineRace extends AbstractEngine {
 
+
 	@Override
 	public void open(String path) throws EngineException {
 	}
