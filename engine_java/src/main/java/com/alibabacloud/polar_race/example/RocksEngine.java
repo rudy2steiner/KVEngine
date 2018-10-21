@@ -5,13 +5,10 @@ import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.ArraysComp;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
+import org.rocksdb.*;
 
 
-public class ExampleEngine extends AbstractEngine {
+public class RocksEngine extends AbstractEngine {
     RocksDB db;
     @Override
     public void open(String path) throws EngineException {
@@ -25,8 +22,16 @@ public class ExampleEngine extends AbstractEngine {
     }
 
     @Override
-    public void close() {
-        db.close();
+    public void close(){
+       FlushOptions options= new FlushOptions();
+       options.setWaitForFlush(true);
+       try {
+           db.flush(options);
+       }catch (RocksDBException e){
+           e.printStackTrace();
+       }finally {
+           db.close();
+       }
     }
 
     @Override
@@ -59,6 +64,6 @@ public class ExampleEngine extends AbstractEngine {
                     break;
                 }
 
-            }while (ArraysComp.compare(it.key(),upper)<=0);
+            }while (ArraysComp.compare(it.key(),upper)<0);
     }
 }

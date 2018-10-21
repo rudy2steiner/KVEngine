@@ -1,0 +1,52 @@
+package com.alibabacloud.polar_race.engine.kv;
+
+import java.nio.ByteBuffer;
+
+public class Cell {
+    private final static int KEY_LENGTH=8;
+    private byte[] key;
+    private byte[] value;
+    private long txId;
+    public byte[] getKey() {
+        return key;
+    }
+
+    public Cell(byte[] key,byte[] value){
+        this.key=key;
+        this.value=value;
+    }
+
+    public Cell(ByteBuffer buffer){
+         if(buffer.remaining()>=KEY_LENGTH){
+            key=new byte[KEY_LENGTH];
+            buffer.get(key) ;
+         }
+         if(buffer.hasRemaining()){
+            value=new byte[buffer.remaining()];
+            buffer.get(value);
+         }
+    }
+    public void setKey(byte[] key) {
+        this.key = key;
+    }
+
+    public byte[] getValue() {
+        return value;
+    }
+
+    public void setValue(byte[] value) {
+        this.value = value;
+    }
+
+    public long getTxId() {
+        return txId;
+    }
+
+    public void setTxId(long txId) {
+        this.txId = txId;
+    }
+
+    public int size(){
+        return key.length+value.length;
+    }
+}

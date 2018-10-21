@@ -3,19 +3,25 @@ import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
-import com.alibabacloud.polar_race.example.ExampleEngine;
+import com.alibabacloud.polar_race.example.RingBufferEngine;
+import com.alibabacloud.polar_race.example.RocksEngine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Random;
-
+/**                  w    r
+ * rocksdb  64*1w   25s
+ *          64*10w  848s   233s
+ *
+ **/
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
-    int concurrency=64;
-    private int numPerThreadWrite=100000;
+    long concurrency=64;
+    private long numPerThreadWrite=1000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -30,23 +36,24 @@ public class EngineTest {
             values[i]=(byte) template.charAt(random.nextInt(len));
         }
         try {
-            engine = new ExampleEngine();
-            engine.open("/export/rocksdb003/");
+            engine = new RingBufferEngine();//new RocksEngine();
+            engine.open("/export/wal001/");
         }catch (EngineException e){
             logger.info("engine starter",e);
         }
     }
     @After
     public void close(){
+
         engine.close();
     }
     @Test
     public void benchmark8b4kbWrite(){
         logger.info(new String(values));
         long start=System.currentTimeMillis();
-        Thread[] t=new Thread[concurrency];
+        Thread[] t=new Thread[(int)concurrency];
          for (int i = 0; i < concurrency; i++) {
-                t[i]=new Thread(new PutThread(i, numPerThreadWrite, engine));
+                t[i]=new Thread(new PutThread(i, (int)numPerThreadWrite, engine));
                 t[i].start();
          }
          try {
@@ -64,9 +71,9 @@ public class EngineTest {
     public void benchmark8b4kbRead(){
         logger.info(new String(values));
         long start=System.currentTimeMillis();
-        Thread[] t=new Thread[concurrency];
+        Thread[] t=new Thread[(int)concurrency];
         for (int i = 0; i < concurrency; i++) {
-            t[i]=new Thread(new GetThread(i, numPerThreadWrite, engine));
+            t[i]=new Thread(new GetThread(i, (int)numPerThreadWrite, engine));
             t[i].start();
         }
         try {
@@ -95,9 +102,11 @@ public class EngineTest {
     }
 
     public class LongVisitor extends AbstractVisitor{
+        int count=0;
         @Override
         public void visit(byte[] key, byte[] value) {
-            logger.info(String.format("%d,k:%s ,v:%d,%s",Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
+            count++;
+            logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
     }
 
@@ -134,17 +143,19 @@ public class EngineTest {
             long key;
             byte[] keyBytes=new byte[8];
             int keyOffset;
+            byte[] vals=new byte[4096];
             try {
                 while (i < num) {
                     key = id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
                     keyOffset = (int) (key % VALUES_MAX_LENGTH);
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
+                    System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
-                        values[keyOffset + k]=keyBytes[k];
+                        vals[keyOffset + k]=keyBytes[k];
                     }
-                    engine.write(keyBytes, values);
-                    if(i%10000==0){
+                    engine.write(keyBytes, vals);
+                    if(i%1==0){
                         logger.info(String.format("%d write key:%s",id,key));
                     }
                     i++;
@@ -210,7 +221,7 @@ public class EngineTest {
 
         for(int i=0;i<concurrency;i++){
             for(int p=0;p<numPerThreadWrite;p++){
-                logger.info(String.valueOf(keyGenerator(i,numPerThreadWrite,p)));
+                logger.info(String.valueOf(keyGenerator(i,(int)numPerThreadWrite,p)));
             }
             logger.info("break");
         }

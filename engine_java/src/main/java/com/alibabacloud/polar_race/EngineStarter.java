@@ -1,8 +1,8 @@
 package com.alibabacloud.polar_race;
 
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
-import com.alibabacloud.polar_race.example.ExampleEngine;
-import com.alibabacloud.polar_race.example.ExampleVisitor;
+import com.alibabacloud.polar_race.example.RocksEngine;
+import com.alibabacloud.polar_race.example.RocksVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ public class EngineStarter {
     private final static Logger logger= LoggerFactory.getLogger(EngineStarter.class);
     public static void main(String[] args){
 
-        ExampleEngine engine=new ExampleEngine();
+        RocksEngine engine=new RocksEngine();
         try {
             engine.open("/export/rocksdb/");
 
@@ -22,7 +22,7 @@ public class EngineStarter {
             engine.write("6".getBytes(),"6".getBytes());
 
             logger.info(new String(engine.read("1".getBytes())));
-            engine.range("3".getBytes(),"5".getBytes(),new ExampleVisitor());
+            engine.range("3".getBytes(),"5".getBytes(),new RocksVisitor());
         }catch (EngineException e){
 
             logger.info("engine starter",e);
