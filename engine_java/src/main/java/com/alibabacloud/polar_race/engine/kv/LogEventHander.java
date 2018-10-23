@@ -24,7 +24,7 @@ public class LogEventHander implements EventHandler<LogEvent<Cell>> {
     @Override
     public void onEvent(LogEvent<Cell> cellLogEvent, long sequence, boolean batchEnd) throws Exception {
             tryRollLog(cellLogEvent);
-            logger.info(String.format("%d,k:%s ",Thread.currentThread().getId(), Bytes.bytes2long(cellLogEvent.getValue().getKey(),0)));
+            //logger.info(String.format("%d,k:%s ",Thread.currentThread().getId(), Bytes.bytes2long(cellLogEvent.getValue().getKey(),0)));
             eventBuf.clear();
             eventBuf.putShort((short)cellLogEvent.getValue().size());
             eventBuf.put(cellLogEvent.getValue().getKey());
@@ -51,6 +51,10 @@ public class LogEventHander implements EventHandler<LogEvent<Cell>> {
         IOHandler nextHandler=logFileService.getFileChannelIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
         //nextHandler.setBuffer(handler.getBuffer());
         handler=nextHandler;
+    }
+
+    public void flush0() throws IOException{
+        handler.flushBuf();
     }
 
 

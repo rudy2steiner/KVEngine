@@ -1,9 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv;
 
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
+
 import java.nio.ByteBuffer;
 
 public class Cell {
-    private final static int KEY_LENGTH=8;
+    private final static int KEY_LENGTH=StoreConfig.KEY_SIZE;
     private byte[] key;
     private byte[] value;
     private long txId;

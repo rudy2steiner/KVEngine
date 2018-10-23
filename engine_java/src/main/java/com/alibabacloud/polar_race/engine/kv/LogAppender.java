@@ -24,11 +24,13 @@ public class LogAppender implements Lifecycle {
     // Construct the Disruptor
     private  static Disruptor<LogEvent<Cell>> disruptor;
     private  static RingBuffer<LogEvent<Cell>> ringBuffer;
+    private LogEventHander eventHander;
     public LogAppender(IOHandler handler,LogFileService fileService ,int bufferSize){
         this.bufferSize=bufferSize;
         this.disruptor = new Disruptor(EVENT_FACTORY, bufferSize, executor);
         this.ringBuffer = disruptor.getRingBuffer();
-        this.disruptor.handleEventsWith(new LogEventHander(handler,fileService));
+        this.eventHander=new LogEventHander(handler,fileService);
+        this.disruptor.handleEventsWith(eventHander);
         this.translator =new LogEventProducerTranslator(ringBuffer);
     }
 
@@ -36,9 +38,10 @@ public class LogAppender implements Lifecycle {
         translator.publish(cell);
     }
 
-    public void close(){
+    public void close() throws Exception{
         disruptor.shutdown();
         executor.shutdown();
+        eventHander.flush0();
     }
 
     public void start(){

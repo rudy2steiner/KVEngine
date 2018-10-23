@@ -1,17 +1,18 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.lmax.disruptor.EventFactory;
 import javafx.event.Event;
 
 public final class ByteEvent {
-    public final  static EventFactory<ByteEvent> EVENT_FACTORY=new EventFactory<ByteEvent>() {
-        public ByteEvent newInstance() {
-            return new ByteEvent();
-        }
-    };
-    private long sequence;
+    private volatile long sequence;
     private volatile byte[] key;
     private volatile byte[] values;
+    public ByteEvent(){
+        this.key=new byte[StoreConfig.KEY_SIZE];
+        this.values=new byte[StoreConfig.VALUE_SIZE];
+    }
+
 
     public byte[] getKey() {
         return key;

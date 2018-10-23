@@ -29,10 +29,13 @@ public class LogParser {
      **/
     void parse(AbstractVisitor visitor, ByteBuffer to,ByteBuffer from) throws IOException {
          int capacity=to.capacity();
-         int readCount=0;
+         int remain=0;
+         int i=0;
          do{
-              readCount=handler.read(to);
+              i++;
+              handler.read(to);
               to.flip();
+              remain=to.remaining();
               batchVisit(to,visitor);
               if(to.hasRemaining()){
                   from.put(to);
@@ -41,7 +44,7 @@ public class LogParser {
                   to.put(from);
                   from.clear();
               }
-         }while (readCount==capacity);
+         }while (remain==capacity);
     }
 
     /**

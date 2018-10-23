@@ -1,8 +1,10 @@
 package com.alibabacloud.polar_race.engin;
 import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.example.LogRingBufferEngine;
 import com.alibabacloud.polar_race.example.RingBufferEngine;
 import com.alibabacloud.polar_race.example.RocksEngine;
 import org.junit.After;
@@ -21,7 +23,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=1000;
+    private long numPerThreadWrite=100000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -36,8 +38,8 @@ public class EngineTest {
             values[i]=(byte) template.charAt(random.nextInt(len));
         }
         try {
-            engine = new RingBufferEngine();//new RocksEngine();
-            engine.open("/export/wal001/");
+            engine = new LogRingBufferEngine();//new RocksEngine();
+            engine.open("/export/wal000/");
         }catch (EngineException e){
             logger.info("engine starter",e);
         }
@@ -89,6 +91,7 @@ public class EngineTest {
 
     @Test
     public void iterate(){
+        long start=System.currentTimeMillis();
         byte[] lower=new byte[8];
         Bytes.long2bytes(0,lower,0);
         byte[] upper=new byte[8];
@@ -98,7 +101,8 @@ public class EngineTest {
         }catch (EngineException e){
             logger.info("engine range",e);
         }
-
+        long end=System.currentTimeMillis();
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
     public class LongVisitor extends AbstractVisitor{
@@ -141,25 +145,29 @@ public class EngineTest {
         public void run()  {
             int  i=0;
             long key;
-            byte[] keyBytes=new byte[8];
+            byte[] keyBytes;
             int keyOffset;
-            byte[] vals=new byte[4096];
+            byte[] vals;
             try {
                 while (i < num) {
                     key = id * num + i;
+                    keyBytes=new byte[StoreConfig.KEY_SIZE];
+                    vals=new byte[StoreConfig.VALUE_SIZE];
                     Bytes.long2bytes(key, keyBytes, 0);
                     keyOffset = (int) (key % VALUES_MAX_LENGTH);
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
+//                    vals=new byte[4096];
                     System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
                         vals[keyOffset + k]=keyBytes[k];
                     }
                     engine.write(keyBytes, vals);
-                    if(i%1==0){
-                        logger.info(String.format("%d write key:%s",id,key));
-                    }
                     i++;
+                    if(i%10000==0){
+                        logger.info(String.format("%d write key:%s",id,Bytes.bytes2long(keyBytes,0)));
+                    }
                 }
+                logger.info(String.format("%d write finish",id));
             }catch (EngineException e){
                 logger.info(String.format("thread %d",id),e);
             }

@@ -9,8 +9,6 @@
         <module name="engine_java" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="engine_java" target="8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="8" />
   </component>
 </project>

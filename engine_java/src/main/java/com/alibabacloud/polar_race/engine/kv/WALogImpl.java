@@ -51,7 +51,7 @@ public class WALogImpl implements WALog {
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception{
         this.logAppender.close();
     }
 

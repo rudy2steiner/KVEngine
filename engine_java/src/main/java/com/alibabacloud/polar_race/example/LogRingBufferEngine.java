@@ -24,8 +24,12 @@ public class LogRingBufferEngine extends AbstractEngine {
     }
 
     @Override
-    public void close() {
-        this.walLogger.close();
+    public void close()  {
+        try{
+            this.walLogger.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
