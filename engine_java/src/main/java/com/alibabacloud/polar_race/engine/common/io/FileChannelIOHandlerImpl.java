@@ -45,7 +45,7 @@ public class FileChannelIOHandlerImpl implements IOHandler {
                              slice.limit(buf.position()+remain);
                    buffer.put(slice);
                    // flip to readable
-                   flushBuf();
+                   flushBuffer();
                    // skip
                    buf.position(buf.position()+remain);
                    append(buf);
@@ -58,7 +58,7 @@ public class FileChannelIOHandlerImpl implements IOHandler {
 
     @Override
     public void write(long position, ByteBuffer buf) throws IOException {
-                 flushBuf();
+                 flushBuffer();
                  fileChannel.position(position);
                  while(buf.hasRemaining()){
                      fileChannel.write(buf);
@@ -67,18 +67,18 @@ public class FileChannelIOHandlerImpl implements IOHandler {
 
     @Override
     public int read(long position, ByteBuffer toBuf) throws IOException{
-             flushBuf();
+             flushBuffer();
              fileChannel.position(position);
              return fileChannel.read(toBuf);
     }
 
     @Override
     public int read(ByteBuffer toBuf) throws IOException {
-            flushBuf();
+            flushBuffer();
             return fileChannel.read(toBuf);
     }
 
-    public void flushBuf() throws IOException{
+    public void flushBuffer() throws IOException{
         // has buffer byte
         if(useBuf &&buffer.position()>0){
             buffer.flip();
@@ -90,10 +90,9 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     }
 
     @Override
-    public boolean flush0() throws IOException {
-         flushBuf();
+    public void flush0() throws IOException {
+         flushBuffer();
          fileChannel.force(false);
-         return true;
     }
 
     @Override
@@ -106,7 +105,7 @@ public class FileChannelIOHandlerImpl implements IOHandler {
                fileChannel.position(nwePosition);
     }
 
-    public ByteBuffer getBuffer() {
+    public ByteBuffer buffer() {
         return buffer;
     }
 
@@ -115,7 +114,7 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     }
 
     public void unBuffer() throws IOException{
-        flushBuf();
+        flushBuffer();
         useBuf =false;
     }
 
@@ -125,5 +124,15 @@ public class FileChannelIOHandlerImpl implements IOHandler {
             len= buffer.position();
         }
         return  this.fileChannel.size()+len;
+    }
+
+    @Override
+    public void flush() throws IOException {
+        flushBuffer();
+    }
+
+    @Override
+    public void close() throws IOException {
+         fileChannel.close();
     }
 }

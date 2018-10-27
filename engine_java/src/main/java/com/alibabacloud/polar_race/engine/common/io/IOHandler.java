@@ -1,19 +1,71 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
+import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public interface IOHandler {
-    void append(ByteBuffer buf) throws IOException;
-    void write(long position,ByteBuffer buf) throws IOException;
-    int read(long position,ByteBuffer toBuf) throws IOException;
-    int read(ByteBuffer toBuf) throws IOException;
-    void flushBuf() throws IOException;
-    boolean flush0() throws IOException;
+public interface IOHandler extends Flushable, Closeable {
+    /**
+     *
+     * append to end of the file sequentially
+     *
+     */
+    void append(ByteBuffer buffer) throws IOException;
+    /**
+     *
+     * write out the @param buf  beginning from position
+     *
+     */
+    void write(long position,ByteBuffer buffer) throws IOException;
+    /**
+     * read  data into @param toBuffer  beginning from position
+     */
+    int read(long position,ByteBuffer toBuffer) throws IOException;
+
+    int read(ByteBuffer toBuffer) throws IOException;
+    /**
+     *
+     * read data into @param toBuffer  beginning from default position
+     *
+     **/
+    void flushBuffer() throws IOException;
+
+    /**
+     * flush to page cache
+     */
+    void flush() throws IOException;
+
+    /**
+     * flush to disk
+     */
+    void flush0() throws IOException;
+
+    /**
+     *  read or write position of underlying file now
+     */
     long position() throws IOException;
+
+    /**
+     * update to new read or write position of underlying file
+     **/
     void position(long position) throws IOException;
-    ByteBuffer getBuffer();
+
+    /**
+     * @return  underlying buffer
+     **/
+    ByteBuffer buffer();
+
+    /**
+     * @deprecated
+     */
     void setBuffer(ByteBuffer buffer) ;
+    /**
+     * @deprecated
+     */
     void unBuffer() throws IOException;
+    /**
+     * @return underlying content length
+     **/
     long length() throws IOException;
 }

@@ -2,7 +2,6 @@ package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.lmax.disruptor.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,16 +44,15 @@ public class LogEventHander implements EventHandler<LogEvent<Cell>> {
         }
         EMPTY_BUFFER.flip();
         handler.append(EMPTY_BUFFER);
-        handler.flushBuf();
+        handler.flushBuffer();
+       // handler.flush();
         String nextLogName=logFileService.nextLogName(cellLogEvent.getValue());
         // roll to next log file
-        IOHandler nextHandler=logFileService.getFileChannelIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
-        //nextHandler.setBuffer(handler.getBuffer());
-        handler=nextHandler;
+        handler=logFileService.bufferedIOHandler(nextLogName,handler);
     }
 
     public void flush0() throws IOException{
-        handler.flushBuf();
+        handler.flushBuffer();
     }
 
 

@@ -1,6 +1,8 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.io.BufferedIOHandler;
+import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandlerImpl;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
@@ -23,8 +25,29 @@ public class LogFileServiceImpl implements LogFileService{
     }
 
     @Override
-    public IOHandler getFileChannelIOHandler(String fileName, int bufferSize) throws FileNotFoundException {
-        return new FileChannelIOHandlerImpl(dir,fileName,"rw",bufferSize);
+    public IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException {
+        File file=new File(dir,fileName);
+        IOHandler handler=new FileChannelIOHandler(file,"rw");
+        return new BufferedIOHandler(handler,bufferSize);
+        //return new FileChannelIOHandlerImpl(dir,fileName,"rw",bufferSize);
+    }
+
+    @Override
+    public IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException {
+        File file=new File(dir,fileName);
+        IOHandler newHandler=new FileChannelIOHandler(file,"rw");
+        return new BufferedIOHandler(newHandler,handler.buffer());
+        //return new FileChannelIOHandlerImpl(dir,fileName,"rw",bufferSize);
+    }
+
+    @Override
+    public IOHandler ioHandler(String fileName) throws FileNotFoundException {
+        return new FileChannelIOHandler(new File(fileName),"rw");
+    }
+
+    @Override
+    public File nextLogFile(Cell cell) {
+        return new File(dir,nextLogName(cell));
     }
 
     @Override

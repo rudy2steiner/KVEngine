@@ -110,7 +110,8 @@ public class EngineTest {
         @Override
         public void visit(byte[] key, byte[] value) {
             count++;
-            logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
+            if(count%10000==0)
+                logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
     }
 

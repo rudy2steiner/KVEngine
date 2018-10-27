@@ -20,7 +20,7 @@ public class WALogImpl implements WALog {
             //throw new IllegalArgumentException("not empty dir");
         }
         this.fileService=new LogFileServiceImpl(dir);
-        this.logAppender=new LogAppender(fileService.getFileChannelIOHandler("0"+ StoreConfig.LOG_FILE_SUFFIX,StoreConfig.FILE_WRITE_BUFFER_SIZE),
+        this.logAppender=new LogAppender(fileService.bufferedIOHandler("0"+ StoreConfig.LOG_FILE_SUFFIX,StoreConfig.FILE_WRITE_BUFFER_SIZE),
                                          fileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
     }
 
