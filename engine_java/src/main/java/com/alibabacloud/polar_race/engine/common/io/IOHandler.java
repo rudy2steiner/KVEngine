@@ -18,6 +18,29 @@ public interface IOHandler extends Flushable, Closeable {
      *
      */
     void write(long position,ByteBuffer buffer) throws IOException;
+
+
+    /**
+     *
+     * append to end of the file sequentially
+     *
+     */
+    void append(byte[] data) throws IOException;
+
+    /**
+     *
+     * append to end of the file sequentially
+     *
+     */
+    void append(byte[] data,int offset,int len) throws IOException;
+    /**
+     *
+     * write out the @param buf  beginning from position
+     *
+     */
+    void write(long position,byte[]  data) throws IOException;
+
+
     /**
      * read  data into @param toBuffer  beginning from position
      */
@@ -68,4 +91,8 @@ public interface IOHandler extends Flushable, Closeable {
      * @return underlying content length
      **/
     long length() throws IOException;
+    /**
+     * @return underlying file name,without format suffix
+     **/
+    String name();
 }

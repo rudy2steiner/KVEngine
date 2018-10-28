@@ -1,9 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
-import com.alibabacloud.polar_race.engine.common.io.ByteEvent;
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.event.Put;
+import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -11,9 +13,11 @@ import com.lmax.disruptor.dsl.Disruptor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class LogAppender implements Lifecycle {
-    public final  static EventFactory<LogEvent<Cell>> EVENT_FACTORY=new EventFactory<LogEvent<Cell>>() {
-        public LogEvent<Cell> newInstance() {
+public class MultiTypeLogAppender implements Lifecycle {
+
+
+    public final  static EventFactory<LogEvent<Event>> EVENT_FACTORY=new EventFactory<LogEvent<Event>>() {
+        public LogEvent<Event> newInstance() {
             return new LogEvent<>();
         }
     };
@@ -21,24 +25,28 @@ public class LogAppender implements Lifecycle {
     // Specify the size of the ring buffer, must be power of 2.
     private final static int DEFAULT_RING_BUFFER_SIZE = 1024*8;
     private int ringBufferSize;
-    private LogEventProducerTranslator translator;
+    private MultiTypeEventProducerTranslator translator;
     // Construct the Disruptor
-    private  static Disruptor<LogEvent<Cell>> disruptor;
-    private  static RingBuffer<LogEvent<Cell>> ringBuffer;
-    private LogEventHander eventHander;
-    public LogAppender(IOHandler handler,LogFileService fileService ,int ringBufferSize){
+    private  static Disruptor<LogEvent<Event>> disruptor;
+    private  static RingBuffer<LogEvent<Event>> ringBuffer;
+    private MultiTypeEventHandler eventHander;
+    public MultiTypeLogAppender(IOHandler handler, LogFileService fileService , int ringBufferSize){
         this.ringBufferSize=ringBufferSize>0? Files.tableSizeFor(ringBufferSize):DEFAULT_RING_BUFFER_SIZE;
         this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor);
         this.ringBuffer = disruptor.getRingBuffer();
-        this.eventHander=new LogEventHander(handler,fileService);
+        this.eventHander=new MultiTypeEventHandler(handler,fileService);
         this.disruptor.handleEventsWith(eventHander);
-        this.translator =new LogEventProducerTranslator(ringBuffer);
+        this.translator =new MultiTypeEventProducerTranslator(ringBuffer);
     }
 
-    public void append(Cell cell){
-        translator.publish(cell);
+    public long append(Put event) throws Exception{
+        translator.publish(event);
+        long txId=event.txId();
+        SyncEvent syncEvent=new SyncEvent(txId);
+        translator.publish(syncEvent);
+        syncEvent.get(StoreConfig.MAX_TIMEOUT);
+        return txId;
     }
-
 
     public void close() throws Exception{
         disruptor.shutdown();
@@ -49,8 +57,4 @@ public class LogAppender implements Lifecycle {
     public void start(){
         disruptor.start();
     }
-
-
-
-
 }

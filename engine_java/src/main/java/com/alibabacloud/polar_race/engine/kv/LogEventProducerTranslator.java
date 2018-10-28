@@ -21,7 +21,7 @@ public class LogEventProducerTranslator {
 
         @Override
         public void translateTo(LogEvent<Cell> cellLogEvent, long sequence, Cell cell) {
-            cell.setTxId(sequence);
+            cell.setTxId((int)sequence);
             cellLogEvent.setSequence(sequence);
             cellLogEvent.setValue(cell);
         }

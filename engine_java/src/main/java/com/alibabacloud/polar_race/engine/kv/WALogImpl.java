@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class WALogImpl implements WALog {
+public class WALogImpl implements WALog<Cell> {
     private String dir;
     private  LogAppender logAppender;
     private  LogFileService fileService;
@@ -67,5 +67,15 @@ public class WALogImpl implements WALog {
            if(files.length>0) return false;
         }
         return true;
+    }
+
+    @Override
+    public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) {
+
+    }
+
+    @Override
+    public byte[] get(byte[] key) {
+        return new byte[0];
     }
 }

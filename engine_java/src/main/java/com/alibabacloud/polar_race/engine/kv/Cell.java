@@ -9,6 +9,8 @@ public class Cell {
     private byte[] key;
     private byte[] value;
     private long txId;
+    private volatile long offset;
+
     public byte[] getKey() {
         return key;
     }
@@ -50,5 +52,13 @@ public class Cell {
 
     public int size(){
         return key.length+value.length;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 }

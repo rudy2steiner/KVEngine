@@ -10,6 +10,7 @@ import java.nio.channels.FileChannel;
 public class FileChannelIOHandler implements IOHandler {
 
     private File file;
+    private String fileName;
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
     /**
@@ -19,6 +20,7 @@ public class FileChannelIOHandler implements IOHandler {
      **/
     public FileChannelIOHandler(File file,String mode) throws FileNotFoundException {
         this.file=file;
+        this.fileName=file.getName();
         this.randomAccessFile=new RandomAccessFile(file,mode);
         this.fileChannel=randomAccessFile.getChannel();
     }
@@ -34,6 +36,21 @@ public class FileChannelIOHandler implements IOHandler {
                 this.fileChannel.position(position);
                 append(buffer);
             }
+    }
+
+    @Override
+    public void append(byte[] data) throws IOException {
+         append(ByteBuffer.wrap(data));
+    }
+
+    @Override
+    public void append(byte[] data, int offset, int len) throws IOException {
+        append(ByteBuffer.wrap(data,offset,len));
+    }
+
+    @Override
+    public void write(long position, byte[] data) throws IOException {
+          write(position,ByteBuffer.wrap(data));
     }
 
     @Override
@@ -95,5 +112,10 @@ public class FileChannelIOHandler implements IOHandler {
     @Override
     public void close() throws IOException {
         fileChannel.close();
+    }
+
+    @Override
+    public String name() {
+        return fileName.substring(0,fileName.indexOf('.'));
     }
 }

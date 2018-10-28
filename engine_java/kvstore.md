@@ -19,13 +19,17 @@
     8     8     4
 3 日志文件设计
   { 
-    "version":0, 
-    "length": 1000,
+    "version":0, //日志文件格式版本
+    "length": 1000,// 整个tail和索引内容的大小
     "recordOffset" : 2111,
     "index":0, //是否存储了索引
    }
-    {version|length|record_offset|......} 4k
-    
+    {version|length|record_offset|......}=20
+      1       4      
   header|{index|.....}|{record|record......}  
+    
+备注：
+   对于同一个持久化的key,offset可以作为其版本号；
+   内存中，ring buffer sequence 作为版本号；
     
    

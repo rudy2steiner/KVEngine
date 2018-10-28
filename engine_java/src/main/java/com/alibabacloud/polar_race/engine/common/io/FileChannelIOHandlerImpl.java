@@ -135,4 +135,24 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     public void close() throws IOException {
          fileChannel.close();
     }
+
+    @Override
+    public void append(byte[] data) throws IOException {
+
+    }
+
+    @Override
+    public void write(long position, byte[] data) throws IOException {
+
+    }
+
+    @Override
+    public String name() {
+        return null;
+    }
+
+    @Override
+    public void append(byte[] data, int offset, int len) throws IOException {
+
+    }
 }

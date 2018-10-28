@@ -1,10 +1,12 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
+import com.alibabacloud.polar_race.engine.common.utils.Files;
+import org.omg.CORBA.DATA_CONVERSION;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class BufferedIOHandler implements IOHandler {
-    private final int  MAXIMUM_CAPACITY=256*1024*1024;
     private IOHandler handler;
     private int bufferSize;
     private ByteBuffer buf;
@@ -14,22 +16,14 @@ public class BufferedIOHandler implements IOHandler {
         if(bufferSize<0)
             throw new IllegalArgumentException("Illegal initial bufferSize: " +
                         bufferSize);
-        this.buf=ByteBuffer.allocateDirect(tableSizeFor(bufferSize));
+        this.buf=ByteBuffer.allocateDirect(Files.tableSizeFor(bufferSize));
     }
     public BufferedIOHandler(IOHandler handler,ByteBuffer buffer){
         this.handler=handler;
         this.buf=buffer;
     }
 
-    public int tableSizeFor(int cap){
-        int n = cap - 1;
-        n |= n >>> 1;
-        n |= n >>> 2;
-        n |= n >>> 4;
-        n |= n >>> 8;
-        n |= n >>> 16;
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-    }
+
 
 
 
@@ -54,6 +48,41 @@ public class BufferedIOHandler implements IOHandler {
     public void write(long position, ByteBuffer buffer) throws IOException {
            flushBuffer();
            handler.write(position,buffer);
+    }
+
+    @Override
+    public void append(byte[] data) throws IOException {
+         if(buf.remaining()>=data.length){
+            buf.put(data);
+         }else {
+             int remain= buf.remaining();
+             buf.put(data,0,remain);
+             flushBuffer();
+             buf.put(data,remain,data.length-remain);
+         }
+    }
+
+    @Override
+    public void append(byte[] data, int offset, int len) throws IOException {
+        if(buf.remaining()>=len){
+            buf.put(data,offset,len);
+        }else {
+            int remain= buf.remaining();
+            buf.put(data,offset,remain);
+            flushBuffer();
+            buf.put(data,offset+remain,len-remain);
+        }
+    }
+
+    @Override
+    public void write(long position, byte[] data) throws IOException {
+        flushBuffer();
+        write(position,ByteBuffer.wrap(data));
+    }
+
+    @Override
+    public String name() {
+        return handler.name();
     }
 
     @Override

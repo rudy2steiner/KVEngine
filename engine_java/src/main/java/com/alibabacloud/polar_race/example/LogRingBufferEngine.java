@@ -17,10 +17,11 @@ public class LogRingBufferEngine extends AbstractEngine {
     public void open(String path) throws EngineException {
         try {
             this.walLogger = new WALogImpl(path);
+            this.walLogger.start();
         }catch (Exception e){
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }
-        this.walLogger.start();
+
     }
 
     @Override
@@ -34,7 +35,11 @@ public class LogRingBufferEngine extends AbstractEngine {
 
     @Override
     public void write(byte[] key, byte[] value) throws EngineException {
-        walLogger.log(new Cell(key,value));
+        try {
+            walLogger.log(new Cell(key, value));
+        }catch (Exception e){
+            throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());
+        }
     }
 
     @Override
