@@ -18,6 +18,15 @@ public class Bytes {
         b[off + 1] = (byte) (v >>> 16);
         b[off + 0] = (byte) (v >>> 24);
     }
+    public static void short2bytes(int v, byte[] b, int off) {
+        b[off + 1] = (byte) v;
+        b[off + 0] = (byte) (v >>> 8);
+    }
+    public static int bytes2short(byte[] b, int off) {
+        return  ((b[off + 1] & 0xFF) << 0) +
+                ((b[off + 0] & 0xFF) << 8);
+
+    }
 
 
     public static int bytes2int(byte[] b, int off) {

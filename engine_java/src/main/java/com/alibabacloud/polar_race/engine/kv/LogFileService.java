@@ -15,7 +15,7 @@ public interface LogFileService {
     IOHandler ioHandler(String fileName) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException;
-    List<String> allLogFiles();
+    List<Long> allLogFiles();
     /**
      * log 文件尾部和index块的总大小
      **/

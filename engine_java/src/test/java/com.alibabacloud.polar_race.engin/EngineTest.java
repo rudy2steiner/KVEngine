@@ -23,7 +23,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=100000;
+    private long numPerThreadWrite=10000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -110,7 +110,7 @@ public class EngineTest {
         @Override
         public void visit(byte[] key, byte[] value) {
             count++;
-            if(count%10000==0)
+            if(count%1==0)
                 logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
     }
@@ -206,7 +206,7 @@ public class EngineTest {
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     value=Bytes.bytes2long(values,keyOffset);
                     if(value!=key){
-                        logger.error(String.format("%d,%d %d",id,key,value));
+                        logger.error(String.format("%d,%d %d %s",id,key,value,new String(values)));
                     }else{
                         logger.info(String.format("%d,%d %d",id,key,value));
                     }

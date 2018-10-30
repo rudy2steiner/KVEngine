@@ -6,9 +6,13 @@ import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.kv.Cell;
 import com.alibabacloud.polar_race.engine.kv.WALog;
-import com.alibabacloud.polar_race.engine.kv.WALogImpl;
+import com.alibabacloud.polar_race.engine.kv.WALogger;
+import com.alibabacloud.polar_race.engine.kv.event.Put;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LogRingBufferEngine extends AbstractEngine {
+    private final static Logger logger= LoggerFactory.getLogger(LogRingBufferEngine.class);
     private WALog walLogger;
     public LogRingBufferEngine(){
 
@@ -16,7 +20,7 @@ public class LogRingBufferEngine extends AbstractEngine {
     @Override
     public void open(String path) throws EngineException {
         try {
-            this.walLogger = new WALogImpl(path);
+            this.walLogger = new WALogger(path);
             this.walLogger.start();
         }catch (Exception e){
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
@@ -36,15 +40,21 @@ public class LogRingBufferEngine extends AbstractEngine {
     @Override
     public void write(byte[] key, byte[] value) throws EngineException {
         try {
-            walLogger.log(new Cell(key, value));
+            walLogger.log(new Put(new Cell(key, value)));
         }catch (Exception e){
+            logger.error("write error",e);
             throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());
         }
     }
 
     @Override
     public byte[] read(byte[] key) throws EngineException {
-        return new byte[0];
+        try {
+            return walLogger.get(key);
+        }catch (Exception e){
+            logger.error("read error",e);
+            throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());
+        }
     }
 
     @Override

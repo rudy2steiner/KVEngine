@@ -10,39 +10,38 @@ public class SyncEvent implements Event<Long> {
     private final static Long NOT_DONE_ID =-1l;
     private AtomicBoolean    done=new AtomicBoolean(false);
     private volatile Long maxDoneTxId= NOT_DONE_ID;
-    private volatile Long txId= NOT_DONE_ID;
+    private volatile Long txId;
 
     public SyncEvent(Long txId){
         this.txId = txId;
     }
     @Override
     public EventType type() {
-        return null;
+        return EventType.SYNC;
     }
 
     @Override
     public Long value() {
         return txId;
     }
-    public  void done(Long maxDoneTxId){
+    public synchronized void done(Long maxDoneTxId){
          if(maxDoneTxId>=this.maxDoneTxId) {
              this.maxDoneTxId=maxDoneTxId;
          }
          notify();
     }
     public boolean isDone(){
-        if(txId!= NOT_DONE_ID)
+        if(maxDoneTxId!= NOT_DONE_ID)
          return true;
         return false;
     }
 
-    public Long get(long timeout) throws InterruptedException,TimeoutException{
-       final long  maxTime=System.currentTimeMillis()+timeout;
+    public synchronized Long get(long timeout) throws InterruptedException,TimeoutException{
        if(!isDone()){
             wait(timeout);
             // wake up or timeout
             if(!isDone()){
-                throw new TimeoutException(String.format("%d timeout after %",txId,timeout));
+                throw new TimeoutException(String.format("%d timeout after %d",txId,timeout));
             }
        }
        return txId;

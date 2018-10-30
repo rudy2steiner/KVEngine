@@ -16,7 +16,7 @@
     "txId":0
    }
     key|offset|txId
-    8     8     4
+    8     8    
 3 日志文件设计
   { 
     "version":0, //日志文件格式版本

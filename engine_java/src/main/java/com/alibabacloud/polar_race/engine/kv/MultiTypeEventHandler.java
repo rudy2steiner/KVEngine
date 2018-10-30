@@ -53,18 +53,19 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
             //put.value().size());
             long offsetInFile=handler.length();
             // offset in file
-            put.value().setOffset(offsetInFile);
-            Bytes.int2bytes(put.value().size(),longBytes,0);
-            handler.append(longBytes,0,StoreConfig.INT_LEN);
+            long offset=fileId+offsetInFile;
+            put.value().setOffset(offset);
+            //logger.info(String.format("handler %d %d",Bytes.bytes2long(put.value().getKey(),0),put.value().getOffset()));
+            Bytes.short2bytes(put.value().size(),longBytes,0);
+            handler.append(longBytes,0,StoreConfig.SHORT_LEN);
             // put txId
 //            Bytes.long2bytes(put.value().getTxId(),longBytes,0);
 //            handler.append(longBytes,0,StoreConfig.LONG_LEN);
             handler.append(put.value().getKey());
             handler.append(put.value().getValue());
             // put value index
-
             valueIndexBuffer.put(put.value().getKey());
-            valueIndexBuffer.putLong(offsetInFile);
+            valueIndexBuffer.putLong(offset);
             //valueIndexBuffer.putInt(put.value().getTxId());
             processedMaxTxId=put.value().getTxId();
         }
@@ -92,6 +93,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
         String nextLogName=logFileService.nextLogName(handler);
         // roll to next log file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
+        fileId=Long.valueOf(handler.name());
     }
 
     /**
@@ -103,6 +105,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
              sync.done(processedMaxTxId);
          }
          flushedMaxTxId=processedMaxTxId;
+         syncIndex=0;
          logger.info(String.format("%d flushed and ack",processedMaxTxId));
     }
 
@@ -121,6 +124,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
         else{
             handler.write(StoreConfig.SEGMENT_LOG_FILE_SIZE-valueIndexBuffer.capacity(),valueIndexBuffer);
         }
+        valueIndexBuffer.clear();
     }
 
     /**

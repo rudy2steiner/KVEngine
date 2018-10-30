@@ -9,14 +9,15 @@ public class StoreConfig {
     public final static int  DISRUPTOR_BUFFER_SIZE=8*1024;
     public final static int  KEY_SIZE=8;
     public final static int  VALUE_SIZE=4096;
-    public final static int  VALUE_INDEX_RECORD_SIZE=20;
+    public final static int  VALUE_INDEX_RECORD_SIZE=16;
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
     public final static int  MAXIMUM_BUFFER_CAPACITY =256*1024*1024;
-    public final static int  batchSyncSize =48;
+    public final static int  batchSyncSize =56;
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;
+    public final static int  SHORT_LEN=2;
     public final static int  MAX_TIMEOUT=1000;
     public final static byte  verison=(byte) 1;
 

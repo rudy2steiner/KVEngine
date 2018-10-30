@@ -32,12 +32,12 @@ public class WALogImpl implements WALog<Cell> {
 
     @Override
     public void iterate(AbstractVisitor visitor) throws IOException {
-        List<String> logNames=fileService.allLogFiles();
+        List<Long> logNames=fileService.allLogFiles();
         LogParser parser;
         ByteBuffer to= ByteBuffer.allocate(StoreConfig.FILE_READ_BUFFER_SIZE);
         ByteBuffer from= ByteBuffer.allocate(StoreConfig.FILE_READ_BUFFER_SIZE);
-        for(String logName:logNames){
-             parser=new LogParser(dir,logName.substring(logName.indexOf("/")+1));
+        for(Long logName:logNames){
+             parser=new LogParser(dir,String.valueOf(logName));
              parser.parse(visitor,to,from);
              to.clear();
              from.clear();

@@ -3,7 +3,6 @@ package com.alibabacloud.polar_race.engine.kv;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.BufferedIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
-import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandlerImpl;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
@@ -16,7 +15,7 @@ import java.util.List;
 
 public class LogFileServiceImpl implements LogFileService{
     private String dir;
-    private List<String> logFiles;
+    private List<Long> logFiles;
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
     public LogFileServiceImpl(String dir){
@@ -39,7 +38,8 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public String nextLogName() {
-        return String.valueOf(Long.valueOf(lastLogName())+StoreConfig.SEGMENT_LOG_FILE_SIZE)+StoreConfig.LOG_FILE_SUFFIX;
+        String lastLogName=lastLogName();
+        return String.valueOf(Long.valueOf(lastLogName==null?String.valueOf(-StoreConfig.SEGMENT_LOG_FILE_SIZE):lastLogName)+StoreConfig.SEGMENT_LOG_FILE_SIZE)+StoreConfig.LOG_FILE_SUFFIX;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public IOHandler ioHandler(String fileName) throws FileNotFoundException {
-        return new FileChannelIOHandler(new File(fileName),"rw");
+        return new FileChannelIOHandler(new File(dir,fileName),"rw");
     }
 
     @Override
@@ -69,15 +69,15 @@ public class LogFileServiceImpl implements LogFileService{
     }
 
     @Override
-    public List<String> allLogFiles() {
+    public List<Long> allLogFiles() {
         File file=new File(dir);
-        List<String> logNames=new ArrayList<>();
+        List<Long> logNames=new ArrayList<>();
         if(!file.isDirectory()) return null;
 
         String[] names= file.list() ;
         for(String name:names){
             if(name.endsWith(StoreConfig.LOG_FILE_SUFFIX)){
-                logNames.add(name);
+                logNames.add(Long.valueOf(name.substring(0,name.indexOf('.'))));
             }
         }
         Collections.sort(logNames);
@@ -87,7 +87,7 @@ public class LogFileServiceImpl implements LogFileService{
     @Override
     public String lastLogName() {
         if(!Null.isEmpty(logFiles))
-           return logFiles.get(logFiles.size()-1);
+           return String.valueOf(logFiles.get(logFiles.size()-1));
         return null;
     }
 
@@ -134,8 +134,9 @@ public class LogFileServiceImpl implements LogFileService{
     @Override
     public String fileName(long position) {
         int mid;
-        long value=10;
+        long value=position;
         long midValue=-1;
+        if(Null.isEmpty(logFiles)) scanFiles();
         if (!Null.isEmpty(logFiles)) {
             int low = 0;
             int high = logFiles.size() - 1;
@@ -152,7 +153,7 @@ public class LogFileServiceImpl implements LogFileService{
 
             }
             if (low == high) midValue = Long.valueOf(logFiles.get(high));
-            return String.valueOf(midValue);
+            return String.valueOf(midValue)+StoreConfig.LOG_FILE_SUFFIX;
         }
         return null;
     }
