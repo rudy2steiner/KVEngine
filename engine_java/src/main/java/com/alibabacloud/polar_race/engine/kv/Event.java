@@ -5,5 +5,4 @@ public interface Event<T> {
      T  value();
      long txId();
      void setTxId(long txId);
-
 }

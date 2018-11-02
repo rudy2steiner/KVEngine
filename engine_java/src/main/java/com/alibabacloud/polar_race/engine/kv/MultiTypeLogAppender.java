@@ -11,14 +11,15 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.TimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class MultiTypeLogAppender implements Lifecycle {
-
-
+    private final static Logger logger= LoggerFactory.getLogger(MultiTypeLogAppender.class);
     public final  static EventFactory<LogEvent<Event>> EVENT_FACTORY=new EventFactory<LogEvent<Event>>() {
         public LogEvent<Event> newInstance() {
             return new LogEvent<>();
@@ -26,7 +27,7 @@ public class MultiTypeLogAppender implements Lifecycle {
     };
     private final static ExecutorService executor = Executors.newSingleThreadExecutor();
     // Specify the size of the ring buffer, must be power of 2.
-    private final static int DEFAULT_RING_BUFFER_SIZE = 1024*8;
+    private final static int DEFAULT_RING_BUFFER_SIZE = 1024;
     private int ringBufferSize;
     private MultiTypeEventProducerTranslator translator;
     // Construct the Disruptor
@@ -35,7 +36,7 @@ public class MultiTypeLogAppender implements Lifecycle {
     private MultiTypeEventHandler eventHander;
     public MultiTypeLogAppender(IOHandler handler, LogFileService fileService , int ringBufferSize){
         this.ringBufferSize=ringBufferSize>0? Files.tableSizeFor(ringBufferSize):DEFAULT_RING_BUFFER_SIZE;
-        this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor,ProducerType.MULTI,new TimeoutBlockingWaitStrategy(StoreConfig.MAX_TIMEOUT/5,TimeUnit.MILLISECONDS));
+        this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor,ProducerType.MULTI,new TimeoutBlockingWaitStrategy(StoreConfig.MAX_TIMEOUT/10,TimeUnit.MILLISECONDS));
         this.ringBuffer = disruptor.getRingBuffer();
         this.eventHander=new MultiTypeEventHandler(handler,fileService);
         this.disruptor.handleEventsWith(eventHander);
@@ -48,7 +49,14 @@ public class MultiTypeLogAppender implements Lifecycle {
         SyncEvent syncEvent=new SyncEvent(txId);
         translator.publish(syncEvent);
         syncEvent.get(StoreConfig.MAX_TIMEOUT);
+        onAppendFinish(syncEvent);
         return txId;
+    }
+
+    public void onAppendFinish(SyncEvent syncEvent){
+        if(syncEvent.value()%10000==0){
+            logger.info(String.format("%d time elapsed %d",syncEvent.txId(),syncEvent.elapse()));
+        }
     }
 
     public void close() throws Exception{

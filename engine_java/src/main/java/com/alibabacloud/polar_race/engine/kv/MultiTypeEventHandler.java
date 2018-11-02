@@ -91,18 +91,22 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
         fileId=Long.valueOf(handler.name());
     }
-
     /**
      *
      */
-    public void flushAndAck() throws IOException{
-         handler.flush();
-         for(SyncEvent sync:syncEvents){
-             sync.done(processedMaxTxId);
-         }
-         flushedMaxTxId=processedMaxTxId;
-         syncIndex=0;
-         logger.info(String.format("%d flushed and ack",processedMaxTxId));
+    public boolean flushAndAck() throws IOException{
+        if(flushedMaxTxId<processedMaxTxId) {
+            handler.flush();
+            for (int i=0;i<syncIndex;i++) {
+                syncEvents[i].done(processedMaxTxId);
+            }
+            flushedMaxTxId = processedMaxTxId;
+            int flushCount=syncIndex;
+            syncIndex = 0;
+            //logger.info(String.format("%d flushed and ack,batch size %d", processedMaxTxId,flushCount));
+            return true;
+        }
+        return false;
     }
 
 
@@ -133,7 +137,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
 
     @Override
     public void onTimeout(long sequence) throws Exception {
-        logger.info("on handler timeout ");
-        flushAndAck();
+        if(flushAndAck()){
+            logger.info("on handler timeout and flush");
+        }
     }
 }

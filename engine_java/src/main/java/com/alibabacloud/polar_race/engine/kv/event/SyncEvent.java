@@ -11,7 +11,8 @@ public class SyncEvent implements Event<Long> {
     private AtomicBoolean    done=new AtomicBoolean(false);
     private volatile Long maxDoneTxId= NOT_DONE_ID;
     private volatile Long txId;
-
+    private long startTimestamp;
+    private long finishTimestamp;
     public SyncEvent(Long txId){
         this.txId = txId;
     }
@@ -37,6 +38,7 @@ public class SyncEvent implements Event<Long> {
     }
 
     public synchronized Long get(long timeout) throws InterruptedException,TimeoutException{
+        startTimestamp=System.currentTimeMillis();
        if(!isDone()){
             wait(timeout);
             // wake up or timeout
@@ -44,6 +46,7 @@ public class SyncEvent implements Event<Long> {
                 throw new TimeoutException(String.format("%d timeout after %d",txId,timeout));
             }
        }
+       finishTimestamp=System.currentTimeMillis();
        return txId;
     }
 
@@ -56,5 +59,9 @@ public class SyncEvent implements Event<Long> {
     @Override
     public void setTxId(long txId) {
        this.txId=txId;
+    }
+
+    public long elapse(){
+        return finishTimestamp-startTimestamp;
     }
 }

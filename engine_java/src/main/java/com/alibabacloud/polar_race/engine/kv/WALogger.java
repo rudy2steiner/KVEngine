@@ -48,7 +48,6 @@ public class WALogger implements WALog<Put> {
     public long log(Put event) throws Exception{
            appender.append(event);
            ValueIndex index=new ValueIndex(event.value().getKey(),event.value().getOffset());
-           //logger.info(String.format("put into map %s %d",Bytes.bytes2long(index.getKey(),0),index.getOffset()));
            valueIndexMap.put(Bytes.bytes2long(event.value().getKey(),0),index);
            return event.txId();
     }
