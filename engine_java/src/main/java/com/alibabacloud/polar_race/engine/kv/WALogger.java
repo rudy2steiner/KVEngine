@@ -122,6 +122,6 @@ public class WALogger implements WALog<Put> {
 
     @Override
     public void close() throws Exception {
-
+         this.appender.close();
     }
 }

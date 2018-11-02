@@ -6,24 +6,25 @@ import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.TimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
+public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,TimeoutHandler {
     private final static Logger logger= LoggerFactory.getLogger(MultiTypeEventHandler.class);
     private final static ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
     private final ByteBuffer valueIndexBuffer;
     private final static byte[]     longBytes=new byte[StoreConfig.LONG_LEN];
-
     private IOHandler handler;
     private LogFileService logFileService;
     private SyncEvent[] syncEvents;
     private int syncIndex=0;
     private long processedMaxTxId;
     private long flushedMaxTxId;
+
     private Put put;
     private SyncEvent syncEvent;
     private long fileId;
@@ -39,7 +40,6 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
     }
     @Override
     public void onEvent(LogEvent<Event> eventLogEvent, long sequence, boolean endOfBatch) throws Exception {
-
         if(eventLogEvent.getValue().type()==EventType.SYNC){
             syncEvent=(SyncEvent) eventLogEvent.getValue();
             //  已经flush 完成
@@ -50,7 +50,6 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
         }else {
             put=(Put) eventLogEvent.getValue();
             tryRollLog(put);
-            //put.value().size());
             long offsetInFile=handler.length();
             // offset in file
             long offset=fileId+offsetInFile;
@@ -58,9 +57,6 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
             //logger.info(String.format("handler %d %d",Bytes.bytes2long(put.value().getKey(),0),put.value().getOffset()));
             Bytes.short2bytes(put.value().size(),longBytes,0);
             handler.append(longBytes,0,StoreConfig.SHORT_LEN);
-            // put txId
-//            Bytes.long2bytes(put.value().getTxId(),longBytes,0);
-//            handler.append(longBytes,0,StoreConfig.LONG_LEN);
             handler.append(put.value().getKey());
             handler.append(put.value().getValue());
             // put value index
@@ -115,6 +111,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
      **/
     public void flushValueIndex(boolean roll) throws IOException{
         int size=valueIndexBuffer.position();
+        // store tail and value index real size
         valueIndexBuffer.position(1);
         valueIndexBuffer.putInt(size);
         valueIndexBuffer.position(valueIndexBuffer.capacity());
@@ -134,5 +131,9 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>> {
         flushValueIndex(false);
     }
 
-
+    @Override
+    public void onTimeout(long sequence) throws Exception {
+        logger.info("on handler timeout ");
+        flushAndAck();
+    }
 }

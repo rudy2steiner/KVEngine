@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.common;
 
 public class StoreConfig {
-    public final static int SEGMENT_LOG_FILE_SIZE =256*1024;
+    public final static int SEGMENT_LOG_FILE_SIZE =512*1024;
     public final static int  EMPTY_FILL_BUFFER_SIZE =8*1024;
     public final static String LOG_FILE_SUFFIX=".wal";
     public final static int  FILE_WRITE_BUFFER_SIZE =64*1024;

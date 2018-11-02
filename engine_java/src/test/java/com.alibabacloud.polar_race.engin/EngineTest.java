@@ -23,7 +23,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=10000;
+    private long numPerThreadWrite=1000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -67,7 +67,6 @@ public class EngineTest {
          }
          long end=System.currentTimeMillis();
          logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
-
     }
     @Test
     public void benchmark8b4kbRead(){
