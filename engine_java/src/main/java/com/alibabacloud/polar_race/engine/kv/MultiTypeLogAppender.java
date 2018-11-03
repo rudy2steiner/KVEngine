@@ -7,8 +7,8 @@ import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.lmax.disruptor.EventFactory;
+import com.lmax.disruptor.LiteTimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.TimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class MultiTypeLogAppender implements Lifecycle {
     private MultiTypeEventHandler eventHander;
     public MultiTypeLogAppender(IOHandler handler, LogFileService fileService , int ringBufferSize){
         this.ringBufferSize=ringBufferSize>0? Files.tableSizeFor(ringBufferSize):DEFAULT_RING_BUFFER_SIZE;
-        this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor,ProducerType.MULTI,new TimeoutBlockingWaitStrategy(StoreConfig.MAX_TIMEOUT/10,TimeUnit.MILLISECONDS));
+        this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor,ProducerType.MULTI,new LiteTimeoutBlockingWaitStrategy(5,TimeUnit.MILLISECONDS));
         this.ringBuffer = disruptor.getRingBuffer();
         this.eventHander=new MultiTypeEventHandler(handler,fileService);
         this.disruptor.handleEventsWith(eventHander);

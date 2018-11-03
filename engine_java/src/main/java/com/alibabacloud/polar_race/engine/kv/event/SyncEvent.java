@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SyncEvent implements Event<Long> {
     private final static Long NOT_DONE_ID =-1l;
-    private AtomicBoolean    done=new AtomicBoolean(false);
     private volatile Long maxDoneTxId= NOT_DONE_ID;
     private volatile Long txId;
     private long startTimestamp;
@@ -26,13 +25,15 @@ public class SyncEvent implements Event<Long> {
         return txId;
     }
     public synchronized void done(Long maxDoneTxId){
-         if(maxDoneTxId>=this.maxDoneTxId) {
+         if(maxDoneTxId>=this.txId) {
              this.maxDoneTxId=maxDoneTxId;
+         }else{
+             throw  new  IllegalArgumentException("done but less than the txID");
          }
          notify();
     }
     public boolean isDone(){
-        if(maxDoneTxId!= NOT_DONE_ID)
+        if(!maxDoneTxId.equals(NOT_DONE_ID))
          return true;
         return false;
     }
@@ -43,7 +44,7 @@ public class SyncEvent implements Event<Long> {
             wait(timeout);
             // wake up or timeout
             if(!isDone()){
-                throw new TimeoutException(String.format("%d timeout after %d",txId,timeout));
+                throw new TimeoutException(String.format("%d timeout after %d",txId,System.currentTimeMillis()-startTimestamp));
             }
        }
        finishTimestamp=System.currentTimeMillis();
@@ -58,7 +59,7 @@ public class SyncEvent implements Event<Long> {
 
     @Override
     public void setTxId(long txId) {
-       this.txId=txId;
+       //this.txId=txId;
     }
 
     public long elapse(){

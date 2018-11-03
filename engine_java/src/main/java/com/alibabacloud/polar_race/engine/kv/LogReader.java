@@ -14,4 +14,8 @@ public class LogReader {
 
         return new byte[0];
     }
+    public void indexRecovery(String logName){
+
+        
+    }
 }

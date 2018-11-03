@@ -1,0 +1,38 @@
+<component name="libraryTable">
+  <library name="Maven: com.koloboke:koloboke-compile:0.5.1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-compile/0.5.1/koloboke-compile-0.5.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-compile/0.5.1/koloboke-compile-0.5.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-compile/0.5.1/koloboke-compile-0.5.1-sources.jar!/" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/benchmarks/dimensioned-jmh/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/benchmarks/research/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/benchmarks/research/src/main/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/benchmarks/time-vs-memory/src/main/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/compile/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/compile/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/compile/src/testJava8/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/jpsg/cli/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/jpsg/core/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/jpsg/gradle-plugin/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/api/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/api/src/main/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/api/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl-common/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl-common/src/main/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl-common/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl-generator/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl/src/main/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/impl/src/test/javaTemplates" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/template-processors/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/testing/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../Koloboke-compile-0.5/lib/testing/src/main/javaTemplates" />
+    </SOURCES>
+  </library>
+</component>

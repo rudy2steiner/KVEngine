@@ -5,8 +5,6 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.example.LogRingBufferEngine;
-import com.alibabacloud.polar_race.example.RingBufferEngine;
-import com.alibabacloud.polar_race.example.RocksEngine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +21,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=1000;
+    private long numPerThreadWrite=10000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -46,7 +44,6 @@ public class EngineTest {
     }
     @After
     public void close(){
-
         engine.close();
     }
     @Test
@@ -123,6 +120,8 @@ public class EngineTest {
         private int num;
         private AbstractEngine engine;
         private byte[] values;
+        private byte[] keyBytes;
+        private byte[] vals;
         private Random random;
         public PutThread(int id,int num,AbstractEngine engine){
             this.id=id;
@@ -137,6 +136,8 @@ public class EngineTest {
             for(int i=0;i<4096;i++){
                 values[i]=(byte) template.charAt(random.nextInt(len));
             }
+            keyBytes=new byte[StoreConfig.KEY_SIZE];
+            vals=new byte[StoreConfig.VALUE_SIZE];
         }
         /**
          * value 中隐藏key 的信息
@@ -145,18 +146,13 @@ public class EngineTest {
         public void run()  {
             int  i=0;
             long key;
-            byte[] keyBytes;
             int keyOffset;
-            byte[] vals;
             try {
                 while (i < num) {
                     key = id * num + i;
-                    keyBytes=new byte[StoreConfig.KEY_SIZE];
-                    vals=new byte[StoreConfig.VALUE_SIZE];
                     Bytes.long2bytes(key, keyBytes, 0);
                     keyOffset = (int) (key % VALUES_MAX_LENGTH);
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
-//                    vals=new byte[4096];
                     System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
                         vals[keyOffset + k]=keyBytes[k];

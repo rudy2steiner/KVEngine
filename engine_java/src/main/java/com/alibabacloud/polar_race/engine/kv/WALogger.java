@@ -33,6 +33,7 @@ public class WALogger implements WALog<Put> {
      *
      **/
     public IOHandler replayLastLog(){
+        String lastLogName=fileService.lastLogName();
 
         return null;
     }

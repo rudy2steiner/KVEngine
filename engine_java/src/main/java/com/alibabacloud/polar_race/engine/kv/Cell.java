@@ -8,7 +8,7 @@ public class Cell {
     private final static int KEY_LENGTH=StoreConfig.KEY_SIZE;
     private byte[] key;
     private byte[] value;
-    private long txId;
+    private volatile long txId;
     private volatile long offset;
 
     public byte[] getKey() {

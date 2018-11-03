@@ -9,7 +9,6 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.TimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -22,9 +21,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     private LogFileService logFileService;
     private SyncEvent[] syncEvents;
     private int syncIndex=0;
-    private long processedMaxTxId;
+    private long processedMaxTxId=-1;
     private long flushedMaxTxId;
-
     private Put put;
     private SyncEvent syncEvent;
     private long fileId;
@@ -46,7 +44,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             if(syncEvent.value()<=flushedMaxTxId) {syncEvent.done(flushedMaxTxId);return;}
             syncEvents[syncIndex++]=syncEvent;
             if(syncIndex<StoreConfig.batchSyncSize) return;
-            else flushAndAck();
+            else flushAndAck(true);
         }else {
             put=(Put) eventLogEvent.getValue();
             tryRollLog(put);
@@ -64,6 +62,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             valueIndexBuffer.putLong(offset);
             //valueIndexBuffer.putInt(put.value().getTxId());
             processedMaxTxId=put.value().getTxId();
+
         }
 
         // need flush
@@ -84,7 +83,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         EMPTY_BUFFER.flip();
         handler.append(EMPTY_BUFFER);
         flushValueIndex(true);
-        handler.flushBuffer();
+        //handler.flushBuffer();
+        flushAndAck(false);
         // handler.flush();
         String nextLogName=logFileService.nextLogName(handler);
         // roll to next log file
@@ -94,19 +94,24 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     /**
      *
      */
-    public boolean flushAndAck() throws IOException{
+    public boolean flushAndAck(boolean force) throws IOException{
+        boolean flushed=false;
         if(flushedMaxTxId<processedMaxTxId) {
             handler.flush();
-            for (int i=0;i<syncIndex;i++) {
-                syncEvents[i].done(processedMaxTxId);
-            }
+            //logger.info(String.format("%d flushed and ack,batch size %d", processedMaxTxId,syncIndex));
             flushedMaxTxId = processedMaxTxId;
-            int flushCount=syncIndex;
-            syncIndex = 0;
-            //logger.info(String.format("%d flushed and ack,batch size %d", processedMaxTxId,flushCount));
-            return true;
+            flushed=true;
         }
-        return false;
+        clearSyncEvent();
+        return flushed;
+    }
+
+    public void clearSyncEvent(){
+        for (int i = 0; i < syncIndex; i++) {
+            syncEvents[i].done(processedMaxTxId);
+            syncEvents[i]=null;
+        }
+        syncIndex = 0;
     }
 
 
@@ -137,8 +142,9 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
 
     @Override
     public void onTimeout(long sequence) throws Exception {
-        if(flushAndAck()){
-            logger.info("on handler timeout and flush");
+        long start=System.currentTimeMillis();
+        if(flushAndAck(false)){
+            logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
         }
     }
 }
