@@ -72,7 +72,7 @@ public class IndexHashAppender  implements Lifecycle {
         }
     }
 
-    public int hash(long key){
+    public static int hash(long key){
       return   (int)(key ^ (key >>> 32));
     }
 

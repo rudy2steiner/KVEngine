@@ -12,6 +12,9 @@ public class StoreConfig {
     public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
     public final static int  HASH_CONCURRENCY =32;
 
+    public final static int  LOAD_HASH_INDEX_TIMEOUT =2000;
+    public final static int  HASH_LOAD_BUFFER_SIZE =256*1024;
+
     public final static int  FILE_WRITE_BUFFER_SIZE =64*1024;
     public final static int  FILE_READ_BUFFER_SIZE=16*1024*1024;
     public final static int  DISRUPTOR_BUFFER_SIZE=1024;
