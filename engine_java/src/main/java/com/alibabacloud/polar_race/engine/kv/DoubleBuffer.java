@@ -1,12 +1,17 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.index.WalIndexLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.nio.ch.DirectBuffer;
 
 import java.nio.ByteBuffer;
 
 public class DoubleBuffer {
+    private final static Logger logger= LoggerFactory.getLogger(DoubleBuffer.class);
     private  volatile boolean  readable;
-    private volatile  boolean  writable;
+    private  volatile  boolean  writable;
     private  int size;
     private volatile ByteBuffer readBuffer;
     private volatile ByteBuffer writeBuffer;
@@ -27,7 +32,8 @@ public class DoubleBuffer {
     public synchronized void swap(boolean write2read) throws Exception{
         //还没读完，不可以交换
         while (readable) {
-                Thread.sleep(5);
+            logger.info("wait readable false");
+            Thread.sleep(5);
         }
         ByteBuffer buf=readBuffer;
         readBuffer = writeBuffer;
@@ -48,6 +54,19 @@ public class DoubleBuffer {
             readable=state;
         else
             writable=state;
+    }
+
+    /**
+     *
+     **/
+    public void release(){
+       if(readBuffer.isDirect()){
+           ((DirectBuffer)readBuffer).cleaner();
+           ((DirectBuffer)writeBuffer).cleaner();
+       }else{
+           readBuffer=null;
+           writeBuffer=null;
+       }
     }
 
 }

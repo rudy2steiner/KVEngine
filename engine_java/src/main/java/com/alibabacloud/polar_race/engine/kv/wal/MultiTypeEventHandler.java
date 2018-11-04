@@ -1,8 +1,12 @@
-package com.alibabacloud.polar_race.engine.kv;
+package com.alibabacloud.polar_race.engine.kv.wal;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.kv.Event;
+import com.alibabacloud.polar_race.engine.kv.EventType;
+import com.alibabacloud.polar_race.engine.kv.LogEvent;
+import com.alibabacloud.polar_race.engine.kv.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.lmax.disruptor.EventHandler;
@@ -14,7 +18,7 @@ import java.nio.ByteBuffer;
 
 public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,TimeoutHandler {
     private final static Logger logger= LoggerFactory.getLogger(MultiTypeEventHandler.class);
-    private final static ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
+    public final static ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
     private final ByteBuffer valueIndexBuffer;
     private final static byte[]     longBytes=new byte[StoreConfig.LONG_LEN];
     private IOHandler handler;
@@ -38,7 +42,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     }
     @Override
     public void onEvent(LogEvent<Event> eventLogEvent, long sequence, boolean endOfBatch) throws Exception {
-        if(eventLogEvent.getValue().type()==EventType.SYNC){
+        if(eventLogEvent.getValue().type()== EventType.SYNC){
             syncEvent=(SyncEvent) eventLogEvent.getValue();
             //  已经flush 完成
             if(syncEvent.value()<=flushedMaxTxId) {syncEvent.done(flushedMaxTxId);return;}
@@ -76,7 +80,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         if(remain>=StoreConfig.LOG_KV_RECORD_LEAST_LEN) {
             EMPTY_BUFFER.putShort((short) 0);
             // fill empty
-            EMPTY_BUFFER.limit((short) remain);
+            EMPTY_BUFFER.position((int)remain);
         }else {
             EMPTY_BUFFER.putChar('#');
         }
@@ -84,8 +88,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         handler.append(EMPTY_BUFFER);
         flushValueIndex(true);
         //handler.flushBuffer();
-        flushAndAck(false);
-        // handler.flush();
+        //flushAndAck(false);
+        clearSyncEvent();
         String nextLogName=logFileService.nextLogName(handler);
         // roll to next log file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
@@ -121,7 +125,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     public void flushValueIndex(boolean roll) throws IOException{
         int size=valueIndexBuffer.position();
         // store tail and value index real size
-        valueIndexBuffer.position(1);
+        valueIndexBuffer.position(0);
+        valueIndexBuffer.put(StoreConfig.verison);
         valueIndexBuffer.putInt(size);
         valueIndexBuffer.position(valueIndexBuffer.capacity());
         valueIndexBuffer.flip();
@@ -130,6 +135,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         else{
             handler.write(StoreConfig.SEGMENT_LOG_FILE_SIZE-valueIndexBuffer.capacity(),valueIndexBuffer);
         }
+        handler.flush();
         valueIndexBuffer.clear();
     }
 

@@ -1,4 +1,5 @@
 package com.alibabacloud.polar_race;
+import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.alibabacloud.polar_race.collection.SynchronizedMap;
 import com.koloboke.compile.KolobokeMap;
 import com.koloboke.compile.MethodForm;
@@ -61,9 +62,10 @@ public class KolobokeMain {
     private final static Logger logger= LoggerFactory.getLogger(KolobokeMain.class);
     public static void main(String[] args) throws InterruptedException {
             long start = System.currentTimeMillis();
-            SynchronizedMap rateMap = SynchronizedMap.withExpectedSize(1000_0000);
-            System.out.println(rateMap.size());
-            for (long i = 0; i < 4000_0000; i++) {
+            //SynchronizedMap rateMap = SynchronizedMap.withExpectedSize(1000_0000);
+          LongLongMap rateMap = LongLongMap.withExpectedSize(1000_0000);
+        System.out.println(rateMap.size());
+            for (long i = 0; i < 4000_0; i++) {
                 rateMap.put(i, i);
             }
             rateMap.forEach(new LongLongConsumer() {

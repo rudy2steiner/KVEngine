@@ -4,7 +4,14 @@ public class StoreConfig {
     public final static int SEGMENT_LOG_FILE_SIZE =512*1024;
     public final static int  EMPTY_FILL_BUFFER_SIZE =8*1024;
     public final static String LOG_FILE_SUFFIX=".wal";
+    public final static String VALUE_CHILD_DIR="wal/";
+    public final static String INDEX_CHILD_DIR="index/";
     public final static String LOG_INDEX_FILE_SUFFIX=".index";
+    public final static int  HASH_INDEX_QUEUE_SIZE=500;
+    public final static int  HASH_BUCKET_SIZE =64;
+    public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
+    public final static int  HASH_CONCURRENCY =32;
+
     public final static int  FILE_WRITE_BUFFER_SIZE =64*1024;
     public final static int  FILE_READ_BUFFER_SIZE=16*1024*1024;
     public final static int  DISRUPTOR_BUFFER_SIZE=1024;

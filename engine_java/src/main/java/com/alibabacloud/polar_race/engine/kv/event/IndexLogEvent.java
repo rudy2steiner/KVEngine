@@ -9,7 +9,7 @@ import com.alibabacloud.polar_race.engine.kv.EventType;
 public class IndexLogEvent implements Event<DoubleBuffer> {
 
     private volatile DoubleBuffer value;
-    private long buckId;
+    private volatile long buckId;
     public IndexLogEvent(DoubleBuffer value){
         this.value=value;
     }

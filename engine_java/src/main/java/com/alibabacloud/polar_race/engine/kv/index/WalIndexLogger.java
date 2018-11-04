@@ -21,104 +21,118 @@ public class WalIndexLogger {
     private String dir;
     private int buckSize;
     private LogFileService fileService;
-    private LogThread writer;
+    private Map<Long, IOHandler> handlerMap;
     public WalIndexLogger(String dir,int buckSize,int queueSize){
         this.dir=dir;
         this.buckSize=buckSize;
         buckTrunck=new ArrayBlockingQueue<>(queueSize);
         this.fileService=new LogFileServiceImpl(dir);
+        this.handlerMap=new HashMap<>(buckSize*2);
 
     }
 
     public void start() throws Exception{
-           writer=new LogThread(buckSize);
-           writer.start();
-           Thread thread=new Thread(writer);
-                  thread.start();
+        IOHandler handler;
+        for(int i=0;i<buckSize;i++){
+            handler=fileService.ioHandler(String.valueOf(i)+ StoreConfig.LOG_INDEX_FILE_SUFFIX);
+            if(handler.length()>0){
+                // move to end
+                handler.position(handler.length());
+            }
+            handlerMap.put((long)i,handler);
+        }
+
     }
     /**
      * wait until put success
      **/
-    public void put(IndexLogEvent event) throws InterruptedException{
-        buckTrunck.put(event);
+    public void put(IndexLogEvent event) throws IOException{
+        IOHandler handler=handlerMap.get(event.txId());
+        if(handler!=null) {
+            handler.append(event.value().get(true));
+            event.value().state(true,false);
+        }else{
+            logger.info("index log thread handler not init");
+            throw new IllegalArgumentException("io handler not found");
+        }
     }
     /**
      * stop
      *
      **/
     public void stop() throws InterruptedException{
-         if(writer!=null){
-             writer.stop(true);
-         }
+//         if(writer!=null){
+//             writer.stop(true);
+//         }
 
     }
-    public class LogThread implements Runnable{
-        private boolean running;
-        private IndexLogEvent processing;
-        private Map<Integer, IOHandler> handlerMap;
-        private IOHandler handler;
-        public LogThread(int buckSize){
-                handlerMap=new HashMap<>(buckSize);
-        }
-        public void start()throws IOException {
-            this.running=true;
-            for(int i=0;i<buckSize;i++){
-                handler=fileService.ioHandler(String.valueOf(i)+ StoreConfig.LOG_INDEX_FILE_SUFFIX);
-                if(handler.length()>0){
-                    // move to end
-                    handler.position(handler.length());
-                    handlerMap.put(i,handler);
-                }
-            }
-        }
-
-        public synchronized void stop(boolean gracefully) throws InterruptedException{
-            if(running){
-                running=false;
-                wait();
-            }
-        }
-
-        @Override
-        public void run() {
-            try {
-                while(true) {
-                    processing = buckTrunck.poll(consumeTimeout, TimeUnit.MILLISECONDS);
-                    if (processing == null) {
-                        if(!onIdle()) break;
-                    }
-                    handler=handlerMap.get(processing.txId());
-                    if(handler!=null) {
-                        handler.append(processing.value().get(true));
-                        processing.value().state(true,false);
-                    }else{
-                        logger.info("index log thread handler not init");
-                        break;
-                    }
-                }
-            }catch (InterruptedException e){
-                logger.info("index log thread interrupted",e);
-            }catch (IOException e){
-                logger.info("index log thread io exception",e);
-            }
-        }
-        /**
-         * @return false  stop the thread
-         **/
-        public boolean onIdle(){
-               if(!running){
-                   notify();
-                   return false;
-               }
-               try {
-                   Thread.sleep(100);
-               }catch (InterruptedException e){
-                   e.printStackTrace();
-               }
-               return true;
-
-        }
-    }
+//    public class LogThread implements Runnable{
+//        private boolean running;
+//        private IndexLogEvent processing;
+//        private Map<Long, IOHandler> handlerMap;
+//        private IOHandler handler;
+//        public LogThread(int buckSize){
+//                handlerMap=new HashMap<>(buckSize);
+//        }
+//        public void start()throws IOException {
+//            this.running=true;
+//            for(int i=0;i<buckSize;i++){
+//                handler=fileService.ioHandler(String.valueOf(i)+ StoreConfig.LOG_INDEX_FILE_SUFFIX);
+//                if(handler.length()>0){
+//                    // move to end
+//                    handler.position(handler.length());
+//                }
+//                handlerMap.put((long)i,handler);
+//            }
+//        }
+//
+//        public synchronized void stop(boolean gracefully) throws InterruptedException{
+//            if(running){
+//                running=false;
+//                wait();
+//            }
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                while(true) {
+//                    processing = buckTrunck.poll(consumeTimeout, TimeUnit.MILLISECONDS);
+//                    if (processing == null) {
+//                        if(!onIdle()) break;
+//                    }
+//                    handler=handlerMap.get(processing.txId());
+//                    if(handler!=null) {
+//                        handler.append(processing.value().get(true));
+//                        processing.value().state(true,false);
+//                    }else{
+//                        logger.info("index log thread handler not init");
+//                        break;
+//                    }
+//                }
+//            }catch (InterruptedException e){
+//                logger.info("index log thread interrupted",e);
+//            }catch (IOException e){
+//                logger.info("index log thread io exception",e);
+//            }
+//        }
+//        /**
+//         * @return false  stop the thread
+//         **/
+//        public boolean onIdle(){
+//               if(!running){
+//                   notify();
+//                   return false;
+//               }
+////               try {
+////                   Thread.sleep(100);
+////               }catch (InterruptedException e){
+////                   e.printStackTrace();
+////               }
+//               return true;
+//
+//        }
+//    }
 
 
 }

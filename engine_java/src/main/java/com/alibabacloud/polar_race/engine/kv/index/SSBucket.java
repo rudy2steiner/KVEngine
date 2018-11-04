@@ -50,21 +50,14 @@ public class SSBucket {
      */
     public int getNextOffset() throws Exception{
               int offset=index.getAndAdd(indexSize);
-              if(offset<bufferSize) return offset;
-              swap();
+              if(offset+StoreConfig.VALUE_INDEX_RECORD_SIZE<=bufferSize) return offset;
+              swap(offset);
               return -1;
     }
 
-    public synchronized void swap() throws Exception{
-           if(index.get()>=bufferSize){
-               buffer.flip();
-               doubleBuffer.swap(true);
-               buffer= doubleBuffer.get(false);
-               buffer.clear();
-               index.set(0);
-               // 可读
-               doubleBuffer.state(true,true);
-               notifyRead();
+    public synchronized void swap(int position) throws Exception{
+           if(index.get()>bufferSize){
+               flushBuffer(position);
            }
     }
     /**
@@ -78,6 +71,26 @@ public class SSBucket {
          logger.put(indexLogEvent);
     }
 
+
+    public void flushBuffer(int position) throws Exception{
+        buffer.position(position);
+        buffer.flip();
+        doubleBuffer.swap(true);
+        buffer= doubleBuffer.get(false);
+        buffer.clear();
+        index.set(0);
+        // 可读
+        doubleBuffer.state(true,true);
+        notifyRead();
+    }
+
+
+    public void close() throws Exception{
+        if(index.get()>0)
+            flushBuffer(index.get());
+        this.buffer=null;
+        this.doubleBuffer.release();
+    }
 
 
 

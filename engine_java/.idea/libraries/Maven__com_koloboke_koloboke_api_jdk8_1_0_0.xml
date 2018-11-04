@@ -30,7 +30,6 @@
       <root url="file://$PROJECT_DIR$/../../Koloboke-lib-1.0.0/lib/template-processors/src/main/java" />
       <root url="file://$PROJECT_DIR$/../../Koloboke-lib-1.0.0/lib/testing/src/main/java" />
       <root url="file://$PROJECT_DIR$/../../Koloboke-lib-1.0.0/lib/testing/src/main/javaTemplates" />
-      <root url="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-api-jdk8/1.0.0/koloboke-api-jdk8-1.0.0.jar!/" />
       <root url="file://$PROJECT_DIR$/../../Koloboke-lib-1.0.0/lib" />
     </SOURCES>
   </library>
