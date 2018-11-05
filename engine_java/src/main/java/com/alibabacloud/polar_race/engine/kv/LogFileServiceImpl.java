@@ -63,6 +63,12 @@ public class LogFileServiceImpl implements LogFileService{
         return new FileChannelIOHandler(new File(dir,fileName),"rw");
     }
 
+
+    @Override
+    public IOHandler ioHandler(String fileName, String mode) throws FileNotFoundException {
+        return new FileChannelIOHandler(new File(dir,fileName),mode);
+    }
+
     @Override
     public File nextLogFile(Cell cell) {
         return new File(dir,nextLogName(cell));

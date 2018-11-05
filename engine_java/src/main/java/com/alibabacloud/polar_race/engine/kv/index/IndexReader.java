@@ -16,20 +16,27 @@ import java.util.concurrent.TimeUnit;
 public class IndexReader {
     private final static Logger logger= LoggerFactory.getLogger(IndexReader.class);
     public static LongLongMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
-           handler.position(0);
-           handler.read(byteBuffer);
-           byteBuffer.flip();
-           int fileSize=(int)handler.length();
-           int keyCount=fileSize/StoreConfig.VALUE_INDEX_RECORD_SIZE;
-           int mapSize=(int)Math.ceil(keyCount*1.53f);
-           LongLongMap map=LongLongMap.withExpectedSize(mapSize);
-           long key;
-           long value;
-           while(byteBuffer.remaining()>=StoreConfig.VALUE_INDEX_RECORD_SIZE){
-               key=byteBuffer.getLong();
-               value=byteBuffer.getLong();
-               map.put(key,value);
-           }
+        int fileSize = (int) handler.length();
+        int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
+        int mapSize = (int) Math.ceil(keyCount * 1.53f);
+        LongLongMap map = LongLongMap.withExpectedSize(mapSize);
+        int bufferSize=byteBuffer.capacity();
+        long key;
+        long value;
+        int remaining=0;
+        byteBuffer.clear();
+        handler.position(0);
+        do {
+            handler.read(byteBuffer);
+            byteBuffer.flip();
+            remaining=byteBuffer.remaining();
+            while (byteBuffer.remaining() >= StoreConfig.VALUE_INDEX_RECORD_SIZE) {
+                key = byteBuffer.getLong();
+                value = byteBuffer.getLong();
+                map.put(key, value);
+            }
+            byteBuffer.compact();
+        }while (remaining==bufferSize);
            return map;
     }
 

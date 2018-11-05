@@ -9,4 +9,9 @@ public abstract  class LongLongMap implements com.koloboke.collect.map.LongLongM
    public static LongLongMap withExpectedSize(int expectedSize){
        return new KolobokeLongLongMap(expectedSize);
    }
+
+    @Override
+    public long defaultValue() {
+        return -1;
+    }
 }

@@ -13,6 +13,10 @@ public interface LogFileService {
     String lastLogName();
     File   nextLogFile(Cell cell);
     IOHandler ioHandler(String fileName) throws FileNotFoundException;
+    /**
+     * @param mode  rw,r
+     **/
+    IOHandler ioHandler(String fileName,String mode) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException;
     List<Long> allLogFiles();

@@ -3,7 +3,7 @@ import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.LogFileService;
-import com.alibabacloud.polar_race.engine.kv.buffer.BufferHandler;
+import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
@@ -129,7 +129,7 @@ public class IndexLogReader implements Lifecycle {
         }
 
         public void close(){
-            BufferHandler.release(buffer);
+            LogBufferAllocator.release(buffer);
             buffer=null;
         }
     }

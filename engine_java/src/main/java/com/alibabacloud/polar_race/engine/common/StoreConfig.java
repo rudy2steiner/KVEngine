@@ -9,6 +9,7 @@ public class StoreConfig {
     public final static String LOG_INDEX_FILE_SUFFIX=".index";
     public final static int  HASH_INDEX_QUEUE_SIZE=500;
     public final static int  HASH_BUCKET_SIZE =64;
+    public final static double  HASH_BUCKET_LOAD_FACTOR =0.5;
     public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
     public final static int  HASH_CONCURRENCY =32;
 
@@ -29,7 +30,11 @@ public class StoreConfig {
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;
     public final static int  SHORT_LEN=2;
+    public final static int  LOG_ELEMNT_LEAST_SIZE=SHORT_LEN+KEY_SIZE;
     public final static int  MAX_TIMEOUT=1000;
-    public final static byte  verison=(byte) 1;
+    public final static byte verison=(byte) 1;
+    public final static int  MAX_DIRECT_BUFFER_SIZE=200*1024*1024; // 220Mb
+    public final static int  MAX_OLD_BUFFER_SIZE=750*1024*1024;  // 750Mb  full gc limit
+    public final static int  MAX_CONCURRENCY_PRODUCER_AND_CONSUMER=64;
 
 }
