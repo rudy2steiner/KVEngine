@@ -6,6 +6,8 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.buffer.BufferAware;
+import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
@@ -22,11 +24,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WALogger implements WALog<Put> {
 
     private final static Logger logger= LoggerFactory.getLogger(WALogger.class);
-    private ThreadLocal<ByteBuffer> keyBuf=new ThreadLocal<>();
     private ThreadLocal<ByteBuffer> valueBuf=new ThreadLocal<>();
     private String walDir;
     private String indexDir;
@@ -41,6 +43,8 @@ public class WALogger implements WALog<Put> {
     private IndexLRUCache indexLRUCache;
     private LogFileLRUCache logFileLRUCache;
     private ExecutorService executorService;
+    private LogBufferAllocator bufferAllocator;
+    private BufferAware bufferAware;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
@@ -52,11 +56,25 @@ public class WALogger implements WALog<Put> {
         this.logFileService =new LogFileServiceImpl(walDir);
         this.indexFileService=new LogFileServiceImpl(indexDir);
         this.cacheController=new KVCacheController(logFileService);
+        this.bufferAllocateControl();
+        this.bufferAware=new BufferAware(bufferAllocator);
         this.executorService= new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                 Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
-        this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService,executorService);
-        this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController,executorService);
+        this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService,executorService,bufferAllocator);
+        this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController,executorService,bufferAllocator);
         this.transferIndexToHashLogInit();
+    }
+
+
+    /**
+     * 控制整体项目的缓存
+     **/
+    public void bufferAllocateControl(){
+        int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
+        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+ StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
+        logger.info(String.format("max direct cache log file %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
+        this.bufferAllocator=new LogBufferAllocator(logFileService,maxDirectCacheLog,maxHeapCacheLog,cacheController.maxDirectBuffer(),cacheController.maxOldBuffer());
+
     }
 
 
@@ -67,12 +85,14 @@ public class WALogger implements WALog<Put> {
      **/
     public IOHandler replayLastLog() throws IOException{
         String lastLogName= logFileService.lastLogName();
+        IOHandler handler=null;
         if(lastLogName!=null){
             WalLogParser logParser=new WalLogParser(logFileService,lastLogName+StoreConfig.LOG_FILE_SUFFIX);
-            ByteBuffer to=ByteBuffer.allocate(logFileService.tailerAndIndexSize());
-          return  logParser.doRecover(null,to,null);
+             ByteBuffer to=bufferAllocator.allocate(logFileService.tailerAndIndexSize(),false);
+             handler=logParser.doRecover(null,to,null);
+             bufferAllocator.onRelease(to);
         }
-        return null;
+        return handler;
     }
 
     /**
@@ -84,12 +104,22 @@ public class WALogger implements WALog<Put> {
             hashIndexAppender.start();
             indexLogReader.start();
             indexLogReader.iterate(new IndexVisitor() {
+                private AtomicInteger concurrency=new AtomicInteger(cacheController.maxHashBucketSize());
                 @Override
                 public void visit(ByteBuffer buffer) throws Exception {
                     hashIndexAppender.append(buffer);
                 }
+
+                @Override
+                public void onFinish() throws Exception{
+                    if(concurrency.decrementAndGet()==0) {
+                        hashIndexAppender.close();
+                        logger.info(String.format("hash task  finish, time %d",System.currentTimeMillis()-start));
+
+                    }
+                }
             });
-            logger.info(String.format("task submitted finish, time %d",System.currentTimeMillis()-start));
+            //logger.info(String.format("task submitted finish, time %d",System.currentTimeMillis()-start));
             //hashIndexAppender.close();
         }
     }
@@ -103,8 +133,8 @@ public class WALogger implements WALog<Put> {
     public void iterate(AbstractVisitor visitor) throws IOException {
         List<Long> logNames= logFileService.allLogFiles();
         LogParser parser;
-        ByteBuffer to= ByteBuffer.allocate(StoreConfig.FILE_READ_BUFFER_SIZE);
-        ByteBuffer from= ByteBuffer.allocate(StoreConfig.FILE_READ_BUFFER_SIZE);
+        ByteBuffer to= bufferAllocator.allocate(StoreConfig.FILE_READ_BUFFER_SIZE,false);
+        ByteBuffer from= bufferAllocator.allocate(StoreConfig.FILE_READ_BUFFER_SIZE,false);
         for(Long logName:logNames){
             parser=new LogParser(walDir,logName+StoreConfig.LOG_FILE_SUFFIX);
             parser.parse(visitor,to,from);
@@ -127,7 +157,7 @@ public class WALogger implements WALog<Put> {
             }
             ByteBuffer valueBuffer=valueBuf.get();
                 if(valueBuffer==null){
-                    valueBuffer=ByteBuffer.allocate(4096);
+                    valueBuffer=bufferAllocator.allocate(4096,false);
                     valueBuf.set(valueBuffer);
                 }
                 valueBuffer.clear();
@@ -172,7 +202,7 @@ public class WALogger implements WALog<Put> {
     }
 
     public void transferIndexToHashLogInit(){
-        hashIndexAppender=new IndexHashAppender(indexDir,StoreConfig.HASH_BUCKET_SIZE,StoreConfig.HASH_WRITE_BUFFER_SIZE,StoreConfig.HASH_INDEX_QUEUE_SIZE);
+        hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize(),StoreConfig.HASH_INDEX_QUEUE_SIZE);
         indexLogReader=new IndexLogReader(walDir,logFileService,executorService);
     }
 
@@ -183,4 +213,6 @@ public class WALogger implements WALog<Put> {
          this.indexLRUCache.close();
          this.logFileLRUCache.close();
     }
+
+
 }

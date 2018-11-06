@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 public class WalIndexLogger {
     private final static Logger logger= LoggerFactory.getLogger(WalIndexLogger.class);
-    private BlockingQueue<IndexLogEvent> buckTrunck;
     private int consumeTimeout=100;
     private String dir;
     private int buckSize;
@@ -25,7 +24,6 @@ public class WalIndexLogger {
     public WalIndexLogger(String dir,int buckSize,int queueSize){
         this.dir=dir;
         this.buckSize=buckSize;
-        buckTrunck=new ArrayBlockingQueue<>(queueSize);
         this.fileService=new LogFileServiceImpl(dir);
         this.handlerMap=new HashMap<>(buckSize*2);
 

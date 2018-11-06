@@ -10,6 +10,11 @@ public interface CacheController {
 
 
     /**
+     * 最大可分配的直接内存
+     **/
+    int maxLogCacheDirectBuffer();
+
+    /**
      * 最大可分配的Heap old 内存
      **/
     int maxOldBuffer();
@@ -62,6 +67,11 @@ public interface CacheController {
      **/
     int maxHashBucketSize();
 
+
+    /**
+     * 最大的hash 桶文件大小
+     **/
+    int hashBucketWriteCacheSize();
     /**
      *  每个cache index 的大小
      **/

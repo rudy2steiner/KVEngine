@@ -1,6 +1,9 @@
 package com.alibabacloud.polar_race.engine.kv.buffer;
 
+import java.nio.ByteBuffer;
+
 public interface BufferSizeAware  {
-    void onAdd(int size);
-    void onRelease(int size);
+    boolean onAdd(int size,boolean direct);
+    boolean onRelease(int size,boolean direct);
+    boolean onRelease(ByteBuffer buffer);
 }

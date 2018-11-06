@@ -30,12 +30,13 @@ public class LogFileLRUCache implements Lifecycle {
     private LogBufferAllocator logBufferAllocator;
     private WalReader logReader;
     private ExecutorService loadServcie;
-    public LogFileLRUCache(LogFileService logFileService,CacheController cacheController,ExecutorService loadServcie){
+    public LogFileLRUCache(LogFileService logFileService,CacheController cacheController,ExecutorService loadServcie,LogBufferAllocator logBufferAllocator){
         this.logFileService=logFileService;
         this.sortedLogFiles=new TreeSet();
         this.cacheController=cacheController;//new KVCacheController(logFileService);
         this.maxCacheLog =cacheController.maxCacheLog();
         this.loadServcie=loadServcie;
+        this.logBufferAllocator=logBufferAllocator;
         this.logReader=new WalReader(logFileService);
     }
 
@@ -77,10 +78,6 @@ public class LogFileLRUCache implements Lifecycle {
     @Override
     public void start() throws Exception {
         if(!isStart()&&logFileService.allLogFiles().size()>0){
-            int maxDirectCacheLog=cacheController.maxDirectBuffer()/cacheController.cacheLogSize();
-            int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+ StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
-            logger.info(String.format("max direct cache log file %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
-            this.logBufferAllocator=new LogBufferAllocator(logFileService,maxDirectCacheLog,maxHeapCacheLog);
 
             sortedLogFiles.addAll(logFileService.allLogFiles());
             this.lru= CacheBuilder.newBuilder()
@@ -115,9 +112,9 @@ public class LogFileLRUCache implements Lifecycle {
             BufferHolder holder=removalNotification.getValue();
             try {
                 if (holder.value().isDirect()) {
-                    logBufferAllocator.rebackDirect(holder);
+                    logBufferAllocator.rebackDirectLogCache(holder);
                 } else {
-                    logBufferAllocator.rebackHeap(holder);
+                    logBufferAllocator.rebackHeapLogCache(holder);
                 }
             }catch (InterruptedException e){
                 logger.info("lru cache out, interrupted");
@@ -127,8 +124,8 @@ public class LogFileLRUCache implements Lifecycle {
 
 
     public BufferHolder getLogBufferHolder(){
-         BufferHolder holder= logBufferAllocator.allocatDirect();
-         if(holder==null) holder=logBufferAllocator.allocateHeap();
+         BufferHolder holder= logBufferAllocator.allocateDirectLogCache();
+         if(holder==null) holder=logBufferAllocator.allocateHeapLogCache();
          if(holder==null) throw new IllegalArgumentException("allocate log buffer failed");
          return holder;
     }

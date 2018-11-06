@@ -12,6 +12,13 @@ public class KVCacheController implements CacheController {
         return StoreConfig.MAX_DIRECT_BUFFER_SIZE;
     }
 
+
+    @Override
+    public int maxLogCacheDirectBuffer() {
+        // 30Mb
+        return StoreConfig.MAX_DIRECT_BUFFER_SIZE-30*1024*1024;
+    }
+
     @Override
     public int maxOldBuffer() {
         return StoreConfig.MAX_OLD_BUFFER_SIZE;
@@ -63,6 +70,11 @@ public class KVCacheController implements CacheController {
     @Override
     public int maxHashBucketSize() {
         return StoreConfig.HASH_BUCKET_SIZE;
+    }
+
+    @Override
+    public int hashBucketWriteCacheSize() {
+        return 256*1024;
     }
 
     @Override

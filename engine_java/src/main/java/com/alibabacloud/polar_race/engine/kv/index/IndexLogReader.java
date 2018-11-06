@@ -93,7 +93,7 @@ public class IndexLogReader implements Lifecycle {
         /**
          * @param start include
          * @param end  exclude
-         *
+         *  256 kb direct buffer
          **/
         public Reader(List<Long> files,int start,int end,IndexVisitor visitor){
            this.files=files;
@@ -115,9 +115,13 @@ public class IndexLogReader implements Lifecycle {
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
                 }
+                visitor.onFinish();
             }catch (Exception e){
                 logger.info("read exception and stop",e);
+            }finally {
+
             }
+
             close();
         }
         public void readPost(ByteBuffer buffer, long fileNO) throws Exception{
@@ -136,6 +140,7 @@ public class IndexLogReader implements Lifecycle {
         }
 
         public void close(){
+
             LogBufferAllocator.release(buffer);
             buffer=null;
         }

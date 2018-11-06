@@ -5,6 +5,7 @@ import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.buffer.BufferSizeAware;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
@@ -32,7 +33,8 @@ public class IndexLRUCache implements Lifecycle {
     private int maxCache;
     private CacheController cacheController;
     private ExecutorService indexLoadThreadPool;
-    public IndexLRUCache(CacheController cacheController ,LogFileService indexFileService,ExecutorService indexLoadThreadPool){
+    private LogBufferAllocator bufferAllocator;
+    public IndexLRUCache(CacheController cacheController ,LogFileService indexFileService,ExecutorService indexLoadThreadPool,LogBufferAllocator bufferAllocator){
         this.cacheController=cacheController;
         this.maxCache=cacheController.maxCacheIndex();
         this.indexHandlerMap =new HashMap(128);
@@ -41,6 +43,7 @@ public class IndexLRUCache implements Lifecycle {
         this.byteBuffers=new ByteBuffer[cacheController.maxHashBucketSize()];
         this.maxConcurrencyLoad=cacheController.cacheIndexInitLoadConcurrency();
         this.indexLoadThreadPool=indexLoadThreadPool;
+        this.bufferAllocator=bufferAllocator;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class IndexLRUCache implements Lifecycle {
                     indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
                 }
                 for (int i = 0; i < maxConcurrencyLoad; i++) {
-                    byteBuffers[i] = ByteBuffer.allocateDirect(cacheController.cacheIndexReadBufferSize());
+                    byteBuffers[i] = bufferAllocator.allocate(cacheController.cacheIndexReadBufferSize(),true);
                 }
                 this.lru = CacheBuilder.newBuilder()
                         .maximumSize(maxCache)
@@ -143,8 +146,6 @@ public class IndexLRUCache implements Lifecycle {
             return map;
         }
     }
-
-
 
 
 }
