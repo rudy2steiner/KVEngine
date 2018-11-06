@@ -45,19 +45,19 @@ public class KVCacheController implements CacheController {
 
     @Override
     public int cacheIndexReadBufferSize() {
-        return 2*1024*1024;
+        return 256*1024;  //256Kb
     }
 
     @Override
     public int cacheIndexInitLoadConcurrency() {
-        // 2*2Mb=4Mb
-        return 2;
+        // 64*256kb= 16Mb
+        return maxHashBucketSize();
     }
 
     @Override
     public int maxCacheIndex() {
               // 12* 16Mb= 192Mb
-        return 12;
+        return 56;
     }
 
     @Override

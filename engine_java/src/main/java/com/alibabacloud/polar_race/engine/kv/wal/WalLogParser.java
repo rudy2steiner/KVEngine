@@ -22,6 +22,7 @@ public class WalLogParser implements KVParser {
     public WalLogParser(LogFileService logFileService,String fileName) throws IOException {
         this.fileName=fileName;
         this.logFileService=logFileService;
+        // no buffer cache
         this.handler=logFileService.ioHandler(fileName);
     }
 

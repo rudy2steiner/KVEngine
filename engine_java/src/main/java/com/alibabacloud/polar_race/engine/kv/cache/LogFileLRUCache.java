@@ -17,7 +17,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogFileLRUCache implements Lifecycle {
@@ -30,11 +29,13 @@ public class LogFileLRUCache implements Lifecycle {
     private int maxCacheLog;
     private LogBufferAllocator logBufferAllocator;
     private WalReader logReader;
-    public LogFileLRUCache(LogFileService logFileService){
+    private ExecutorService loadServcie;
+    public LogFileLRUCache(LogFileService logFileService,CacheController cacheController,ExecutorService loadServcie){
         this.logFileService=logFileService;
         this.sortedLogFiles=new TreeSet();
-        this.cacheController=new KVCacheController(logFileService);
+        this.cacheController=cacheController;//new KVCacheController(logFileService);
         this.maxCacheLog =cacheController.maxCacheLog();
+        this.loadServcie=loadServcie;
         this.logReader=new WalReader(logFileService);
     }
 
@@ -42,26 +43,29 @@ public class LogFileLRUCache implements Lifecycle {
     /**
      * 根据key and offset 取value
      **/
-    public  byte[] getValue(long expectedKey,long offset) throws ExecutionException,EngineException{
-         long fileId=sortedLogFiles.ceiling(offset);
+    public  void readValue(long expectedKey,long offset,ByteBuffer buffer) throws ExecutionException,EngineException{
+         long fileId=sortedLogFiles.floor(offset);
          BufferHolder holder=lru.get(fileId);
-         holder.retain();
+                      holder.retain();
          int offsetInFile=(int)(offset-fileId);
          ByteBuffer  slice=holder.value().slice();
                      slice.position(offsetInFile);
-         byte[] values=new byte[StoreConfig.VALUE_SIZE];
          if(slice.remaining()>StoreConfig.LOG_ELEMNT_LEAST_SIZE){
-             slice.position(offsetInFile+2);
+             short len=slice.getShort();
              long  actualKey=slice.getLong();
              if(actualKey!=expectedKey){
                  throw new IllegalArgumentException("read record error");
              }
-             slice.get(values);
+             if(len!=StoreConfig.KEY_VALUE_SIZE) {
+                 logger.info(String.format("file %d,offset %d,key %,len %d ", fileId, offsetInFile, expectedKey, len));
+                 throw  new EngineException(RetCodeEnum.CORRUPTION,"log error");
+             }
+             slice.limit(slice.position()+StoreConfig.VALUE_SIZE);
+             buffer.put(slice);
          }else {
              throw new EngineException(RetCodeEnum.NOT_FOUND,String.format("%d missing in file %d",expectedKey,fileId));
          }
          holder.release();
-        return values;
     }
 
 
@@ -72,7 +76,7 @@ public class LogFileLRUCache implements Lifecycle {
 
     @Override
     public void start() throws Exception {
-        if(!isStart()){
+        if(!isStart()&&logFileService.allLogFiles().size()>0){
             int maxDirectCacheLog=cacheController.maxDirectBuffer()/cacheController.cacheLogSize();
             int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+ StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
             logger.info(String.format("max direct cache log file %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
@@ -100,7 +104,8 @@ public class LogFileLRUCache implements Lifecycle {
 
     @Override
     public void close() throws Exception {
-              logBufferAllocator.close();
+        if(isStart())
+            logBufferAllocator.close();
     }
 
     public class LogFileRemoveListener implements RemovalListener<Long,BufferHolder> {
@@ -134,15 +139,10 @@ public class LogFileLRUCache implements Lifecycle {
         concurrency=Math.min(concurrency,logs.size());
         int initLoad=(int)(cacheController.cacheLogLoadFactor()*cacheController.maxCacheLog());
         if(concurrency>0) {
-            ExecutorService loadServcie = Executors.newFixedThreadPool(concurrency);
+            if(loadServcie==null)
+                loadServcie = Executors.newFixedThreadPool(concurrency);
             for (int i=0;i<initLoad;i++){
-                loadServcie.submit(new LoadLogFile(logReader,String.valueOf(logs.get(i))));
-            }
-            loadServcie.shutdown();
-            if(loadServcie.awaitTermination(10, TimeUnit.SECONDS)){
-                logger.info("load cache log finish");
-            }else{
-                logger.info("load cache log timeout,continue");
+                loadServcie.submit(new LoadLogFile(logReader,logs.get(i)));
             }
         }
 
@@ -152,8 +152,9 @@ public class LogFileLRUCache implements Lifecycle {
 
     public class LoadLogFile implements Runnable{
         private WalReader reader;
-        private String fileName;
-         public LoadLogFile(WalReader reader, String fileName){
+        // without suffix
+        private long fileName;
+         public LoadLogFile(WalReader reader,long fileName){
              this.reader=reader;
              this.fileName=fileName;
          }
@@ -161,10 +162,11 @@ public class LogFileLRUCache implements Lifecycle {
         public void run() {
              try {
                  BufferHolder holder=getLogBufferHolder();
-                 reader.read(fileName,holder.value() , cacheController.cacheLogSize());
-                 getLogBufferHolder().value().flip();
+                 int cacheLogSize=cacheController.cacheLogSize();
+                 reader.read(fileName+StoreConfig.LOG_FILE_SUFFIX,holder.value() , cacheLogSize);
+                 holder.value().flip();
                  // cache
-                 lru.put(Long.valueOf(fileName),holder);
+                 lru.put(fileName,holder);
              }catch (Exception  e){
                  logger.info("read log to cache failed",e);
              }

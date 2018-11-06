@@ -107,7 +107,8 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
         BufferHolder holder;
         do {
             holder=directCache.poll();
-            release(holder.value());
+            if(holder!=null)
+                release(holder.value());
         }while (holder==null);
     }
 }

@@ -192,6 +192,7 @@ public class EngineTest {
             byte[] values;
             int keyOffset;
             long value;
+            int success=0;
             try {
                 while (i < num) {
                     key = id * num + i;
@@ -203,7 +204,9 @@ public class EngineTest {
                     if(value!=key){
                         logger.error(String.format("%d,%d %d %s",id,key,value,new String(values)));
                     }else{
-                        logger.info(String.format("%d,%d %d",id,key,value));
+                        success++;
+                        if(success%1000==0)
+                                logger.info(String.format("%d,%d %d",id,key,value));
                     }
                     i++;
                 }

@@ -66,73 +66,7 @@ public class WalIndexLogger {
 //         }
 
     }
-//    public class LogThread implements Runnable{
-//        private boolean running;
-//        private IndexLogEvent processing;
-//        private Map<Long, IOHandler> handlerMap;
-//        private IOHandler handler;
-//        public LogThread(int buckSize){
-//                handlerMap=new HashMap<>(buckSize);
-//        }
-//        public void start()throws IOException {
-//            this.running=true;
-//            for(int i=0;i<buckSize;i++){
-//                handler=fileService.ioHandler(String.valueOf(i)+ StoreConfig.LOG_INDEX_FILE_SUFFIX);
-//                if(handler.length()>0){
-//                    // move to end
-//                    handler.position(handler.length());
-//                }
-//                handlerMap.put((long)i,handler);
-//            }
-//        }
-//
-//        public synchronized void stop(boolean gracefully) throws InterruptedException{
-//            if(running){
-//                running=false;
-//                wait();
-//            }
-//        }
-//
-//        @Override
-//        public void run() {
-//            try {
-//                while(true) {
-//                    processing = buckTrunck.poll(consumeTimeout, TimeUnit.MILLISECONDS);
-//                    if (processing == null) {
-//                        if(!onIdle()) break;
-//                    }
-//                    handler=handlerMap.get(processing.txId());
-//                    if(handler!=null) {
-//                        handler.append(processing.value().get(true));
-//                        processing.value().state(true,false);
-//                    }else{
-//                        logger.info("index log thread handler not init");
-//                        break;
-//                    }
-//                }
-//            }catch (InterruptedException e){
-//                logger.info("index log thread interrupted",e);
-//            }catch (IOException e){
-//                logger.info("index log thread io exception",e);
-//            }
-//        }
-//        /**
-//         * @return false  stop the thread
-//         **/
-//        public boolean onIdle(){
-//               if(!running){
-//                   notify();
-//                   return false;
-//               }
-////               try {
-////                   Thread.sleep(100);
-////               }catch (InterruptedException e){
-////                   e.printStackTrace();
-////               }
-//               return true;
-//
-//        }
-//    }
+
 
 
 }

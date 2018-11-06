@@ -11,6 +11,11 @@ public class Files {
         if(file.exists()) return;
         file.mkdirs();
     }
+    public static void  removeDirIfExist(String dir){
+        File file=new File(dir);
+        if(file.exists()) file.delete();
+    }
+
     public static boolean isEmptyDir(String dir) {
         File file=new File(dir);
         if(file.exists()){

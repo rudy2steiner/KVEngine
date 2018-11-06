@@ -17,20 +17,25 @@ public class IndexLogReader implements Lifecycle {
     private LogFileService logFileService;
     private List<Long>  logFiles;
     private ExecutorService indexHashService;
-    public IndexLogReader(String logDir, LogFileService logFileService){
+    private boolean ownThreadPool=false;
+    public IndexLogReader(String logDir, LogFileService logFileService,ExecutorService executorService){
            this.logDir=logDir;
            this.logFileService=logFileService;
+           this.indexHashService=executorService;
     }
 
     @Override
     public void start() throws Exception {
           this.logFiles=logFileService.allLogFiles();
-          this.indexHashService= Executors.newFixedThreadPool(StoreConfig.HASH_CONCURRENCY);
+          if(indexHashService==null) {
+              this.indexHashService = Executors.newFixedThreadPool(StoreConfig.HASH_CONCURRENCY);
+              ownThreadPool=true;
+          }
     }
 
     @Override
     public void close() throws Exception {
-         if(!indexHashService.isShutdown()){
+         if(!indexHashService.isShutdown()&&ownThreadPool){
              if(!indexHashService.isTerminated()){
                  if(indexHashService.awaitTermination(1, TimeUnit.SECONDS)){
                      logger.info("tasks finished,and shutdown");
@@ -67,12 +72,14 @@ public class IndexLogReader implements Lifecycle {
              logger.info(String.format("add task,start %d,end %d",start,end));
              indexHashService.submit(task);
         }
-        indexHashService.shutdown();
-        if(indexHashService.awaitTermination(50, TimeUnit.SECONDS)){
-            logger.info("tasks finished,and shutdown");
-        }else{
-            logger.info("tasks timeout,and shutdown");
-            indexHashService.shutdownNow();
+        if(ownThreadPool){
+            indexHashService.shutdown();
+            if(indexHashService.awaitTermination(50, TimeUnit.SECONDS)){
+                logger.info("tasks finished,and shutdown");
+            }else{
+                logger.info("tasks timeout,and shutdown");
+                indexHashService.shutdownNow();
+            }
         }
     }
     public class Reader implements Runnable{

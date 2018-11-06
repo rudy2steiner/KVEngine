@@ -14,13 +14,14 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexLRUCache implements Lifecycle {
     private final static Logger logger= LoggerFactory.getLogger(IndexLRUCache.class);
-    LoadingCache<Integer, LongLongMap> lru;
+    private LoadingCache<Integer, LongLongMap> lru;
     private Map<Integer, IOHandler> indexHandlerMap;
     private IndexReader indexReader;
     private LogFileService indexFileService;
@@ -28,14 +29,18 @@ public class IndexLRUCache implements Lifecycle {
     private int maxConcurrencyLoad=0;
     private AtomicBoolean started=new AtomicBoolean(false);
     private AtomicInteger bufferHolder=new AtomicInteger(0);
-    private int cacheSize;
-    public IndexLRUCache(int cacheSize,int bufferBlocks ,LogFileService indexFileService){
-        this.cacheSize=cacheSize;
+    private int maxCache;
+    private CacheController cacheController;
+    private ExecutorService indexLoadThreadPool;
+    public IndexLRUCache(CacheController cacheController ,LogFileService indexFileService,ExecutorService indexLoadThreadPool){
+        this.cacheController=cacheController;
+        this.maxCache=cacheController.maxCacheIndex();
         this.indexHandlerMap =new HashMap(128);
         this.indexFileService=indexFileService;
         this.indexReader=new IndexReader();
-        this.byteBuffers=new ByteBuffer[bufferBlocks];
-        this.maxConcurrencyLoad=bufferBlocks;
+        this.byteBuffers=new ByteBuffer[cacheController.maxHashBucketSize()];
+        this.maxConcurrencyLoad=cacheController.cacheIndexInitLoadConcurrency();
+        this.indexLoadThreadPool=indexLoadThreadPool;
     }
 
     @Override
@@ -46,19 +51,21 @@ public class IndexLRUCache implements Lifecycle {
     @Override
     public void start() throws Exception {
         if(!isStart()) {
-            List<Long> indexFiles = indexFileService.allLogFiles();
-            for (Long fid : indexFiles) {
-                indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
+            List<Long> indexFiles = indexFileService.allFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
+            if(indexFiles.size()>0) {
+                for (Long fid : indexFiles) {
+                    indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
+                }
+                for (int i = 0; i < maxConcurrencyLoad; i++) {
+                    byteBuffers[i] = ByteBuffer.allocateDirect(cacheController.cacheIndexReadBufferSize());
+                }
+                this.lru = CacheBuilder.newBuilder()
+                        .maximumSize(maxCache)
+                        .removalListener(new IndexRemoveListener())
+                        .build(new IndexMapLoad(maxConcurrencyLoad));
+                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers), initCacheIndexHandler(), new IndexCacheListener(lru));
+                started.compareAndSet(false, true);
             }
-            for (int i = 0; i < byteBuffers.length; i++) {
-                byteBuffers[i] = ByteBuffer.allocateDirect(StoreConfig.HASH_LOAD_BUFFER_SIZE);
-            }
-            this.lru= CacheBuilder.newBuilder()
-                    .maximumSize(cacheSize)
-                    .removalListener(new IndexRemoveListener())
-                    .build(new IndexMapLoad(maxConcurrencyLoad));
-            indexReader.concurrentLoadIndex(null,maxConcurrencyLoad,Arrays.asList(byteBuffers), initCacheIndexHandler(),new IndexCacheListener(lru));
-            started.compareAndSet(false,true);
         }
 
     }
@@ -79,11 +86,10 @@ public class IndexLRUCache implements Lifecycle {
 
     /**
      * @param key
-     * @return  offset for the key or -1
+     * @return  fileId for the key or -1
      */
     public long getOffset(long key){
          int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
-         byte[] values=null;
          try {
              LongLongMap longLongMap = lru.get(bucketId);
              if(longLongMap!=null) {
@@ -101,9 +107,11 @@ public class IndexLRUCache implements Lifecycle {
 
 
     public class IndexRemoveListener implements RemovalListener<Integer,LongLongMap>{
+        private int removeCount=0;
         @Override
         public void onRemoval(RemovalNotification<Integer, LongLongMap> removalNotification) {
-             logger.info(String.format("remove %d",removalNotification.getKey()));
+            if(removeCount++%100==0)
+                logger.info(String.format("remove %d",removalNotification.getKey()));
         }
     }
 

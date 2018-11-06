@@ -15,7 +15,7 @@ public class WalReader {
 
     public ByteBuffer read(String name, ByteBuffer byteBuffer,int maxLength) throws Exception {
         IOHandler handler=logFileService.ioHandler(name,"r");
-                  maxLength=(int)Math.max(handler.length(),maxLength);
+                  maxLength=(int)Math.min(handler.length(),maxLength);
                   if(byteBuffer==null){
                       byteBuffer=ByteBuffer.allocate(maxLength);
                   }

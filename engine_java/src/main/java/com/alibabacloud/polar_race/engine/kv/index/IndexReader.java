@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class IndexReader {
     private final static Logger logger= LoggerFactory.getLogger(IndexReader.class);
@@ -26,6 +25,7 @@ public class IndexReader {
         int remaining=0;
         byteBuffer.clear();
         handler.position(0);
+        long oldValue;
         do {
             handler.read(byteBuffer);
             byteBuffer.flip();
@@ -33,7 +33,13 @@ public class IndexReader {
             while (byteBuffer.remaining() >= StoreConfig.VALUE_INDEX_RECORD_SIZE) {
                 key = byteBuffer.getLong();
                 value = byteBuffer.getLong();
-                map.put(key, value);
+                oldValue=map.put(key, value);
+                // value 版本号
+                if(oldValue>value){
+                    // 保留大版本号
+                    map.put(key,oldValue);
+                    logger.info(String.format("key %d,newer version %d,old version %  ",key,oldValue,value));
+                }
             }
             byteBuffer.compact();
         }while (remaining==bufferSize);
@@ -67,8 +73,8 @@ public class IndexReader {
                 logger.info(String.format("assign task start %d ,end  %d",start,end));
                 service.submit(new LoadIndexTask(handlers,start,end,buffers.get(i),cacheListener));
             }
-            service.shutdown();
-            service.awaitTermination(StoreConfig.LOAD_HASH_INDEX_TIMEOUT, TimeUnit.MILLISECONDS);
+//            service.shutdown();
+//            service.awaitTermination(StoreConfig.LOAD_HASH_INDEX_TIMEOUT, TimeUnit.MILLISECONDS);
         }
 
 

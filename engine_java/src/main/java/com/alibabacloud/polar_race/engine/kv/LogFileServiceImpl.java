@@ -76,13 +76,17 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public List<Long> allLogFiles() {
+        return  allFiles(StoreConfig.LOG_FILE_SUFFIX);
+    }
+
+    @Override
+    public List<Long> allFiles(String suffix) {
         File file=new File(dir);
         List<Long> logNames=new ArrayList<>();
         if(!file.isDirectory()) return null;
-
         String[] names= file.list() ;
         for(String name:names){
-            if(name.endsWith(StoreConfig.LOG_FILE_SUFFIX)){
+            if(name.endsWith(suffix)){
                 logNames.add(Long.valueOf(name.substring(0,name.indexOf('.'))));
             }
         }

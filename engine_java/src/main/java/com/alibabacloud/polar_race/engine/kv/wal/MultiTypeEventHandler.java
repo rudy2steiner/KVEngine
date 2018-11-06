@@ -30,6 +30,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     private Put put;
     private SyncEvent syncEvent;
     private long fileId;
+    private long timeoutAndNoEventCounter=0;
     public MultiTypeEventHandler(IOHandler handler,LogFileService logFileService){
         this.handler=handler;
         this.logFileService=logFileService;
@@ -37,7 +38,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         this.syncEvents=new SyncEvent[StoreConfig.batchSyncSize];
         this.fileId=Long.valueOf(handler.name());
         // init value index buffer
-        this.valueIndexBuffer.put(StoreConfig.verison);
+        //this.valueIndexBuffer.put(StoreConfig.verison);
         this.valueIndexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
     }
     @Override
@@ -137,6 +138,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         }
         handler.flush();
         valueIndexBuffer.clear();
+        this.valueIndexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
     }
 
     /**
@@ -150,7 +152,12 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     public void onTimeout(long sequence) throws Exception {
         long start=System.currentTimeMillis();
         if(flushAndAck(false)){
+            timeoutAndNoEventCounter=0;
             logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
+        }else{
+            timeoutAndNoEventCounter++;
+            if(timeoutAndNoEventCounter%1000==0)
+                logger.info(Thread.currentThread().getId()+" timeout  and now write,consider close ");
         }
     }
 }

@@ -21,6 +21,7 @@ public class StoreConfig {
     public final static int  DISRUPTOR_BUFFER_SIZE=1024;
     public final static int  KEY_SIZE=8;
     public final static int  VALUE_SIZE=4096;
+    public final static int  KEY_VALUE_SIZE=KEY_SIZE+VALUE_SIZE;
     public final static int  VALUE_INDEX_RECORD_SIZE=16;
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
