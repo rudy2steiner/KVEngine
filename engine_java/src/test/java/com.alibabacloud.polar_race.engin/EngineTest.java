@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.kv.WALogger;
 import com.alibabacloud.polar_race.example.LogRingBufferEngine;
 import org.junit.After;
 import org.junit.Before;
@@ -25,6 +26,7 @@ public class EngineTest {
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
+    private String root="/export/wal000/";
     private int VALUES_MAX_LENGTH=4096;
     AbstractEngine engine;
     @Before
@@ -109,6 +111,13 @@ public class EngineTest {
             if(count%1==0)
                 logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
+    }
+
+    @Test
+    public void KeyIndexIterate() throws Exception{
+        WALogger logger=new WALogger(root);
+        logger.startIndexEngine();
+
     }
 
 

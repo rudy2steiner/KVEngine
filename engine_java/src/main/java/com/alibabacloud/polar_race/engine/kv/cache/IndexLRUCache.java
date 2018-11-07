@@ -66,11 +66,27 @@ public class IndexLRUCache implements Lifecycle {
                         .maximumSize(maxCache)
                         .removalListener(new IndexRemoveListener())
                         .build(new IndexMapLoad(maxConcurrencyLoad));
-                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers), initCacheIndexHandler(), new IndexCacheListener(lru));
+                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxCache, Arrays.asList(byteBuffers).subList(0,maxCache), initCacheIndexHandler(), new IndexCacheListener(lru));
                 started.compareAndSet(false, true);
             }
         }
 
+    }
+
+    /**
+     *   遍历所有的key
+     **/
+    public void iterateKey() throws Exception{
+        List<Long> indexFiles = indexFileService.allFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
+        if(indexFiles.size()>0) {
+            for (Long fid : indexFiles) {
+                indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
+            }
+            for (int i = 0; i < maxConcurrencyLoad; i++) {
+                byteBuffers[i] = bufferAllocator.allocate(cacheController.cacheIndexReadBufferSize(), true);
+            }
+            indexReader.concurrentLoadIndex(indexLoadThreadPool, byteBuffers.length, Arrays.asList(byteBuffers),new ArrayList<>(indexHandlerMap.values()),null);
+        }
     }
 
     public List<IOHandler> initCacheIndexHandler(){

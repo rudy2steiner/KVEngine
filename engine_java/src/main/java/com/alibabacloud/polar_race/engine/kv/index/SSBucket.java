@@ -4,6 +4,9 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.DoubleBuffer;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
+import com.alibabacloud.polar_race.engine.kv.wal.MultiTypeLogAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,12 +15,12 @@ public class SSBucket {
     private int id;
     private int indexSize= StoreConfig.VALUE_INDEX_RECORD_SIZE;
     private int bufferSize;
-    private ByteBuffer buffer;
-    private DoubleBuffer doubleBuffer;
+    private volatile  ByteBuffer buffer;
+    private volatile DoubleBuffer doubleBuffer;
     private AtomicInteger index=new AtomicInteger(0);
-    private WalIndexLogger logger;
+    private WalIndexLogger walLogger;
+    private final static Logger logger= LoggerFactory.getLogger(SSBucket.class);
     public void SSBucket(){
-
     }
     public SSBucket(int id,int bufferSize){
         this(id,ByteBuffer.allocateDirect(Files.tableSizeFor(bufferSize)));
@@ -34,11 +37,17 @@ public class SSBucket {
     public SSBucket(int id, DoubleBuffer doubleBUffer,WalIndexLogger logger){
         this(id,doubleBUffer.get(false));
         this.doubleBuffer =doubleBUffer;
-        this.logger=logger;
+        this.walLogger =logger;
     }
 
     public void put(ByteBuffer index,int offset) {
+        if(buffer.remaining()==0){
+            logger.info("bug");
+        }
         ByteBuffer buf = buffer.slice();
+        if ((offset > buf.limit()) || (offset < 0)){
+
+        }
         buf.position(offset);
         buf.put(index);
     }
@@ -50,15 +59,16 @@ public class SSBucket {
      */
     public int getNextOffset() throws Exception{
               int offset=index.getAndAdd(indexSize);
-              if(offset+StoreConfig.VALUE_INDEX_RECORD_SIZE<=bufferSize) return offset;
+              if(offset+indexSize<=bufferSize) {
+                  return offset;
+              }
               swap(offset);
               return -1;
     }
 
     public synchronized void swap(int position) throws Exception{
-           if(index.get()>bufferSize){
-               flushBuffer(position);
-           }
+          //if(position<=bufferSize)
+            flushBuffer(position);
     }
     /**
      *
@@ -68,20 +78,24 @@ public class SSBucket {
     public void notifyRead() throws Exception{
          IndexLogEvent indexLogEvent=new IndexLogEvent(doubleBuffer);
          indexLogEvent.setTxId(id);
-         logger.put(indexLogEvent);
+         walLogger.put(indexLogEvent);
     }
 
 
-    public void flushBuffer(int position) throws Exception{
-        buffer.position(position);
-        buffer.flip();
-        doubleBuffer.swap(true);
-        buffer= doubleBuffer.get(false);
-        buffer.clear();
-        index.set(0);
-        // 可读
-        doubleBuffer.state(true,true);
-        notifyRead();
+    public synchronized void flushBuffer(int position) throws Exception{
+        if(position<=buffer.limit()){
+            buffer.position(position);
+            buffer.flip();
+            doubleBuffer.slice(true);
+            buffer= doubleBuffer.get(false);
+            buffer.clear();
+            index.set(0);
+            // 可读
+            doubleBuffer.state(true,true);
+            notifyRead();
+        }else{
+            //logger.info("excel");
+        }
     }
 
 

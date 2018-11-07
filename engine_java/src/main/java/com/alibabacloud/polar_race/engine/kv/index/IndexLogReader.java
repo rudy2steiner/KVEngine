@@ -47,22 +47,21 @@ public class IndexLogReader implements Lifecycle {
          }
     }
 
-    public void iterate(IndexVisitor visitor) throws Exception{
-        int concurreny=StoreConfig.HASH_CONCURRENCY;
+    public void iterate(IndexVisitor visitor,int concurrency) throws Exception{
         int perThreadFiles=1;
         int mod=0;
         int logCount=logFiles.size();
         if(logCount==0) return;
-        if(logCount>concurreny){
-            perThreadFiles=logFiles.size()/concurreny;
-            mod=logFiles.size()%concurreny;
+        if(logCount>concurrency){
+            perThreadFiles=logFiles.size()/concurrency;
+            mod=logFiles.size()%concurrency;
         }else{
-            concurreny=logFiles.size();
+            concurrency=logFiles.size();
         }
         int start;
         int end=0;
         Runnable task;
-        for(int i=0;i<concurreny;i++){
+        for(int i=0;i<concurrency;i++){
             start=end;
             if(i<mod){
                 end+=1;
@@ -119,28 +118,26 @@ public class IndexLogReader implements Lifecycle {
             }catch (Exception e){
                 logger.info("read exception and stop",e);
             }finally {
-
+                close();
             }
-
-            close();
         }
         public void readPost(ByteBuffer buffer, long fileNO) throws Exception{
                 buffer.flip();
                 if(buffer.hasRemaining()) {
                     byte version = buffer.get();
                     int size = buffer.getInt();
+                    if(size<2000)
                     logger.info(String.format("version %d,index buffer size %d,file %d", (int) version, size,fileNO));
                     buffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
                     buffer.limit(size);
                     visitor.visit(buffer);
                 }else {
-                    logger.info(String.format("buf no remaining "+fileNO));
-                    throw new IllegalArgumentException("buf no remaining");
+                    logger.info(String.format("buf no remaining ,ignore"+fileNO));
                 }
         }
 
         public void close(){
-
+            logger.info(String.format("read %d index log file",end-start));
             LogBufferAllocator.release(buffer);
             buffer=null;
         }

@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import sun.nio.ch.DirectBuffer;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DoubleBuffer {
     private final static Logger logger= LoggerFactory.getLogger(DoubleBuffer.class);
@@ -15,6 +18,7 @@ public class DoubleBuffer {
     private  int size;
     private volatile ByteBuffer readBuffer;
     private volatile ByteBuffer writeBuffer;
+    private ReadWriteLock lock=new ReentrantReadWriteLock();
     public DoubleBuffer(int bufferSize, boolean direct){
         this.size= Files.tableSizeFor(bufferSize);
         if(direct){
@@ -29,8 +33,9 @@ public class DoubleBuffer {
     /**
      * 读写buffer 交换
      **/
-    public synchronized void swap(boolean write2read) throws Exception{
+    public  void slice(boolean write2read) throws Exception{
         //还没读完，不可以交换
+        lock.writeLock().lock();
         while (readable) {
             logger.info("wait readable false");
             Thread.sleep(5);
@@ -39,6 +44,7 @@ public class DoubleBuffer {
         readBuffer = writeBuffer;
         writeBuffer = buf;
         readable=true;
+        lock.writeLock().unlock();
     }
 
     public ByteBuffer get(boolean read){

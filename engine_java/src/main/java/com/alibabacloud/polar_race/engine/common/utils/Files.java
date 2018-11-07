@@ -13,7 +13,13 @@ public class Files {
     }
     public static void  removeDirIfExist(String dir){
         File file=new File(dir);
-        if(file.exists()) file.delete();
+        if(file.exists()&&file.isDirectory()){
+            File[] files=file.listFiles();
+            for(File f:files){
+                 if(f.isDirectory()) removeDirIfExist(f.getAbsolutePath());
+                 else f.delete();
+            }
+        } else file.delete();
     }
 
     public static boolean isEmptyDir(String dir) {

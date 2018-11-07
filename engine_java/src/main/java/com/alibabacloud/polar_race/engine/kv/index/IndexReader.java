@@ -11,13 +11,16 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexReader {
     private final static Logger logger= LoggerFactory.getLogger(IndexReader.class);
+    private static AtomicInteger keyCounter=new AtomicInteger(0);
     public static LongLongMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
-        int mapSize = (int) Math.ceil(keyCount * 1.53f);
+        int mapSize = (int) Math.ceil(keyCount * 1.23f);
+        logger.info("mapSize " +mapSize);
         LongLongMap map = LongLongMap.withExpectedSize(mapSize);
         int bufferSize=byteBuffer.capacity();
         long key;
@@ -25,7 +28,7 @@ public class IndexReader {
         int remaining=0;
         byteBuffer.clear();
         handler.position(0);
-        long oldValue;
+        long oldValue=0;
         do {
             handler.read(byteBuffer);
             byteBuffer.flip();
@@ -40,15 +43,20 @@ public class IndexReader {
                     map.put(key,oldValue);
                     logger.info(String.format("key %d,newer version %d,old version %  ",key,oldValue,value));
                 }
+                //logger.info(String.format("count %d,key %d,v %d ",keyCounter.incrementAndGet(),key,value));
             }
             byteBuffer.compact();
         }while (remaining==bufferSize);
            return map;
     }
 
+    /**
+     *
+     * 限制初始加载缓存数量 handler 限制
+     **/
     public void concurrentLoadIndex(ExecutorService service,int concurrency,List<ByteBuffer> buffers, List<IOHandler> handlers , CacheListener cacheListener) throws Exception{
         if(!Null.isEmpty(handlers)){
-            if(concurrency!=buffers.size()) throw new IllegalArgumentException("need more buffer bucket");
+            if(concurrency>buffers.size()) throw new IllegalArgumentException("need more buffer bucket");
             int perThreadTasks=1;
             int mod=0;
             int handlerCount=handlers.size();
@@ -69,9 +77,9 @@ public class IndexReader {
                     end+=1;
                 }
                 end+=perThreadTasks;
-                start=end;
                 logger.info(String.format("assign task start %d ,end  %d",start,end));
                 service.submit(new LoadIndexTask(handlers,start,end,buffers.get(i),cacheListener));
+                start=end;
             }
 //            service.shutdown();
 //            service.awaitTermination(StoreConfig.LOAD_HASH_INDEX_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -101,7 +109,8 @@ public class IndexReader {
                 for(int i=start;i<end;i++) {
                     handler=handlers.get(i);
                     LongLongMap map = IndexReader.read(handler, buffer);
-                    cacheListener.onCache(Integer.valueOf(handler.name()),map);
+                    if(cacheListener!=null)
+                        cacheListener.onCache(Integer.valueOf(handler.name()),map);
                 }
             }catch (IOException e){
                 logger.info(String.format("load key failed,%d ",handler.name()));

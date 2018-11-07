@@ -45,6 +45,7 @@ public class WALogger implements WALog<Put> {
     private ExecutorService executorService;
     private LogBufferAllocator bufferAllocator;
     private BufferAware bufferAware;
+    private CountDownLatch latch;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
@@ -63,6 +64,7 @@ public class WALogger implements WALog<Put> {
         this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService,executorService,bufferAllocator);
         this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController,executorService,bufferAllocator);
         this.transferIndexToHashLogInit();
+
     }
 
 
@@ -100,6 +102,7 @@ public class WALogger implements WALog<Put> {
      **/
     public void concurrentHashBucket() throws Exception{
         if(logFileService.allLogFiles().size()>0) {
+            this.latch=new CountDownLatch(1);
             long start=System.currentTimeMillis();
             hashIndexAppender.start();
             indexLogReader.start();
@@ -114,11 +117,12 @@ public class WALogger implements WALog<Put> {
                 public void onFinish() throws Exception{
                     if(concurrency.decrementAndGet()==0) {
                         hashIndexAppender.close();
+                        latch.countDown();
                         logger.info(String.format("hash task  finish, time %d",System.currentTimeMillis()-start));
 
                     }
                 }
-            });
+            },cacheController.maxHashBucketSize());
             //logger.info(String.format("task submitted finish, time %d",System.currentTimeMillis()-start));
             //hashIndexAppender.close();
         }
@@ -148,6 +152,8 @@ public class WALogger implements WALog<Put> {
     public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) {
 
     }
+
+
     @Override
     public byte[] get(final byte[] key) throws Exception{
             long expectedKey=Bytes.bytes2long(key,0);
@@ -177,11 +183,13 @@ public class WALogger implements WALog<Put> {
             nextLogName= logFileService.nextLogName();
         }
         concurrentHashBucket();
-        logFileLRUCache.start();
         // ensure hash bucket task is finished
+        if(latch!=null)
+            latch.await();
         indexLRUCache.start();
+        logFileLRUCache.start();
         executorService.shutdown();
-        if(executorService.awaitTermination(10, TimeUnit.SECONDS)){
+        if(executorService.awaitTermination(1000, TimeUnit.SECONDS)){
             logger.info("load  index and log cache finish");
         }else{
             logger.info("load  index and log cache timeout,continue");
@@ -190,6 +198,54 @@ public class WALogger implements WALog<Put> {
         this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
         this.appender.start();
         startFinish();
+    }
+
+
+    /**
+     *  only 启动 hash  engine
+     **/
+    public void  startHashEngine() throws Exception{
+        IOHandler handler;
+        String nextLogName;
+        boolean redo=logFileService.needReplayLog();
+        if(redo){
+            handler=replayLastLog();
+            nextLogName= logFileService.nextLogName(handler);
+        }else{
+            nextLogName= logFileService.nextLogName();
+        }
+        concurrentHashBucket();
+        // ensure hash bucket task is finished
+        //indexLRUCache.start();
+        executorService.shutdown();
+        if(executorService.awaitTermination(1000, TimeUnit.SECONDS)){
+            logger.info("load  index and log cache finish");
+        }else{
+            logger.info("load  index and log cache timeout,continue");
+        }
+    }
+
+    /**
+     *  only 启动 index  engine
+     **/
+    public void  startIndexEngine() throws Exception{
+        IOHandler handler;
+        String nextLogName;
+        boolean redo=logFileService.needReplayLog();
+        if(redo){
+            handler=replayLastLog();
+            nextLogName= logFileService.nextLogName(handler);
+        }else{
+            nextLogName= logFileService.nextLogName();
+        }
+        concurrentHashBucket();
+        indexLRUCache.iterateKey();
+        executorService.shutdown();
+        if(executorService.awaitTermination(1000, TimeUnit.SECONDS)){
+            logger.info("load  index and log cache finish");
+        }else{
+            logger.info("load  index and log cache timeout,continue");
+        }
     }
 
 

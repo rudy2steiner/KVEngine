@@ -57,7 +57,7 @@ public class MultiTypeLogAppender implements Lifecycle {
     }
 
     public void onAppendFinish(SyncEvent syncEvent){
-        if(syncEvent.value()%10000==0){
+        if(syncEvent.value()%100000==0){
             logger.info(String.format("%d time elapsed %d",syncEvent.txId(),syncEvent.elapse()));
         }
     }

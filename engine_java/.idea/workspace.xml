@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java" line="92" mnemonic="8" />
+    <bookmark url="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java" line="75" mnemonic="8" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf3944b4-aeaa-441b-8d1a-6f8567e0980a" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferAware.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/IndexTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferSizeAware.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferSizeAware.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LogFileLRUCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LogFileLRUCache.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/log4j.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
@@ -37,49 +37,49 @@
         <counts>
           <entry key="project.closed" value="5" />
           <entry key="project.open.time.1" value="2" />
-          <entry key="project.open.time.10" value="4" />
+          <entry key="project.open.time.10" value="5" />
           <entry key="project.open.time.11" value="3" />
           <entry key="project.open.time.14" value="2" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.7" value="1" />
-          <entry key="project.opened" value="13" />
+          <entry key="project.opened" value="14" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="class" value="79" />
-          <entry key="java" value="585" />
+          <entry key="class" value="80" />
+          <entry key="java" value="640" />
           <entry key="jvm_parameters" value="4" />
           <entry key="md" value="8" />
-          <entry key="properties" value="1" />
+          <entry key="properties" value="2" />
           <entry key="xml" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="CLASS" value="79" />
-          <entry key="JAVA" value="585" />
+          <entry key="CLASS" value="80" />
+          <entry key="JAVA" value="640" />
           <entry key="Markdown" value="8" />
           <entry key="PLAIN_TEXT" value="4" />
-          <entry key="Properties" value="1" />
+          <entry key="Properties" value="2" />
           <entry key="XML" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="32834" />
+          <entry key="java" value="33807" />
           <entry key="jvm_parameters" value="18" />
           <entry key="md" value="575" />
-          <entry key="properties" value="9" />
+          <entry key="properties" value="19" />
           <entry key="xml" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="32834" />
+          <entry key="JAVA" value="33807" />
           <entry key="Markdown" value="575" />
           <entry key="PLAIN_TEXT" value="18" />
-          <entry key="Properties" value="9" />
+          <entry key="Properties" value="19" />
           <entry key="XML" value="3" />
         </counts>
       </usages-collector>
@@ -87,102 +87,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-780">
-              <caret line="2" column="60" selection-start-line="2" selection-start-column="60" selection-end-line="2" selection-end-column="60" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="23" column="42" lean-forward="true" selection-start-line="23" selection-start-column="42" selection-end-line="23" selection-end-column="42" />
+            <state relative-caret-position="270">
+              <caret line="70" column="30" lean-forward="true" selection-start-line="70" selection-start-column="30" selection-end-line="70" selection-end-column="30" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java">
+        <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/IndexTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="570">
-              <caret line="59" column="17" lean-forward="true" selection-start-line="59" selection-start-column="17" selection-end-line="59" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/atomic/AtomicInteger.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="204" column="60" selection-start-line="204" selection-start-column="60" selection-end-line="204" selection-end-column="60" />
-              <folding>
-                <element signature="e#4504#4505#0" expanded="true" />
-                <element signature="e#4572#4573#0" expanded="true" />
-                <element signature="e#5214#5215#0" expanded="true" />
-                <element signature="e#5290#5291#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexHashAppender.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="107">
-              <caret line="27" selection-start-line="27" selection-end-line="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="14" column="86" lean-forward="true" selection-start-line="14" selection-start-column="1" selection-end-line="14" selection-end-column="86" />
+            <state relative-caret-position="270">
+              <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="36" selection-start-line="8" selection-start-column="36" selection-end-line="8" selection-end-column="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="163">
-              <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#438#439#0" expanded="true" />
-                <element signature="e#495#496#0" expanded="true" />
-                <element signature="e#1259#1260#0" expanded="true" />
-                <element signature="e#1299#1300#0" expanded="true" />
-                <element signature="e#1589#1590#0" expanded="true" />
-                <element signature="e#1640#1641#0" expanded="true" />
-                <element signature="e#1699#1700#0" expanded="true" />
-                <element signature="e#1723#1724#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -191,10 +111,88 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="339">
-              <caret line="72" column="59" selection-start-line="72" selection-start-column="59" selection-end-line="72" selection-end-column="59" />
+            <state relative-caret-position="130">
+              <caret line="161" selection-start-line="161" selection-end-line="161" />
               <folding>
                 <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/ExecutorService.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="357">
+              <caret line="209" column="12" selection-start-line="209" selection-start-column="12" selection-end-line="209" selection-end-column="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="364">
+              <caret line="68" column="37" lean-forward="true" selection-start-line="68" selection-start-column="37" selection-end-line="68" selection-end-column="37" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#2418#2419#0" expanded="true" />
+                <element signature="e#2454#2455#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="181">
+              <caret line="31" column="23" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="23" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="38" column="21" lean-forward="true" selection-start-line="38" selection-start-column="21" selection-end-line="38" selection-end-column="21" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/LruTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="10" column="13" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/collection/LongLongMap.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="9" column="31" lean-forward="true" selection-start-line="9" selection-start-column="31" selection-end-line="9" selection-end-column="31" />
+              <folding>
+                <element signature="e#254#255#0" expanded="true" />
+                <element signature="e#312#313#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -213,20 +211,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>mark</find>
-      <find>NullPointerException</find>
-      <find>add task</find>
-      <find>task</find>
-      <find>valueIndexMap</find>
-      <find>start</find>
-      <find>1661468672</find>
-      <find>2184708096</find>
-      <find>2529689600</find>
-      <find>buf no remaining</find>
-      <find>flushValueIndex</find>
-      <find>release</find>
-      <find>WalReader</find>
-      <find>tasks finished,and shutdown</find>
       <find>appender</find>
       <find>cache miss</find>
       <find>not found</find>
@@ -243,6 +227,20 @@
       <find>hash</find>
       <find>262144</find>
       <find>allocatedDirectBufferSize</find>
+      <find>version 1</find>
+      <find>520192</find>
+      <find>mapSize</find>
+      <find>index log thread handler</find>
+      <find>bug</find>
+      <find>flushBuffer</find>
+      <find>2032</find>
+      <find>maxCacheIndex</find>
+      <find>need more buffer bucket</find>
+      <find>read</find>
+      <find>close</find>
+      <find>assign task start %d</find>
+      <find>shutdown</find>
+      <find>indexLogReader</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -264,9 +262,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/Reader.java" />
-        <option value="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/MapMemoryTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/collection/SynchronizedMap.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexBucket.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBUffer.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexAppender.java" />
@@ -276,9 +271,7 @@
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/LogParser.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/KVParser.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/Lifecycle.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/event/IndexLogEvent.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/IndexLRUCache.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LRU.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/collection/KolobokeLongLongMap.java" />
@@ -295,10 +288,8 @@
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/RecyclableBuffer.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferHolder.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferAllocator.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/LogFileService.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/LogFileServiceImpl.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/WalLogParser.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/WalReader.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/StoreConfig.java" />
@@ -306,15 +297,22 @@
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferSizeAware.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LogFileLRUCache.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferAware.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheController.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java" />
+        <option value="$PROJECT_DIR$/src/main/resources/log4j.properties" />
         <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java" />
         <option value="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java" />
+        <option value="$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/IndexTest.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java" />
       </list>
     </option>
   </component>
@@ -355,8 +353,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="AndroidView" />
       <pane id="ProjectPane">
         <subPane>
@@ -398,6 +396,15 @@
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="java" type="462c0819:PsiDirectoryNode" />
               <item name="polar_race" type="462c0819:PsiDirectoryNode" />
+              <item name="collection" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="engine_java" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="polar_race" type="462c0819:PsiDirectoryNode" />
               <item name="engine" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -429,7 +436,7 @@
               <item name="polar_race" type="462c0819:PsiDirectoryNode" />
               <item name="engine" type="462c0819:PsiDirectoryNode" />
               <item name="kv" type="462c0819:PsiDirectoryNode" />
-              <item name="buffer" type="462c0819:PsiDirectoryNode" />
+              <item name="cache" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
@@ -452,6 +459,13 @@
               <item name="engine" type="462c0819:PsiDirectoryNode" />
               <item name="kv" type="462c0819:PsiDirectoryNode" />
               <item name="wal" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="engine_java" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
@@ -496,6 +510,49 @@
               <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
               <item name="java" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="io" type="462c0819:PsiDirectoryNode" />
+              <item name="File" type="1a9f42e2:ClassTreeNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="nio" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="nio" type="462c0819:PsiDirectoryNode" />
+              <item name="Buffer" type="1a9f42e2:ClassTreeNode" />
+            </path>
+            <path>
+              <item name="engine_java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; 1.8 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="rt.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="nio" type="462c0819:PsiDirectoryNode" />
+              <item name="ByteBuffer" type="1a9f42e2:ClassTreeNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -505,7 +562,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1541538278114" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1541631164307" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Koloboke-lib-1.0.0/lib/api" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -585,22 +642,26 @@
       <option name="_new_target" value="&quot;&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
-    <configuration name="KolobokeMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.KolobokeMain" />
-      <module name="engine_java" />
-      <option name="VM_PARAMETERS" value="-server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=512m -XX:MaxMetaspaceSize=300m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/export/gc.log" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.alibabacloud.polar_race.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="Application" factoryName="Application">
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <configuration name="EngineTest.KeyIndexIterate" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="engine_java" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.alibabacloud.polar_race.engin.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.alibabacloud.polar_race.engin" />
+      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.EngineTest" />
+      <option name="METHOD_NAME" value="KeyIndexIterate" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -617,8 +678,7 @@
       <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.EngineTest" />
       <option name="METHOD_NAME" value="benchmark8b4kbRead" />
       <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="-server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:MaxMetaspaceSize=300m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/export/gc.log" />
-      <option name="PARAMETERS" value="" />
+      <option name="VM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -643,7 +703,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="EngineTest.iterate" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="IndexTest.IndexIterate" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="engine_java" />
       <extension name="coverage">
         <pattern>
@@ -652,8 +712,8 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.alibabacloud.polar_race.engin" />
-      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.EngineTest" />
-      <option name="METHOD_NAME" value="iterate" />
+      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.IndexTest" />
+      <option name="METHOD_NAME" value="IndexIterate" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
@@ -661,7 +721,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="LruTest.lru" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="IndexTest.KeyIndexIterate" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="engine_java" />
       <extension name="coverage">
         <pattern>
@@ -670,8 +730,8 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.alibabacloud.polar_race.engin" />
-      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.LruTest" />
-      <option name="METHOD_NAME" value="lru" />
+      <option name="MAIN_CLASS_NAME" value="com.alibabacloud.polar_race.engin.IndexTest" />
+      <option name="METHOD_NAME" value="KeyIndexIterate" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
@@ -696,19 +756,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Application.KolobokeMain" />
       <item itemvalue="JUnit.EngineTest.benchmark8b4kbWrite" />
-      <item itemvalue="JUnit.EngineTest.iterate" />
+      <item itemvalue="JUnit.EngineTest.KeyIndexIterate" />
+      <item itemvalue="JUnit.IndexTest.KeyIndexIterate" />
+      <item itemvalue="JUnit.IndexTest.IndexIterate" />
       <item itemvalue="JUnit.EngineTest.benchmark8b4kbRead" />
-      <item itemvalue="JUnit.LruTest.lru" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.EngineTest.benchmark8b4kbRead" />
+        <item itemvalue="JUnit.IndexTest.IndexIterate" />
+        <item itemvalue="JUnit.IndexTest.KeyIndexIterate" />
         <item itemvalue="JUnit.EngineTest.benchmark8b4kbWrite" />
-        <item itemvalue="JUnit.EngineTest.iterate" />
-        <item itemvalue="JUnit.LruTest.lru" />
-        <item itemvalue="Application.KolobokeMain" />
+        <item itemvalue="JUnit.EngineTest.KeyIndexIterate" />
       </list>
     </recent_temporary>
   </component>
@@ -739,48 +799,50 @@
       <workItem from="1541356091808" duration="6258000" />
       <workItem from="1541425618639" duration="23910000" />
       <workItem from="1541514088122" duration="24509000" />
+      <workItem from="1541608067535" duration="23010000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 42m 05s.xml">
+    <history-entry file="IndexTest_KeyIndexIterate - 2018.11.08 at 06h 21m 34s.xml">
+      <configuration name="IndexTest.KeyIndexIterate" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="IndexTest_IndexIterate - 2018.11.08 at 06h 22m 04s.xml">
+      <configuration name="IndexTest.IndexIterate" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="IndexTest_IndexIterate - 2018.11.08 at 06h 23m 18s.xml">
+      <configuration name="IndexTest.IndexIterate" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="IndexTest_IndexIterate - 2018.11.08 at 06h 23m 32s.xml">
+      <configuration name="IndexTest.IndexIterate" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 28m 47s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 50m 01s.xml">
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 29m 58s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 54m 49s.xml">
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 33m 20s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 55m 10s.xml">
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 36m 10s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 55m 44s.xml">
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 37m 35s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 56m 44s.xml">
-      <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 58m 07s.xml">
-      <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 04h 58m 52s.xml">
-      <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbWrite - 2018.11.07 at 05h 03m 50s.xml">
-      <configuration name="EngineTest.benchmark8b4kbWrite" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.07 at 05h 05m 01s.xml">
+    <history-entry file="EngineTest_benchmark8b4kbRead - 2018.11.08 at 06h 50m 21s.xml">
       <configuration name="EngineTest.benchmark8b4kbRead" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="258464000" />
+    <option name="totallyTimeSpent" value="281474000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="85" y="24" width="1855" height="1004" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1901603" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20176893" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -789,17 +851,17 @@
       <window_info id="Capture Tool" order="6" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.15296803" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.75570774" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.59646213" weight="0.56392694" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.26940638" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.59646213" visible="true" weight="0.30479452" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3629707" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.40353787" side_tool="true" weight="0.35355648" />
-      <window_info anchor="bottom" id="JProfiler" order="9" weight="0.44292238" />
+      <window_info anchor="bottom" id="JProfiler" order="9" weight="0.44863012" />
       <window_info anchor="bottom" id="Database Changes" order="10" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="11" weight="0.4385246" />
-      <window_info anchor="bottom" id="Messages" order="12" weight="0.34623432" />
+      <window_info anchor="bottom" id="Messages" order="12" weight="0.3458904" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -836,122 +898,28 @@
           <properties />
           <option name="timeStamp" value="30" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java</url>
+          <line>52</line>
+          <properties />
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java</url>
+          <line>38</line>
+          <properties />
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java</url>
+          <line>44</line>
+          <properties />
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$MAVEN_REPOSITORY$/com/google/guava/guava/25.0-jre/guava-25.0-jre.jar!/com/google/common/cache/AbstractCache.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="60" column="24" lean-forward="true" selection-start-line="60" selection-start-column="24" selection-end-line="60" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/LruTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="43" selection-start-line="15" selection-start-column="43" selection-end-line="15" selection-end-column="43" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#887#1157#0" expanded="true" />
-            <element signature="e#1156#1157#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/google/guava/guava/25.0-jre/guava-25.0-jre.jar!/com/google/common/cache/CacheBuilder.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="37" column="112" lean-forward="true" selection-start-line="37" selection-start-column="112" selection-end-line="37" selection-end-column="112" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/RecyclableBuffer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="29" lean-forward="true" selection-start-line="18" selection-start-column="29" selection-end-line="18" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/jre/lib/rt.jar!/sun/misc/Unsafe.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="343">
-          <caret line="361" column="30" selection-start-line="361" selection-start-column="30" selection-end-line="361" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/Queue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="198" column="6" selection-start-line="198" selection-start-column="6" selection-end-line="198" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/BlockingQueue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="217" column="14" lean-forward="true" selection-start-line="217" selection-start-column="14" selection-end-line="217" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WalReader.java" />
-    <entry file="file://$PROJECT_DIR$/jvm_parameters">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="13" column="30" lean-forward="true" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexCacheListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="46" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="46" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#343#344#0" expanded="true" />
-            <element signature="e#371#372#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/ThreadPoolExecutor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="1198" column="30" selection-start-line="1198" selection-start-column="30" selection-end-line="1198" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/TimeUnit.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="283">
-          <caret line="119" column="4" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/ScheduledThreadPoolExecutor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="430" column="34" selection-start-line="430" selection-start-column="18" selection-end-line="430" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/Executors.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="334">
-          <caret line="173" column="71" lean-forward="true" selection-start-line="173" selection-start-column="36" selection-end-line="173" selection-end-column="71" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/ExecutorService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="283">
-          <caret line="263" column="14" selection-start-line="263" selection-start-column="14" selection-end-line="263" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-api-jdk8/1.0.0/koloboke-api-jdk8-1.0.0.jar!/com/koloboke/collect/map/LongLongMap.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="283">
@@ -980,30 +948,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="48" column="32" selection-start-line="48" selection-start-column="32" selection-end-line="48" selection-end-column="32" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar!/org/slf4j/impl/Log4jLoggerAdapter.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
           <caret line="218" selection-start-line="218" selection-end-line="218" />
-          <folding>
-            <element signature="e#7255#7256#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/Buffer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="147">
-          <caret line="355" column="24" selection-start-line="355" selection-start-column="24" selection-end-line="355" selection-end-column="24" />
         </state>
       </provider>
     </entry>
@@ -1021,13 +969,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeEventHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="103">
-          <caret line="123" column="40" lean-forward="true" selection-start-line="123" selection-start-column="40" selection-end-line="123" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/BufferHolder.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -1039,13 +980,6 @@
             <element signature="e#384#385#0" expanded="true" />
             <element signature="e#413#414#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/WalLogParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
-          <caret line="95" column="16" selection-start-line="95" selection-start-column="16" selection-end-line="95" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -1073,34 +1007,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/ByteBuffer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="297" column="30" selection-start-line="297" selection-start-column="26" selection-end-line="297" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LogFileLRUCache.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="128" column="70" selection-start-line="128" selection-start-column="62" selection-end-line="128" selection-end-column="70" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#3246#3247#0" expanded="true" />
-            <element signature="e#3282#3283#0" expanded="true" />
-            <element signature="e#4076#4567#0" expanded="true" />
-            <element signature="e#4566#4567#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/example/LogRingBufferEngine.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="111">
-          <caret line="25" selection-start-line="25" selection-end-line="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/LogFileService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -1112,20 +1018,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="186">
           <caret line="118" column="15" selection-start-line="118" selection-start-column="15" selection-end-line="118" selection-end-column="15" />
-          <folding>
-            <element signature="e#2822#2823#0" expanded="true" />
-            <element signature="e#2883#2884#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="33">
-          <caret line="62" column="87" selection-start-line="62" selection-start-column="87" selection-end-line="62" selection-end-column="87" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1136,28 +1028,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="10" column="25" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="298">
-          <caret line="74" column="23" lean-forward="true" selection-start-line="74" selection-start-column="23" selection-end-line="74" selection-end-column="23" />
+        <state relative-caret-position="465">
+          <caret line="32" column="63" lean-forward="true" selection-start-line="32" selection-start-column="63" selection-end-line="32" selection-end-column="63" />
           <folding>
-            <element signature="e#755#756#0" expanded="true" />
-            <element signature="e#837#838#0" expanded="true" />
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/KVStore.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="46" column="17" selection-start-line="46" selection-start-column="17" selection-end-line="46" selection-end-column="17" />
+        <state relative-caret-position="30">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/WalLogParser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="95" column="16" selection-start-line="95" selection-start-column="16" selection-end-line="95" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -1171,25 +1062,67 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="36" selection-start-line="8" selection-start-column="36" selection-end-line="8" selection-end-column="36" />
+        <state relative-caret-position="75">
+          <caret line="24" column="92" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="92" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexHashAppender.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/koloboke/koloboke-impl-common-jdk8/1.0.0/koloboke-impl-common-jdk8-1.0.0.jar!/com/koloboke/collect/impl/hash/LHashCapacities.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="107">
-          <caret line="27" selection-start-line="27" selection-end-line="27" />
+        <state relative-caret-position="219">
+          <caret line="52" column="40" lean-forward="true" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/target/generated-sources/annotations/com/alibabacloud/polar_race/collection/KolobokeLongLongMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="121">
+          <caret line="939" column="34" selection-start-line="939" selection-start-column="34" selection-end-line="939" selection-end-column="34" />
+          <folding>
+            <element signature="e#2691#2692#0" expanded="true" />
+            <element signature="e#2754#2755#0" expanded="true" />
+            <element signature="e#27042#27043#0" expanded="true" />
+            <element signature="e#27131#27132#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/io/File.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="372">
+          <caret line="1032" column="24" selection-start-line="1032" selection-start-column="24" selection-end-line="1032" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/common/utils/Files.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="19" column="33" lean-forward="true" selection-start-line="19" selection-start-column="33" selection-end-line="19" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/Buffer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="389" column="21" selection-start-line="389" selection-start-column="21" selection-end-line="389" selection-end-column="21" />
+          <folding>
+            <element signature="e#12171#12172#0" expanded="true" />
+            <element signature="e#12210#12211#0" expanded="true" />
+            <element signature="e#12489#12490#0" expanded="true" />
+            <element signature="e#12528#12529#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/atomic/AtomicInteger.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="204" column="60" selection-start-line="204" selection-start-column="60" selection-end-line="204" selection-end-column="60" />
+        <state relative-caret-position="236">
+          <caret line="67" column="25" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="25" />
           <folding>
+            <element signature="e#2195#2196#0" expanded="true" />
+            <element signature="e#2227#2228#0" expanded="true" />
             <element signature="e#4504#4505#0" expanded="true" />
             <element signature="e#4572#4573#0" expanded="true" />
             <element signature="e#5214#5215#0" expanded="true" />
@@ -1198,37 +1131,105 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java">
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/ByteBuffer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="86" lean-forward="true" selection-start-line="14" selection-start-column="1" selection-end-line="14" selection-end-column="86" />
+        <state relative-caret-position="619">
+          <caret line="830" column="23" lean-forward="true" selection-start-line="830" selection-start-column="23" selection-end-line="830" selection-end-column="23" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#25207#25208#0" expanded="true" />
+            <element signature="e#25253#25254#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java">
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/DirectByteBufferR.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="72" column="59" selection-start-line="72" selection-start-column="59" selection-end-line="72" selection-end-column="59" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="283">
+          <caret line="353" column="22" selection-start-line="353" selection-start-column="22" selection-end-line="353" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/nio/DirectByteBuffer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="332" column="13" selection-start-line="332" selection-start-column="13" selection-end-line="332" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/DoubleBuffer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="157">
+          <caret line="37" column="32" selection-start-line="37" selection-start-column="32" selection-end-line="37" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="9" selection-start-line="5" selection-start-column="9" selection-end-line="5" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALog.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="14" column="13" lean-forward="true" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/example/LogRingBufferEngine.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="141">
+          <caret line="28" selection-start-line="28" selection-end-line="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeEventHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6">
+          <caret line="131" column="38" lean-forward="true" selection-start-line="131" selection-start-column="38" selection-end-line="131" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/resources/log4j.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="43" selection-start-line="13" selection-start-column="43" selection-end-line="13" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/WalIndexLogger.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="433">
+          <caret line="60" column="16" selection-start-line="60" selection-start-column="16" selection-end-line="60" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexVisitor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="9" selection-start-line="8" selection-start-column="9" selection-end-line="8" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexHashAppender.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="41" selection-start-line="41" selection-end-line="41" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/CacheController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="14" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
+        <state relative-caret-position="245">
+          <caret line="56" column="9" selection-start-line="56" selection-start-column="9" selection-end-line="56" selection-end-column="9" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/KVCacheController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
+        <state relative-caret-position="270">
+          <caret line="64" column="28" selection-start-line="64" selection-start-column="15" selection-end-line="64" selection-end-column="28" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#438#439#0" expanded="true" />
@@ -1238,29 +1239,123 @@
             <element signature="e#1589#1590#0" expanded="true" />
             <element signature="e#1640#1641#0" expanded="true" />
             <element signature="e#1699#1700#0" expanded="true" />
-            <element signature="e#1723#1724#0" expanded="true" />
+            <element signature="e#1730#1731#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/wal/MultiTypeLogAppender.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/LogFileLRUCache.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
-          <caret line="59" column="17" lean-forward="true" selection-start-line="59" selection-start-column="17" selection-end-line="59" selection-end-column="17" />
+        <state relative-caret-position="256">
+          <caret line="78" column="16" selection-start-line="78" selection-start-column="16" selection-end-line="78" selection-end-column="16" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/MapMemoryTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/RingBufferTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-75">
+          <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/collection/LongLongMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="31" lean-forward="true" selection-start-line="9" selection-start-column="31" selection-end-line="9" selection-end-column="31" />
+          <folding>
+            <element signature="e#254#255#0" expanded="true" />
+            <element signature="e#312#313#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="23" column="42" lean-forward="true" selection-start-line="23" selection-start-column="42" selection-end-line="23" selection-end-column="42" />
+        <state relative-caret-position="270">
+          <caret line="70" column="30" lean-forward="true" selection-start-line="70" selection-start-column="30" selection-end-line="70" selection-end-column="30" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/buffer/LogBufferAllocator.java">
+    <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/LruTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-780">
-          <caret line="2" column="60" selection-start-line="2" selection-start-column="60" selection-end-line="2" selection-end-column="60" />
+        <state relative-caret-position="60">
+          <caret line="10" column="13" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com.alibabacloud.polar_race.engin/IndexTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/cache/IndexLRUCache.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="364">
+          <caret line="68" column="37" lean-forward="true" selection-start-line="68" selection-start-column="37" selection-end-line="68" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2418#2419#0" expanded="true" />
+            <element signature="e#2454#2455#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../installment/jdk1.8.0_181/src.zip!/java/util/concurrent/ExecutorService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="209" column="12" selection-start-line="209" selection-start-column="12" selection-end-line="209" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexLogReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="31" column="23" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="23" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/WALogger.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="130">
+          <caret line="161" selection-start-line="161" selection-end-line="161" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/IndexReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="38" column="21" lean-forward="true" selection-start-line="38" selection-start-column="21" selection-end-line="38" selection-end-column="21" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/alibabacloud/polar_race/engine/kv/index/SSBucket.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
         </state>
       </provider>
     </entry>
