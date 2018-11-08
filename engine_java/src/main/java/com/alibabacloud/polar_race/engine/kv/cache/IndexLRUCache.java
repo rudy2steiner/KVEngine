@@ -108,6 +108,7 @@ public class IndexLRUCache implements Lifecycle {
      * @return  fileId for the key or -1
      */
     public long getOffset(long key){
+        if(!isStart()) throw new IllegalStateException("not starteds");
          int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
          try {
              LongLongMap longLongMap = lru.get(bucketId);

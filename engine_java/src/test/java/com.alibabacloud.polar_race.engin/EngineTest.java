@@ -19,6 +19,7 @@ import java.util.Random;
  *          64*10w  848s   233s
  *
  **/
+@Ignore
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
@@ -51,10 +52,10 @@ public class EngineTest {
         engine.close();
     }
 
-
+    @AfterClass
     public static void afterClass(){
         logger.info("class empty");
-        //Files.removeDirIfExist(root);
+        Files.removeDirIfExist(root);
     }
     @Test
     public void benchmark8b4kbWrite(){
