@@ -16,6 +16,7 @@ import java.util.Random;
  *          64*10w  848s   233s
  *
  **/
+@Ignore
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;

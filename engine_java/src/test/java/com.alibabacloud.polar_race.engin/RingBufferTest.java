@@ -1,19 +1,14 @@
 package com.alibabacloud.polar_race.engin;
 
-import com.alibabacloud.polar_race.engine.common.io.ByteEvent;
-import com.alibabacloud.polar_race.engine.common.io.ByteEventHandler;
+
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.dsl.Disruptor;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.omg.PortableServer.LIFESPAN_POLICY_ID;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
+@Ignore
 public class RingBufferTest {
 
     @Test
