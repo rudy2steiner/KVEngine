@@ -189,7 +189,7 @@ public class WALogger implements WALog<Put> {
         indexLRUCache.start();
         logFileLRUCache.start();
         executorService.shutdown();
-        if(executorService.awaitTermination(10, TimeUnit.SECONDS)){
+        if(executorService.awaitTermination(2, TimeUnit.SECONDS)){
             logger.info("load  index and log cache finish");
         }else{
             logger.info("load  index and log cache timeout,continue");

@@ -45,7 +45,7 @@ public class EngineTest {
             logger.info("engine start error",e);
         }
     }
-
+    @After
     public void close(){
         logger.info("kv store  close");
         engine.close();
@@ -97,7 +97,7 @@ public class EngineTest {
 
     @Test
     public void iterate(){
-        long start=System.currentTimeMillis();
+        long start=System.currentTimeMillis()-1;
         byte[] lower=new byte[8];
         Bytes.long2bytes(0,lower,0);
         byte[] upper=new byte[8];

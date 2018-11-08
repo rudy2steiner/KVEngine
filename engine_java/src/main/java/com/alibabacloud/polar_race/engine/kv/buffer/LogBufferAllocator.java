@@ -161,6 +161,6 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
                 onRelease(holder.value().capacity(),true);
                 release(holder.value());
             }
-        }while (holder==null);
+        }while (holder!=null);
     }
 }
