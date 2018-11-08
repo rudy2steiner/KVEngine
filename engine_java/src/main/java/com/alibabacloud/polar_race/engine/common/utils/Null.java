@@ -13,4 +13,8 @@ public class Null {
         if(value==null||value.length()==0)return true;
         return false;
     }
+    public static boolean isEmpty(Object value){
+        if(value==null)return true;
+        return false;
+    }
 }

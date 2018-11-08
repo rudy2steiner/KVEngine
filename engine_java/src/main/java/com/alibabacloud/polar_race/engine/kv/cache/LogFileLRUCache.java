@@ -111,7 +111,7 @@ public class LogFileLRUCache implements Lifecycle {
         @Override
         public void onRemoval(RemovalNotification<Long, BufferHolder> removalNotification) {
             if(removeCounter.incrementAndGet()%1000==0)
-                 logger.info(String.format("remove %d",removalNotification.getKey()));
+                 logger.info(String.format("cache miss %d total, lead remove %d",removeCounter.get(),removalNotification.getKey()));
             BufferHolder holder=removalNotification.getValue();
             try {
                 if (holder.value().isDirect()) {
@@ -129,7 +129,9 @@ public class LogFileLRUCache implements Lifecycle {
     public BufferHolder getLogBufferHolder(){
          BufferHolder holder= logBufferAllocator.allocateDirectLogCache();
          if(holder==null) holder=logBufferAllocator.allocateHeapLogCache();
-         if(holder==null) throw new IllegalArgumentException("allocate log buffer failed");
+         if(holder==null) {
+             throw new IllegalArgumentException("allocate log buffer failed");
+         }
          return holder;
     }
 

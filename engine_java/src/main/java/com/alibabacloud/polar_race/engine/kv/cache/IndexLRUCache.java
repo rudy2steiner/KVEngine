@@ -127,8 +127,8 @@ public class IndexLRUCache implements Lifecycle {
         private int removeCount=0;
         @Override
         public void onRemoval(RemovalNotification<Integer, LongLongMap> removalNotification) {
-            if(removeCount++%1000==0)
-                logger.info(String.format("%d cache miss,remove %d",removeCount,removalNotification.getKey()));
+            if(++removeCount%1000==0)
+                logger.info(String.format("%d cache miss total,remove %d",removeCount,removalNotification.getKey()));
         }
     }
 

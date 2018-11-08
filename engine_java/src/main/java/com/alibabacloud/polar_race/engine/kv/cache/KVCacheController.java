@@ -16,7 +16,7 @@ public class KVCacheController implements CacheController {
     @Override
     public int maxLogCacheDirectBuffer() {
         // 30Mb
-        return StoreConfig.MAX_DIRECT_BUFFER_SIZE-30*1024*1024;
+        return StoreConfig.MAX_DIRECT_BUFFER_SIZE-50*1024*1024;
     }
 
     @Override

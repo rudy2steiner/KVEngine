@@ -70,7 +70,7 @@ public class WALogger implements WALog<Put> {
      **/
     public void bufferAllocateControl(){
         int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
-        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+ StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
+        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+2* StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
         logger.info(String.format("max direct cache log file %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
         this.bufferAllocator=new LogBufferAllocator(logFileService,maxDirectCacheLog,maxHeapCacheLog,cacheController.maxDirectBuffer(),cacheController.maxOldBuffer());
 

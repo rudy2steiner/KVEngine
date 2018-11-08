@@ -10,7 +10,6 @@ public class IndexHashAppender  implements Lifecycle {
     private AtomicBoolean started=new AtomicBoolean(false);
     private SSBucket buckets[];
     private int buckBufferSize ;
-    private int bufferQueueSize;
     private WalIndexLogger indexLogger;
     private String indexDir;
     public IndexHashAppender(String indexDir,int capacity,int buckBufferSize){

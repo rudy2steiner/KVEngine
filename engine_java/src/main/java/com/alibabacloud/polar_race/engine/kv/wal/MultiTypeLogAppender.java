@@ -3,6 +3,7 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.event.Event;
 import com.alibabacloud.polar_race.engine.kv.LogEvent;
@@ -55,16 +56,17 @@ public class MultiTypeLogAppender implements Lifecycle {
         SyncEvent syncEvent=new SyncEvent(txId);
         translator.publish(syncEvent);
         syncEvent.get(StoreConfig.MAX_TIMEOUT);
-        onAppendFinish(syncEvent);
+        onAppendFinish(syncEvent,event);
         return txId;
     }
 
     /**
      * on append finish
      **/
-    public void onAppendFinish(SyncEvent syncEvent){
+    public void onAppendFinish(SyncEvent syncEvent,Put event){
         if(syncEvent.value()%100000==0){
-            logger.info(String.format("%d time elapsed %d",syncEvent.txId(),syncEvent.elapse()));
+            logger.info(String.format("key %d,%d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
+                                  syncEvent.txId(),syncEvent.elapse()));
         }
     }
 

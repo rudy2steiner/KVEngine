@@ -25,6 +25,7 @@ public class EngineTest {
     Random random;
     private static String root="/export/wal000/";
     private int VALUES_MAX_LENGTH=4096;
+    private static boolean local=false;
     AbstractEngine engine;
     @Before
     public void beforeAction(){
@@ -51,7 +52,9 @@ public class EngineTest {
     @AfterClass
     public static void afterClass(){
         logger.info("class empty");
-        Files.emptyDirIfExist(root);
+        // 本地测试
+        if(!local)
+            Files.emptyDirIfExist(root);
     }
 
     @Test
@@ -100,6 +103,7 @@ public class EngineTest {
      * to do concurrent iterate
      *
      **/
+    @Ignore
     @Test
     public void iterate(){
         long start=System.currentTimeMillis()-1;

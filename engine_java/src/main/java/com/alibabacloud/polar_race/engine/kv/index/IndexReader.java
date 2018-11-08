@@ -49,7 +49,7 @@ public class IndexReader {
             byteBuffer.compact();
         }while (remaining==bufferSize);
         if(readBucketCounter.incrementAndGet()<=100)
-            logger.info(String.format("%s count %d,key %d,v %d ",handler.name(),keyCounter.get(),key,value));
+            logger.info(String.format("file %s ,total load key count %d,this key %d,v %d ",handler.name(),keyCounter.get(),key,value));
            return map;
     }
 

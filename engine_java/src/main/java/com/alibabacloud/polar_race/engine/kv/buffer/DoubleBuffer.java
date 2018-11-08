@@ -72,8 +72,8 @@ public class DoubleBuffer {
      **/
     public void release(){
        if(readBuffer.isDirect()){
-           ((DirectBuffer)readBuffer).cleaner();
-           ((DirectBuffer)writeBuffer).cleaner();
+           ((DirectBuffer)readBuffer).cleaner().clean();
+           ((DirectBuffer)writeBuffer).cleaner().clean();
        }else{
            readBuffer=null;
            writeBuffer=null;

@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.buffer;
 
+import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,15 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
      **/
     public BufferHolder allocateDirectLogCache(){
           BufferHolder holder= directCache.poll();
-          if(holder==null&&allocatedDirectBucks.getAndIncrement()<=maxDirectBufferBucks){
-                holder=new BufferHolder(allocate(logFileService.logWritableSize(),true));
-                //onAdd(logFileService.logWritableSize(),true);
+          if(Null.isEmpty(holder)){
+              if( allocatedDirectBucks.getAndIncrement()<maxDirectBufferBucks) {
+                  try {
+                      holder = new BufferHolder(allocate(logFileService.logWritableSize(), true));
+                  }finally {
+                      if(Null.isEmpty(holder)) allocatedDirectBucks.decrementAndGet();
+                  }
+              }else allocatedDirectBucks.decrementAndGet();
+
           }
           return holder;
     }
@@ -70,11 +77,16 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
      **/
     public BufferHolder allocateHeapLogCache(){
         BufferHolder holder= heapCache.poll();
-        if(holder==null){
-            if(allocatedHeapBucks.getAndIncrement()<=maxHeapBufferBucks)
-                holder=new BufferHolder(allocate(logFileService.logWritableSize(),false));
-            else
+        if(Null.isEmpty(holder)){
+            if(allocatedHeapBucks.getAndIncrement()<maxHeapBufferBucks) {
+                try {
+                    holder = new BufferHolder(allocate(logFileService.logWritableSize(), false));
+                }finally {
+                    if(holder==null) allocatedHeapBucks.decrementAndGet();
+                }
+            }else {
                 allocatedHeapBucks.decrementAndGet();
+            }
             //onAdd(logFileService.logWritableSize(),false);
         }
         return holder;
