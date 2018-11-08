@@ -28,6 +28,7 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
     private AtomicInteger allocatedDirectBufferSize=new AtomicInteger(0);
     private AtomicInteger allocatedHeapBufferSize=new AtomicInteger(0);
     private LogFileService logFileService;
+    private AtomicInteger allocateCounter=new AtomicInteger(0);
     public LogBufferAllocator(LogFileService logFileService, int maxDirectLogCacheBufferBucks, int maxHeapLogCacheBufferBucks,int maxDirectBuffeSize,int maxHeapBufferSize){
             this.maxDirectBufferBucks=maxDirectLogCacheBufferBucks;
             this.maxHeapBufferBucks=maxHeapLogCacheBufferBucks;
@@ -129,9 +130,19 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
                 return false;
             }
         }
-        logger.info(String.format("allocate %d %s",size,direct?"direct":"heap"));
+        if(allocateCounter.incrementAndGet()%100==0) {
+            logger.info(String.format("allocate %d %s,this time allocate info", size, direct ? "direct" : "heap"));
+            memoryMonitor();
+        }
          bufferSizeAllocated.getAndAdd(size);
          return true;
+    }
+
+    /**
+     *
+     **/
+    public void memoryMonitor(){
+       logger.info( String.format("allocated direct buffer %d,heap %d",allocatedDirectBufferSize.get(),allocatedHeapBufferSize.get()));
     }
 
     @Override

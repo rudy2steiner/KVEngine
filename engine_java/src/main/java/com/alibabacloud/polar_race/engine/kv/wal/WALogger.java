@@ -116,7 +116,7 @@ public class WALogger implements WALog<Put> {
                     if(concurrency.decrementAndGet()==0) {
                         hashIndexAppender.close();
                         latch.countDown();
-                        logger.info(String.format("hash task  finish, time %d",System.currentTimeMillis()-start));
+                        logger.info(String.format("hash task  finish, time %d ms",System.currentTimeMillis()-start));
 
                     }
                 }
