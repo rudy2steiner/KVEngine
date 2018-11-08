@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engin;
 import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.EngineRace;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
@@ -22,7 +23,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=40000;
+    private long numPerThreadWrite=100000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -38,7 +39,7 @@ public class EngineTest {
             values[i]=(byte) template.charAt(random.nextInt(len));
         }
         try {
-            engine = new LogRingBufferEngine();//new RocksEngine();
+            engine = new EngineRace();//new RocksEngine();
             engine.open("/export/wal000/");
         }catch (EngineException e){
             logger.info("engine starter",e);
