@@ -16,15 +16,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IndexReader {
     private final static Logger logger= LoggerFactory.getLogger(IndexReader.class);
     private static AtomicInteger keyCounter=new AtomicInteger(0);
+    private static AtomicInteger readBucketCounter=new AtomicInteger(0);
     public static LongLongMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
         int mapSize = (int) Math.ceil(keyCount * 1.23f);
-        logger.info("mapSize " +mapSize);
+        //logger.info("mapSize " +mapSize);
         LongLongMap map = LongLongMap.withExpectedSize(mapSize);
         int bufferSize=byteBuffer.capacity();
-        long key;
-        long value;
+        long key=0;
+        long value=0;
         int remaining=0;
         byteBuffer.clear();
         handler.position(0);
@@ -43,10 +44,12 @@ public class IndexReader {
                     map.put(key,oldValue);
                     logger.info(String.format("key %d,newer version %d,old version %  ",key,oldValue,value));
                 }
-                //logger.info(String.format("count %d,key %d,v %d ",keyCounter.incrementAndGet(),key,value));
+                keyCounter.incrementAndGet();
             }
             byteBuffer.compact();
         }while (remaining==bufferSize);
+        if(readBucketCounter.incrementAndGet()<=100)
+            logger.info(String.format("%s count %d,key %d,v %d ",handler.name(),keyCounter.get(),key,value));
            return map;
     }
 

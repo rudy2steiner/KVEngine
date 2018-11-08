@@ -129,7 +129,7 @@ public class IndexLRUCache implements Lifecycle {
         private int removeCount=0;
         @Override
         public void onRemoval(RemovalNotification<Integer, LongLongMap> removalNotification) {
-            if(removeCount++%100==0)
+            if(removeCount++%1000==0)
                 logger.info(String.format("remove %d",removalNotification.getKey()));
         }
     }

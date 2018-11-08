@@ -22,7 +22,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=100000;
+    private long numPerThreadWrite=40000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -54,7 +54,7 @@ public class EngineTest {
         long start=System.currentTimeMillis();
         Thread[] t=new Thread[(int)concurrency];
          for (int i = 0; i < concurrency; i++) {
-                t[i]=new Thread(new PutThread(i, (int)numPerThreadWrite, engine));
+                t[i]=new Thread(new PutThread(i, (int)numPerThreadWrite, engine),"write"+i);
                 t[i].start();
          }
          try {
@@ -73,7 +73,7 @@ public class EngineTest {
         long start=System.currentTimeMillis();
         Thread[] t=new Thread[(int)concurrency];
         for (int i = 0; i < concurrency; i++) {
-            t[i]=new Thread(new GetThread(i, (int)numPerThreadWrite, engine));
+            t[i]=new Thread(new GetThread(i, (int)numPerThreadWrite, engine),"reader"+i);
             t[i].start();
         }
         try {

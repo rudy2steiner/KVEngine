@@ -20,6 +20,8 @@ public class SSBucket {
     private AtomicInteger index=new AtomicInteger(0);
     private WalIndexLogger walLogger;
     private final static Logger logger= LoggerFactory.getLogger(SSBucket.class);
+    private AtomicInteger writeCounter=new AtomicInteger(0);
+    private int maxWriteCounter;
     public void SSBucket(){
     }
     public SSBucket(int id,int bufferSize){
@@ -38,18 +40,19 @@ public class SSBucket {
         this(id,doubleBUffer.get(false));
         this.doubleBuffer =doubleBUffer;
         this.walLogger =logger;
+        this.maxWriteCounter=doubleBUffer.maxWriteCount();
     }
 
-    public void put(ByteBuffer index,int offset) {
+    public void put(ByteBuffer index,int offset) throws Exception{
         if(buffer.remaining()==0){
             logger.info("bug");
         }
         ByteBuffer buf = buffer.slice();
-        if ((offset > buf.limit()) || (offset < 0)){
-
-        }
         buf.position(offset);
         buf.put(index);
+        if(writeCounter.incrementAndGet()%maxWriteCounter==0){
+            swap(maxWriteCounter*StoreConfig.VALUE_INDEX_RECORD_SIZE);
+        }
     }
 
     /**
@@ -62,7 +65,7 @@ public class SSBucket {
               if(offset+indexSize<=bufferSize) {
                   return offset;
               }
-              swap(offset);
+              //swap(offset);
               return -1;
     }
 
@@ -84,9 +87,9 @@ public class SSBucket {
 
     public synchronized void flushBuffer(int position) throws Exception{
         if(position<=buffer.limit()){
-            buffer.position(position);
-            buffer.flip();
-            doubleBuffer.slice(true);
+            ByteBuffer slice=doubleBuffer.slice(true);
+            slice.position(position);
+            slice.flip();
             buffer= doubleBuffer.get(false);
             buffer.clear();
             index.set(0);

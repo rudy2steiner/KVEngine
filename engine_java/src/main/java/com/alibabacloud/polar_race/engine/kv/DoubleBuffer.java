@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv;
 
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.index.WalIndexLogger;
 import org.slf4j.Logger;
@@ -31,9 +32,10 @@ public class DoubleBuffer {
     }
 
     /**
-     * 读写buffer 交换
+     * 读写buffer 交换,
+     * @return the sliced write buffer
      **/
-    public  void slice(boolean write2read) throws Exception{
+    public  ByteBuffer slice(boolean write2read) throws Exception{
         //还没读完，不可以交换
         lock.writeLock().lock();
         while (readable) {
@@ -45,6 +47,7 @@ public class DoubleBuffer {
         writeBuffer = buf;
         readable=true;
         lock.writeLock().unlock();
+        return readBuffer;
     }
 
     public ByteBuffer get(boolean read){
@@ -60,6 +63,10 @@ public class DoubleBuffer {
             readable=state;
         else
             writable=state;
+    }
+
+    public int maxWriteCount(){
+        return size/StoreConfig.VALUE_INDEX_RECORD_SIZE;
     }
 
     /**

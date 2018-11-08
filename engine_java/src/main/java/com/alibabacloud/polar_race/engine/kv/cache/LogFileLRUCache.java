@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LogFileLRUCache implements Lifecycle {
     private final static Logger logger= LoggerFactory.getLogger(LogFileLRUCache.class);
@@ -106,9 +107,11 @@ public class LogFileLRUCache implements Lifecycle {
     }
 
     public class LogFileRemoveListener implements RemovalListener<Long,BufferHolder> {
+        AtomicInteger removeCounter=new AtomicInteger(0);
         @Override
         public void onRemoval(RemovalNotification<Long, BufferHolder> removalNotification) {
-            logger.info(String.format("remove %d",removalNotification.getKey()));
+            if(removeCounter.incrementAndGet()%1000==0)
+                 logger.info(String.format("remove %d",removalNotification.getKey()));
             BufferHolder holder=removalNotification.getValue();
             try {
                 if (holder.value().isDirect()) {
