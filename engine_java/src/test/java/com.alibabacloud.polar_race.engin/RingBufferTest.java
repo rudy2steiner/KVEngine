@@ -19,20 +19,6 @@ public class RingBufferTest {
     @Test
     public void test(){
 
-
-// Executor that will be used to construct new threads for consumers
-
-//
-//        // Connect the handler
-//        disruptor.handleEventsWith(new ByteEventHandler());
-//
-//        // Start the Disruptor, starts all threads running
-//        disruptor.start();
-//
-//        // Get the ring buffer from the Disruptor to be used for publishing.
-//
-//           ringBuffer.publishEvent((event, sequence, buffer) -> event.set(buffer.getLong(0)), bb);
-
     int v=98;
     byte[] a=new byte[4];
         Bytes.int2bytes(v,a,0);
@@ -67,6 +53,5 @@ public class RingBufferTest {
             if(low==high) midValue=Long.valueOf(list.get(high));
             System.out.println(midValue);
         }
-
     }
 }

@@ -1,6 +1,5 @@
 package com.alibabacloud.polar_race.engin;
 
-import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.google.common.cache.*;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -5,11 +5,10 @@ import com.alibabacloud.polar_race.engine.common.EngineRace;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.WALogger;
 import com.alibabacloud.polar_race.example.LogRingBufferEngine;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +22,11 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=100000;
+    private long numPerThreadWrite=1000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
-    private String root="/export/wal000/";
+    private static String root="/export/wal000/";
     private int VALUES_MAX_LENGTH=4096;
     AbstractEngine engine;
     @Before
@@ -41,13 +40,21 @@ public class EngineTest {
         try {
             engine = new EngineRace();//new RocksEngine();
             engine.open("/export/wal000/");
+            logger.info("kv store init");
         }catch (EngineException e){
-            logger.info("engine starter",e);
+            logger.info("engine start error",e);
         }
     }
-    @After
+
     public void close(){
+        logger.info("kv store  close");
         engine.close();
+    }
+
+
+    public static void afterClass(){
+        logger.info("class empty");
+        //Files.removeDirIfExist(root);
     }
     @Test
     public void benchmark8b4kbWrite(){
@@ -113,16 +120,6 @@ public class EngineTest {
                 logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
     }
-
-    @Test
-    public void KeyIndexIterate() throws Exception{
-        WALogger logger=new WALogger(root);
-        logger.startIndexEngine();
-
-    }
-
-
-
 
 
     public class PutThread implements Runnable{
@@ -226,32 +223,4 @@ public class EngineTest {
         }
     }
 
-
-
-    public long keyGenerator(int id,int num,int position){
-
-        return id*num+position;
-    }
-
-    @Test
-    public void keyTest(){
-
-        for(int i=0;i<concurrency;i++){
-            for(int p=0;p<numPerThreadWrite;p++){
-                logger.info(String.valueOf(keyGenerator(i,(int)numPerThreadWrite,p)));
-            }
-            logger.info("break");
-        }
-
-    }
-
-    @Test
-    public void byteSum(){
-        byte b=(byte)128;
-        byte a=(byte)5;
-        byte c=(byte) (a+b);
-        byte d=(byte)(c-a);
-        logger.info(String.valueOf((byte)(b)));
-
-    }
 }

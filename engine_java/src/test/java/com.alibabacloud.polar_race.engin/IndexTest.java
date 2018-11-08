@@ -13,6 +13,10 @@ public class IndexTest {
     }
 
     @Test
+    public void  testMax(){
+        System.out.println(Math.max(2,3));
+    }
+    @Test
     public void IndexIterate() throws Exception{
 
         WALogger logger=new WALogger(root);

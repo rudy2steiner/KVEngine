@@ -137,7 +137,9 @@ public class LogFileLRUCache implements Lifecycle {
         int concurrency=cacheController.cacheLogInitLoadConcurrency();
         List<Long> logs=logFileService.allLogFiles();
         concurrency=Math.min(concurrency,logs.size());
-        int initLoad=(int)(cacheController.cacheLogLoadFactor()*cacheController.maxCacheLog());
+        int initLoad=(int)(cacheController.cacheLogInitLoadConcurrency()*cacheController.maxCacheLog());
+        int logSize=logs.size();
+           initLoad=logSize>initLoad?initLoad:logSize;
         if(concurrency>0) {
             if(loadServcie==null)
                 loadServcie = Executors.newFixedThreadPool(concurrency);

@@ -11,8 +11,6 @@ public class MapMemoryTest {
         Map<Integer, Integer> map = HashIntIntMaps.newMutableMap();
 
     }
-
-
     public class  PutThread implements Runnable{
 
 

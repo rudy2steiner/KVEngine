@@ -23,6 +23,7 @@ public class LogRingBufferEngine extends AbstractEngine {
             this.walLogger = new WALogger(path);
             this.walLogger.start();
         }catch (Exception e){
+            logger.info("wal exception",e);
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }
 
