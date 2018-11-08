@@ -1,6 +1,7 @@
-package com.alibabacloud.polar_race.engine.kv;
+package com.alibabacloud.polar_race.engine.kv.file;
 
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,7 +21,7 @@ public interface LogFileService {
     IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException;
     List<Long> allLogFiles();
-    List<Long> allFiles(String suffix);
+    List<Long> allSortedFiles(String suffix);
     /**
      * log 文件尾部和index块的总大小
      **/

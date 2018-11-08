@@ -11,17 +11,25 @@ public class Files {
         if(file.exists()) return;
         file.mkdirs();
     }
-    public static void  removeDirIfExist(String dir){
+    /**
+     *  remove files in the directory
+     *
+     **/
+    public static void emptyDirIfExist(String dir){
         File file=new File(dir);
         if(file.exists()&&file.isDirectory()){
             File[] files=file.listFiles();
             for(File f:files){
-                 if(f.isDirectory()) removeDirIfExist(f.getAbsolutePath());
+                 if(f.isDirectory()) emptyDirIfExist(f.getAbsolutePath());
                  else f.delete();
             }
         } else file.delete();
     }
 
+    /**
+     * 判断文件夹是否为空
+     *
+     **/
     public static boolean isEmptyDir(String dir) {
         File file=new File(dir);
         if(file.exists()){
@@ -31,6 +39,9 @@ public class Files {
         return true;
     }
 
+    /**
+     *   2^M
+     **/
     public static int tableSizeFor(int cap){
         int n = cap - 1;
         n |= n >>> 1;

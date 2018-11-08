@@ -1,9 +1,10 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
-import com.alibabacloud.polar_race.engine.common.io.ByteEvent;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -26,7 +27,7 @@ public class LogAppender implements Lifecycle {
     private  static Disruptor<LogEvent<Cell>> disruptor;
     private  static RingBuffer<LogEvent<Cell>> ringBuffer;
     private LogEventHander eventHander;
-    public LogAppender(IOHandler handler,LogFileService fileService ,int ringBufferSize){
+    public LogAppender(IOHandler handler, LogFileService fileService , int ringBufferSize){
         this.ringBufferSize=ringBufferSize>0? Files.tableSizeFor(ringBufferSize):DEFAULT_RING_BUFFER_SIZE;
         this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor);
         this.ringBuffer = disruptor.getRingBuffer();

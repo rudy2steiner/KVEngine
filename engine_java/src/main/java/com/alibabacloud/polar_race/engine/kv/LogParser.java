@@ -27,7 +27,7 @@ public class LogParser {
      * @param  to in write mode
      * @param
      **/
-    void parse(AbstractVisitor visitor, ByteBuffer to,ByteBuffer from) throws IOException {
+    public void parse(AbstractVisitor visitor, ByteBuffer to,ByteBuffer from) throws IOException {
          int capacity=to.capacity();
          int remain=0;
          int i=0;

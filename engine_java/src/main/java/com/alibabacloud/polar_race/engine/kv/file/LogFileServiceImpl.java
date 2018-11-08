@@ -1,4 +1,4 @@
-package com.alibabacloud.polar_race.engine.kv;
+package com.alibabacloud.polar_race.engine.kv.file;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.BufferedIOHandler;
@@ -6,6 +6,9 @@ import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,8 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class LogFileServiceImpl implements LogFileService{
+    private final static Logger logger= LoggerFactory.getLogger(LogFileServiceImpl.class);
     private String dir;
-    private List<Long> logFiles;
+    private List<Long> sortedLogFiles;
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
     public LogFileServiceImpl(String dir){
@@ -24,7 +28,7 @@ public class LogFileServiceImpl implements LogFileService{
     }
 
     public void scanFiles(){
-        this.logFiles=allLogFiles();
+        this.sortedLogFiles =allLogFiles();
     }
     @Override
     public String nextLogName(Cell cell) {
@@ -55,7 +59,6 @@ public class LogFileServiceImpl implements LogFileService{
         File file=new File(dir,fileName);
         IOHandler newHandler=new FileChannelIOHandler(file,"rw");
         return new BufferedIOHandler(newHandler,handler.buffer());
-        //return new FileChalongnnelIOHandlerImpl(dir,fileName,"rw",bufferSize);
     }
 
     @Override
@@ -76,11 +79,11 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public List<Long> allLogFiles() {
-        return  allFiles(StoreConfig.LOG_FILE_SUFFIX);
+        return  allSortedFiles(StoreConfig.LOG_FILE_SUFFIX);
     }
 
     @Override
-    public List<Long> allFiles(String suffix) {
+    public List<Long> allSortedFiles(String suffix) {
         File file=new File(dir);
         List<Long> logNames=new ArrayList<>();
         if(!file.isDirectory()) return null;
@@ -96,8 +99,8 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public String lastLogName() {
-        if(!Null.isEmpty(logFiles))
-           return String.valueOf(logFiles.get(logFiles.size()-1));
+        if(!Null.isEmpty(sortedLogFiles))
+           return String.valueOf(sortedLogFiles.get(sortedLogFiles.size()-1));
         return null;
     }
 
@@ -129,8 +132,18 @@ public class LogFileServiceImpl implements LogFileService{
         if(lastName!=null) {
             File file = new File(dir,lastName );
             if (file.exists()){
-                if(file.length()<StoreConfig.SEGMENT_LOG_FILE_SIZE){
+                long fileSize=file.length();
+                if(fileSize>0l&&fileSize<StoreConfig.SEGMENT_LOG_FILE_SIZE){
                     return true;
+                }else if(fileSize==0){
+                    //
+                     logger.info("delete last empty file "+lastName);
+                     file.delete();
+                     sortedLogFiles.remove(sortedLogFiles.size()-1);
+                }else{
+                    //
+                    logger.info("last time shutdown gracefully,"+lastName);
+
                 }
             }
         }
@@ -139,22 +152,22 @@ public class LogFileServiceImpl implements LogFileService{
 
     /**
      * binary search
-     *
+     * @return  position 所在的文件名,带后缀
      **/
     @Override
     public String fileName(long position) {
         int mid;
         long value=position;
         long midValue=-1;
-        if(Null.isEmpty(logFiles)) scanFiles();
-        if (!Null.isEmpty(logFiles)) {
+        if(Null.isEmpty(sortedLogFiles)) scanFiles();
+        if (!Null.isEmpty(sortedLogFiles)) {
             int low = 0;
-            int high = logFiles.size() - 1;
+            int high = sortedLogFiles.size() - 1;
             while (low < high) {
                 mid = low + (high - low) / 2;
-                midValue = Long.valueOf(logFiles.get(mid));
+                midValue = Long.valueOf(sortedLogFiles.get(mid));
                 if (midValue < value) {
-                    if (Long.valueOf(logFiles.get(mid + 1)) > value)
+                    if (Long.valueOf(sortedLogFiles.get(mid + 1)) > value)
                         break;
                     low = mid + 1;
                 } else if (midValue > value) {
@@ -162,7 +175,7 @@ public class LogFileServiceImpl implements LogFileService{
                 } else break;
 
             }
-            if (low == high) midValue = Long.valueOf(logFiles.get(high));
+            if (low == high) midValue = Long.valueOf(sortedLogFiles.get(high));
             return String.valueOf(midValue)+StoreConfig.LOG_FILE_SUFFIX;
         }
         return null;

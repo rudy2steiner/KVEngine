@@ -1,20 +1,20 @@
-package com.alibabacloud.polar_race.example;
+package com.alibabacloud.polar_race.engine.example;
 
 import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
-import com.alibabacloud.polar_race.engine.kv.Cell;
-import com.alibabacloud.polar_race.engine.kv.WALog;
-import com.alibabacloud.polar_race.engine.kv.WALogger;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.wal.WALog;
+import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LogRingBufferEngine extends AbstractEngine {
-    private final static Logger logger= LoggerFactory.getLogger(LogRingBufferEngine.class);
+public class WALogEngine extends AbstractEngine {
+    private final static Logger logger= LoggerFactory.getLogger(WALogEngine.class);
     private WALog walLogger;
-    public LogRingBufferEngine(){
+    public WALogEngine(){
 
     }
     @Override
@@ -26,7 +26,6 @@ public class LogRingBufferEngine extends AbstractEngine {
             logger.info("wal exception",e);
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }
-
     }
 
     @Override

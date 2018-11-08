@@ -1,6 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.wal;
 
-import com.alibabacloud.polar_race.engine.kv.Event;
+import com.alibabacloud.polar_race.engine.kv.event.Event;
 import com.alibabacloud.polar_race.engine.kv.LogEvent;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.RingBuffer;

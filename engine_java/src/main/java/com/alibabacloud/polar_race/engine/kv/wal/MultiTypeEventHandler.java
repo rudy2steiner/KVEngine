@@ -3,10 +3,10 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
-import com.alibabacloud.polar_race.engine.kv.Event;
-import com.alibabacloud.polar_race.engine.kv.EventType;
+import com.alibabacloud.polar_race.engine.kv.event.Event;
+import com.alibabacloud.polar_race.engine.kv.event.EventType;
 import com.alibabacloud.polar_race.engine.kv.LogEvent;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.lmax.disruptor.EventHandler;
@@ -69,11 +69,15 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             processedMaxTxId=put.value().getTxId();
 
         }
-
         // need flush
-
-
     }
+
+
+    /**
+     *
+     * roll to next log file
+     *
+     **/
     public void tryRollLog(Put put) throws IOException {
         long remain= logFileService.logWritableSize()-handler.length();
         if(remain>=put.value().size()+StoreConfig.LOG_KV_RECORD_LEAST_LEN) return;
@@ -90,14 +94,16 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         flushValueIndex(true);
         //handler.flushBuffer();
         //flushAndAck(false);
-        clearSyncEvent();
+        ackSyncEvent();
         String nextLogName=logFileService.nextLogName(handler);
         // roll to next log file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
         fileId=Long.valueOf(handler.name());
     }
+
+
     /**
-     *
+     * 将缓存中的 索引 和 value刷盘，并ack request
      */
     public boolean flushAndAck(boolean force) throws IOException{
         boolean flushed=false;
@@ -107,11 +113,16 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             flushedMaxTxId = processedMaxTxId;
             flushed=true;
         }
-        clearSyncEvent();
+        ackSyncEvent();
         return flushed;
     }
 
-    public void clearSyncEvent(){
+
+    /**
+     * release sync flush request thread
+     *
+     **/
+    public void ackSyncEvent(){
         for (int i = 0; i < syncIndex; i++) {
             syncEvents[i].done(processedMaxTxId);
             syncEvents[i]=null;
@@ -148,6 +159,10 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         flushValueIndex(false);
     }
 
+    /**
+     *
+     * handler timeout
+     **/
     @Override
     public void onTimeout(long sequence) throws Exception {
         long start=System.currentTimeMillis();

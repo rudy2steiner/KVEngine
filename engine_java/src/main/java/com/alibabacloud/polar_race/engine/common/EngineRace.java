@@ -1,13 +1,11 @@
 package com.alibabacloud.polar_race.engine.common;
 
-import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
-import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
-import com.alibabacloud.polar_race.example.LogRingBufferEngine;
+import com.alibabacloud.polar_race.engine.example.WALogEngine;
 
 public class EngineRace extends AbstractEngine {
 
-     private AbstractEngine engine=new LogRingBufferEngine();
+     private AbstractEngine engine=new WALogEngine();
 	@Override
 	public void open(String path) throws EngineException {
 		engine.open(path);

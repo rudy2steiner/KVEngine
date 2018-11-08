@@ -4,8 +4,7 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.KVParser;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 
 
 import java.io.IOException;
@@ -59,6 +58,8 @@ public class WalLogParser implements KVParser {
         logTailerAndIndex(indexBuffer,maxValueLength);
         return handler;
     }
+
+
     /**
      *
      */

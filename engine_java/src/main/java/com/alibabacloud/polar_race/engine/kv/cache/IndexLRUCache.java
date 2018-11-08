@@ -4,8 +4,7 @@ import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
-import com.alibabacloud.polar_race.engine.kv.buffer.BufferSizeAware;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
@@ -54,7 +53,7 @@ public class IndexLRUCache implements Lifecycle {
     @Override
     public void start() throws Exception {
         if(!isStart()) {
-            List<Long> indexFiles = indexFileService.allFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
+            List<Long> indexFiles = indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
             if(indexFiles.size()>0) {
                 for (Long fid : indexFiles) {
                     indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
@@ -77,7 +76,7 @@ public class IndexLRUCache implements Lifecycle {
      *   遍历所有的key
      **/
     public void iterateKey() throws Exception{
-        List<Long> indexFiles = indexFileService.allFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
+        List<Long> indexFiles = indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
         if(indexFiles.size()>0) {
             for (Long fid : indexFiles) {
                 indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
@@ -124,14 +123,12 @@ public class IndexLRUCache implements Lifecycle {
          return -1;
     }
 
-
-
     public class IndexRemoveListener implements RemovalListener<Integer,LongLongMap>{
         private int removeCount=0;
         @Override
         public void onRemoval(RemovalNotification<Integer, LongLongMap> removalNotification) {
             if(removeCount++%1000==0)
-                logger.info(String.format("remove %d",removalNotification.getKey()));
+                logger.info(String.format("%d cache miss,remove %d",removeCount,removalNotification.getKey()));
         }
     }
 

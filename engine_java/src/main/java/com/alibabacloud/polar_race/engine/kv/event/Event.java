@@ -1,4 +1,4 @@
-package com.alibabacloud.polar_race.engine.kv;
+package com.alibabacloud.polar_race.engine.kv.event;
 
 public interface Event<T> {
      EventType type();

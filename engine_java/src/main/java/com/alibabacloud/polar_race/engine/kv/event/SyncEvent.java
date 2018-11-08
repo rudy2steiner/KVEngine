@@ -1,10 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.event;
 
-import com.alibabacloud.polar_race.engine.kv.Event;
-import com.alibabacloud.polar_race.engine.kv.EventType;
-
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SyncEvent implements Event<Long> {
     private final static Long NOT_DONE_ID =-1l;

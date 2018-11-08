@@ -2,7 +2,7 @@ package com.alibabacloud.polar_race.engine.kv.index;
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

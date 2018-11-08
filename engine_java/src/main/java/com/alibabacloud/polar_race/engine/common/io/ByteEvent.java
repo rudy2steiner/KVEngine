@@ -1,8 +1,6 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
-import com.lmax.disruptor.EventFactory;
-import javafx.event.Event;
 
 public final class ByteEvent {
     private volatile long sequence;

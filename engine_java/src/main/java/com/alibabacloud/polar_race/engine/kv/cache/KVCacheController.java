@@ -1,6 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.cache;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 
 public class KVCacheController implements CacheController {
     private LogFileService logFileService;

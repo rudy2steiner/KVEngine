@@ -2,6 +2,10 @@ package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
+import com.alibabacloud.polar_race.engine.kv.wal.WALog;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,7 +16,7 @@ import java.util.List;
 public class WALogImpl implements WALog<Cell> {
     private String dir;
     private  LogAppender logAppender;
-    private  LogFileService fileService;
+    private LogFileService fileService;
     public WALogImpl(String dir) throws FileNotFoundException {
         this.dir=dir;
         makeDirIfNotExist(dir);

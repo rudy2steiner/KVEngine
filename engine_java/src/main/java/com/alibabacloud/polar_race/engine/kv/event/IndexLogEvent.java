@@ -1,9 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.event;
 
 
-import com.alibabacloud.polar_race.engine.kv.DoubleBuffer;
-import com.alibabacloud.polar_race.engine.kv.Event;
-import com.alibabacloud.polar_race.engine.kv.EventType;
+import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
 
 
 public class IndexLogEvent implements Event<DoubleBuffer> {

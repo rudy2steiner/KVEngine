@@ -2,9 +2,8 @@ package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
-import com.alibabacloud.polar_race.engine.kv.DoubleBuffer;
+import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
-import com.alibabacloud.polar_race.engine.kv.wal.MultiTypeLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

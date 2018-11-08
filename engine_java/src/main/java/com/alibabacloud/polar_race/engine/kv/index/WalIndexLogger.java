@@ -2,17 +2,14 @@ package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
-import com.alibabacloud.polar_race.engine.kv.LogFileServiceImpl;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 public class WalIndexLogger {
     private final static Logger logger= LoggerFactory.getLogger(WalIndexLogger.class);
@@ -21,7 +18,7 @@ public class WalIndexLogger {
     private int buckSize;
     private LogFileService fileService;
     private Map<Long, IOHandler> handlerMap;
-    public WalIndexLogger(String dir,int buckSize,int queueSize){
+    public WalIndexLogger(String dir,int buckSize){
         this.dir=dir;
         this.buckSize=buckSize;
         this.fileService=new LogFileServiceImpl(dir);

@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.wal;
 
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import java.nio.ByteBuffer;
 
 

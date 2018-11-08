@@ -13,52 +13,6 @@ public class KolobokeMain {
     /**
      * Created by yeqinyong on 17/4/23.
      */
-//
-//    @KolobokeMap
-//    abstract class MyMap<K, V> implements Map<K, V> {
-//        static <K, V> Map<K, V> withExpectedSize(int expectedSize) {
-//            return new KolobokeMyMap<K, V>(expectedSize);
-//        }
-//    }
-//
-//    @KolobokeMap
-//    abstract class MyIntLongMap implements Map<Long, Short> {
-//        static MyIntLongMap withExpectedSize(int expectedSize) {
-//            return new KolobokeMyIntLongMap(expectedSize);
-//        }
-//
-//        abstract short put(long key, short value);
-//
-//        abstract short get(long key);
-//    }
-//
-//    @KolobokeMap
-//    abstract class SynchronizedMap {
-//        public static SynchronizedMap withExpectedSize(int expectedSize) {
-//            return new KolobokeSynchronizedMap(expectedSize);
-//        }
-//
-//        public final synchronized short get(long key) {
-//            return subGet(key);
-//        }
-//
-//        public final synchronized short put(long key, short value) {
-//            return subPut(key, value);
-//        }
-//
-//        public final synchronized int size() {
-//            return subSize();
-//        }
-//
-//        @MethodForm("get")
-//        abstract short subGet(long key);
-//
-//        @MethodForm("put")
-//        abstract short subPut(long key, short value);
-//
-//        @MethodForm("size")
-//        abstract int subSize();
-//    }
     private final static Logger logger= LoggerFactory.getLogger(KolobokeMain.class);
     public static void main(String[] args) throws InterruptedException {
             long start = System.currentTimeMillis();

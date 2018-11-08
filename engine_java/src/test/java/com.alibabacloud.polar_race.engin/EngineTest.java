@@ -6,20 +6,16 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
-import com.alibabacloud.polar_race.engine.kv.WALogger;
-import com.alibabacloud.polar_race.example.LogRingBufferEngine;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Random;
 /**                  w    r
  * rocksdb  64*1w   25s
  *          64*10w  848s   233s
  *
  **/
-@Ignore
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
@@ -31,7 +27,7 @@ public class EngineTest {
     private int VALUES_MAX_LENGTH=4096;
     AbstractEngine engine;
     @Before
-    public void init(){
+    public void beforeAction(){
         random=new Random(0);
         int len=template.length();
         values=new byte[4096];
@@ -39,9 +35,9 @@ public class EngineTest {
             values[i]=(byte) template.charAt(random.nextInt(len));
         }
         try {
-            engine = new EngineRace();//new RocksEngine();
-            engine.open("/export/wal000/");
-            logger.info("kv store init");
+            engine = new EngineRace();
+            engine.open(root);
+            logger.info("kv store started");
         }catch (EngineException e){
             logger.info("engine start error",e);
         }
@@ -55,8 +51,9 @@ public class EngineTest {
     @AfterClass
     public static void afterClass(){
         logger.info("class empty");
-        Files.removeDirIfExist(root);
+        Files.emptyDirIfExist(root);
     }
+
     @Test
     public void benchmark8b4kbWrite(){
         logger.info(new String(values));
@@ -76,6 +73,8 @@ public class EngineTest {
          long end=System.currentTimeMillis();
          logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
+
+
     @Test
     public void benchmark8b4kbRead(){
         logger.info(new String(values));
@@ -96,6 +95,11 @@ public class EngineTest {
         logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
+    /**
+     *
+     * to do concurrent iterate
+     *
+     **/
     @Test
     public void iterate(){
         long start=System.currentTimeMillis()-1;
@@ -112,6 +116,10 @@ public class EngineTest {
         logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
+    /**
+     * visit kv listener
+     *
+     **/
     public class LongVisitor extends AbstractVisitor{
         int count=0;
         @Override

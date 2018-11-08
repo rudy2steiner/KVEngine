@@ -1,4 +1,4 @@
-package com.alibabacloud.polar_race.engine.kv;
+package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
@@ -6,18 +6,18 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
-import com.alibabacloud.polar_race.engine.kv.buffer.BufferAware;
+import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexLogReader;
 import com.alibabacloud.polar_race.engine.kv.index.IndexVisitor;
-import com.alibabacloud.polar_race.engine.kv.wal.MultiTypeLogAppender;
-import com.alibabacloud.polar_race.engine.kv.wal.WalLogParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -27,13 +27,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WALogger implements WALog<Put> {
-
     private final static Logger logger= LoggerFactory.getLogger(WALogger.class);
     private ThreadLocal<ByteBuffer> valueBuf=new ThreadLocal<>();
     private String walDir;
     private String indexDir;
     private String rootDir;
-    private ConcurrentHashMap<Long,ValueIndex> valueIndexMap;
     private LogFileService logFileService;
     private LogFileService indexFileService;
     private MultiTypeLogAppender appender;
@@ -42,28 +40,27 @@ public class WALogger implements WALog<Put> {
     private CacheController cacheController;
     private IndexLRUCache indexLRUCache;
     private LogFileLRUCache logFileLRUCache;
-    private ExecutorService executorService;
+    private ExecutorService commonExecutorService;
     private LogBufferAllocator bufferAllocator;
-    private BufferAware bufferAware;
     private CountDownLatch latch;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
         this.indexDir=dir+StoreConfig.INDEX_CHILD_DIR;
         Files.makeDirIfNotExist(walDir);
-        // empty index ,每次起来都重建hash 桶
-        Files.removeDirIfExist(indexDir);
+        // empty index ,每次起来都重建hash桶
+        Files.emptyDirIfExist(indexDir);
         Files.makeDirIfNotExist(indexDir);
         this.logFileService =new LogFileServiceImpl(walDir);
         this.indexFileService=new LogFileServiceImpl(indexDir);
         this.cacheController=new KVCacheController(logFileService);
         this.bufferAllocateControl();
-        this.bufferAware=new BufferAware(bufferAllocator);
-        this.executorService= new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
-                Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
-        this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService,executorService,bufferAllocator);
-        this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController,executorService,bufferAllocator);
-        this.transferIndexToHashLogInit();
+        this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
+                                                     Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
+                                        60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
+        this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator);
+        this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
+        this.transferIndexLogToHashBucketInit();
 
     }
 
@@ -97,10 +94,12 @@ public class WALogger implements WALog<Put> {
         return handler;
     }
 
+
     /**
-     *     将索引hash 到索引文件
+     *  启动hash 到索引文件引擎
      **/
-    public void concurrentHashBucket() throws Exception{
+
+    public boolean startAsyncHashBucketTask() throws Exception{
         if(logFileService.allLogFiles().size()>0) {
             this.latch=new CountDownLatch(1);
             long start=System.currentTimeMillis();
@@ -112,7 +111,6 @@ public class WALogger implements WALog<Put> {
                 public void visit(ByteBuffer buffer) throws Exception {
                     hashIndexAppender.append(buffer);
                 }
-
                 @Override
                 public void onFinish() throws Exception{
                     if(concurrency.decrementAndGet()==0) {
@@ -123,9 +121,9 @@ public class WALogger implements WALog<Put> {
                     }
                 }
             },cacheController.maxHashBucketSize());
-            //logger.info(String.format("task submitted finish, time %d",System.currentTimeMillis()-start));
-            //hashIndexAppender.close();
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -133,6 +131,9 @@ public class WALogger implements WALog<Put> {
            appender.append(event);
            return event.txId();
     }
+
+
+
     @Override
     public void iterate(AbstractVisitor visitor) throws IOException {
         List<Long> logNames= logFileService.allLogFiles();
@@ -162,8 +163,8 @@ public class WALogger implements WALog<Put> {
                 throw new EngineException(RetCodeEnum.NOT_FOUND,"not found "+expectedKey);
             }
             ByteBuffer valueBuffer=valueBuf.get();
-                if(valueBuffer==null){
-                    valueBuffer=bufferAllocator.allocate(4096,false);
+                if( valueBuffer==null){
+                    valueBuffer=bufferAllocator.allocate(StoreConfig.VALUE_SIZE,false);
                     valueBuf.set(valueBuffer);
                 }
                 valueBuffer.clear();
@@ -182,84 +183,76 @@ public class WALogger implements WALog<Put> {
         }else{
             nextLogName= logFileService.nextLogName();
         }
-        concurrentHashBucket();
-        // ensure hash bucket task is finished
-        if(latch!=null)
+        // ensure hash bucket task is finished,possible optimize
+        if(startAsyncHashBucketTask()) {
             latch.await();
-        indexLRUCache.start();
-        logFileLRUCache.start();
-        executorService.shutdown();
-        if(executorService.awaitTermination(2, TimeUnit.SECONDS)){
-            logger.info("load  index and log cache finish");
+            indexLRUCache.start();
+            logFileLRUCache.start();
+        }
+        commonExecutorService.shutdown();
+        if(commonExecutorService.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+            logger.info("hash bucket and load  index,log cache finish");
         }else{
-            logger.info("load  index and log cache timeout,continue");
+            logger.info("hash bucket and load  index,log cache timeout,continue");
         }
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
         this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
         this.appender.start();
-        startFinish();
+        onStartFinish();
     }
 
 
     /**
      *  only 启动 hash  engine
      **/
-    public void  startHashEngine() throws Exception{
-        IOHandler handler;
-        String nextLogName;
+    public void startAsyncHashTask() throws Exception{
         boolean redo=logFileService.needReplayLog();
         if(redo){
-            handler=replayLastLog();
-            nextLogName= logFileService.nextLogName(handler);
-        }else{
-            nextLogName= logFileService.nextLogName();
+            replayLastLog();
         }
-        concurrentHashBucket();
-        // ensure hash bucket task is finished
-        //indexLRUCache.start();
-        executorService.shutdown();
-        if(executorService.awaitTermination(1000, TimeUnit.SECONDS)){
-            logger.info("load  index and log cache finish");
+        startAsyncHashBucketTask();
+        commonExecutorService.shutdown();
+        if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
+            logger.info("hash index finished");
         }else{
-            logger.info("load  index and log cache timeout,continue");
+            logger.info("hash index timeout,continue");
         }
     }
 
     /**
      *  only 启动 index  engine
      **/
-    public void  startIndexEngine() throws Exception{
-        IOHandler handler;
-        String nextLogName;
+    public void startAsyncIndexCacheTask() throws Exception{
         boolean redo=logFileService.needReplayLog();
-        if(redo){
-            handler=replayLastLog();
-            nextLogName= logFileService.nextLogName(handler);
-        }else{
-            nextLogName= logFileService.nextLogName();
+        if(redo) {
+          replayLastLog();
         }
-        concurrentHashBucket();
-        indexLRUCache.iterateKey();
-        executorService.shutdown();
-        if(executorService.awaitTermination(1000, TimeUnit.SECONDS)){
-            logger.info("load  index and log cache finish");
+        if(startAsyncHashBucketTask()) {
+            // 等hash 完成
+            latch.await();
+            indexLRUCache.iterateKey();
+        }
+        commonExecutorService.shutdown();
+        if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
+            logger.info(" index and log cache finish");
         }else{
-            logger.info("load  index and log cache timeout,continue");
+            logger.info(" index and log cache timeout,continue");
         }
     }
-
 
     /**
      * to do release if need
      * */
-    public void startFinish(){
-        logger.info("engine started");
+    public void onStartFinish(){
+        logger.info("wal logger started");
 
     }
 
-    public void transferIndexToHashLogInit(){
-        hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize(),StoreConfig.HASH_INDEX_QUEUE_SIZE);
-        indexLogReader=new IndexLogReader(walDir,logFileService,executorService);
+    /**
+     * */
+    public void transferIndexLogToHashBucketInit(){
+        hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize());
+        indexLogReader=new IndexLogReader(walDir,logFileService, commonExecutorService);
     }
 
     @Override
