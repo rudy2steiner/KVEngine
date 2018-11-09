@@ -20,6 +20,7 @@ public interface LogFileService {
     IOHandler ioHandler(String fileName,String mode) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException;
+    void asyncCloseFileChannel(IOHandler handler);
     List<Long> allLogFiles();
     List<Long> allSortedFiles(String suffix);
     /**

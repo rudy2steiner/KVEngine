@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheListener;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -18,6 +19,10 @@ public class IndexReader {
     private static AtomicInteger keyCounter=new AtomicInteger(0);
     private static AtomicInteger readBucketCounter=new AtomicInteger(0);
     private static AtomicInteger duplicatedCounter=new AtomicInteger(0);
+    public LogFileService indexFileService;
+    public IndexReader(LogFileService indexFileService){
+        this.indexFileService=indexFileService;
+    }
     public static LongLongMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
@@ -117,10 +122,19 @@ public class IndexReader {
                     if(cacheListener!=null)
                         cacheListener.onCache(Integer.valueOf(handler.name()),map);
                 }
+                close();
             }catch (IOException e){
                 logger.info(String.format("load key failed,%d ",handler.name()));
             }
 
+        }
+        /**
+         *close 所有的io handler
+         **/
+        public void close(){
+            for(int i=start;i<end;i++){
+               indexFileService.asyncCloseFileChannel(handlers.get(i));
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ public abstract class AbstractEngine {
 	public abstract void open(String path) throws EngineException;
 	
 	/**
-	 * close Engine
+	 * asyncClose Engine
 	 */
 	public abstract void close();
 	

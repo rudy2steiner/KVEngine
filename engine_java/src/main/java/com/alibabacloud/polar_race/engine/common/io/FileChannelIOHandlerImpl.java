@@ -155,4 +155,9 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     public void append(byte[] data, int offset, int len) throws IOException {
 
     }
+
+    @Override
+    public void closeFileChannel() throws IOException {
+        this.close();
+    }
 }

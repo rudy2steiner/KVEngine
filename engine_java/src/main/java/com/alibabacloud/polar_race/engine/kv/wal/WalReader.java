@@ -22,6 +22,7 @@ public class WalReader {
                   byteBuffer.clear();
                   byteBuffer.limit(maxLength);
                   handler.read(byteBuffer);
+                  logFileService.asyncCloseFileChannel(handler);
                   return byteBuffer;
     }
 }

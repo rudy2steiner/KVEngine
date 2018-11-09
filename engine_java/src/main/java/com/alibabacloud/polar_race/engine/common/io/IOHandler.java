@@ -69,6 +69,7 @@ public interface IOHandler extends Flushable, Closeable {
      */
     long position() throws IOException;
 
+//    void asyncClose();
     /**
      * update to new read or write position of underlying file
      **/
@@ -95,4 +96,9 @@ public interface IOHandler extends Flushable, Closeable {
      * @return underlying file name,without format suffix
      **/
     String name();
+
+    /**
+     * asyncClose underlying file channel
+     **/
+    void closeFileChannel() throws IOException;
 }

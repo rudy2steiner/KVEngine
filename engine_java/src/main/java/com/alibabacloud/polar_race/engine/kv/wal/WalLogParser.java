@@ -57,6 +57,8 @@ public class WalLogParser implements KVParser {
             }
         }while (remain==capacity);
         logTailerAndIndex(indexBuffer,maxValueLength);
+        // no need anymore
+        logFileService.asyncCloseFileChannel(handler);
         return handler;
     }
 

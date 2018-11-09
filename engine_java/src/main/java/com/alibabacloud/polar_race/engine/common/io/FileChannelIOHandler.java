@@ -111,11 +111,17 @@ public class FileChannelIOHandler implements IOHandler {
 
     @Override
     public void close() throws IOException {
-        fileChannel.close();
+        closeFileChannel();
     }
 
     @Override
     public String name() {
         return fileName.substring(0,fileName.indexOf('.'));
+    }
+
+    @Override
+    public void closeFileChannel() throws IOException {
+        if(fileChannel.isOpen())
+            fileChannel.close();
     }
 }

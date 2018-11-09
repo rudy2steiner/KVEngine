@@ -12,6 +12,7 @@ import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
+import com.alibabacloud.polar_race.engine.kv.event.EventBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
@@ -43,6 +44,7 @@ public class WALogger implements WALog<Put> {
     private ExecutorService commonExecutorService;
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch latch;
+    private EventBus fileChannelCloseProcessor;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
@@ -51,8 +53,9 @@ public class WALogger implements WALog<Put> {
         // empty index ,每次起来都重建hash桶
         Files.emptyDirIfExist(indexDir);
         Files.makeDirIfNotExist(indexDir);
-        this.logFileService =new LogFileServiceImpl(walDir);
-        this.indexFileService=new LogFileServiceImpl(indexDir);
+        this.fileChannelCloseProcessor=new EventBus(1);
+        this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
+        this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);
         this.bufferAllocateControl();
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
@@ -176,6 +179,8 @@ public class WALogger implements WALog<Put> {
     public void start() throws Exception{
         IOHandler handler;
         String nextLogName;
+        // start to process io handler close
+        fileChannelCloseProcessor.start();
         boolean redo=logFileService.needReplayLog();
         if(redo){
             handler=replayLastLog();
@@ -261,7 +266,7 @@ public class WALogger implements WALog<Put> {
          this.hashIndexAppender.close();
          this.indexLRUCache.close();
          this.logFileLRUCache.close();
-         logger.info("close wal logger");
+         logger.info("asyncClose wal logger");
     }
 
 

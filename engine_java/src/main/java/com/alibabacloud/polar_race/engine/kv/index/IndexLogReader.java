@@ -40,7 +40,7 @@ public class IndexLogReader implements Lifecycle {
                  if(indexHashService.awaitTermination(1, TimeUnit.SECONDS)){
                      logger.info("tasks finished,and shutdown");
                  }else{
-                     logger.info("tasks close timeout,and shutdown");
+                     logger.info("tasks asyncClose timeout,and shutdown");
                      indexHashService.shutdownNow();
                  }
              }
@@ -137,6 +137,7 @@ public class IndexLogReader implements Lifecycle {
         }
 
         public void close(){
+            logFileService.asyncCloseFileChannel(handler);
             logger.info(String.format("read %d index log file",end-start));
             LogBufferAllocator.release(buffer);
             buffer=null;

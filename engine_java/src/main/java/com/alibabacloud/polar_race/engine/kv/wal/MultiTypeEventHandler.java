@@ -153,7 +153,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     }
 
     /**
-     * close
+     * asyncClose
      **/
     public void flush0() throws IOException{
         flushValueIndex(false);
@@ -172,7 +172,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         }else{
             timeoutAndNoEventCounter++;
             if(timeoutAndNoEventCounter%1000==0)
-                logger.info(Thread.currentThread().getId()+" timeout  and now write,consider close ");
+                logger.info(Thread.currentThread().getId()+" timeout  and now write,consider asyncClose ");
         }
     }
 }

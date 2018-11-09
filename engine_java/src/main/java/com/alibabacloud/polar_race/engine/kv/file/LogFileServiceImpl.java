@@ -7,11 +7,13 @@ import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.event.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +24,10 @@ public class LogFileServiceImpl implements LogFileService{
     private List<Long> sortedLogFiles;
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
-    public LogFileServiceImpl(String dir){
+    private EventBus handlerCloseEventProcessor;
+    public LogFileServiceImpl(String dir,EventBus eventBus){
         this.dir=dir;
+        this.handlerCloseEventProcessor=eventBus;
         scanFiles();
     }
 
@@ -58,6 +62,7 @@ public class LogFileServiceImpl implements LogFileService{
     public IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException {
         File file=new File(dir,fileName);
         IOHandler newHandler=new FileChannelIOHandler(file,"rw");
+                  asyncCloseFileChannel(handler);
         return new BufferedIOHandler(newHandler,handler.buffer());
     }
 
@@ -115,7 +120,6 @@ public class LogFileServiceImpl implements LogFileService{
             }
         }
         return logTailerAndIndexSize;
-
     }
 
     @Override
@@ -178,5 +182,19 @@ public class LogFileServiceImpl implements LogFileService{
             return String.valueOf(midValue)+StoreConfig.LOG_FILE_SUFFIX;
         }
         return null;
+    }
+
+    @Override
+    public void asyncCloseFileChannel(IOHandler handler) {
+        handlerCloseEventProcessor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    handler.closeFileChannel();
+                }catch (IOException e){
+                    logger.info(String.format("asyncClose %s exception,ignore",handler.name()));
+                }
+            }
+        });
     }
 }

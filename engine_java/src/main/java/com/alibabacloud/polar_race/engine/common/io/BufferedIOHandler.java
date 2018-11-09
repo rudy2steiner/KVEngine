@@ -154,4 +154,9 @@ public class BufferedIOHandler implements IOHandler {
         flushBuffer();
         handler.close();
     }
+
+    @Override
+    public void closeFileChannel() throws IOException {
+        handler.close();
+    }
 }
