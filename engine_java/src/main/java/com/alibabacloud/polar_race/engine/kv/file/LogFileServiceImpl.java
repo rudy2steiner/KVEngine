@@ -130,13 +130,12 @@ public class LogFileServiceImpl implements LogFileService{
     public boolean needReplayLog() {
         String lastName=lastLogName();
         if(lastName!=null) {
-            File file = new File(dir,lastName );
+            File file = new File(dir,lastName+StoreConfig.LOG_FILE_SUFFIX );
             if (file.exists()){
                 long fileSize=file.length();
                 if(fileSize>0l&&fileSize<StoreConfig.SEGMENT_LOG_FILE_SIZE){
                     return true;
                 }else if(fileSize==0){
-                    //
                      logger.info("delete last empty file "+lastName);
                      file.delete();
                      sortedLogFiles.remove(sortedLogFiles.size()-1);

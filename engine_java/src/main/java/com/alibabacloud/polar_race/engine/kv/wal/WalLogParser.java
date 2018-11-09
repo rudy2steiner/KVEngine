@@ -4,7 +4,10 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
@@ -15,6 +18,7 @@ import java.nio.ByteBuffer;
  *
  **/
 public class WalLogParser implements KVParser {
+    private final static Logger logger= LoggerFactory.getLogger(WalLogParser.class);
     private IOHandler handler;
     private String fileName;
     private LogFileService logFileService;
@@ -39,6 +43,7 @@ public class WalLogParser implements KVParser {
         indexBuffer.put(StoreConfig.verison);
         indexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
         long fileStartPosition=Long.valueOf(handler.name());
+        logger.info(String.format("recovering last file %s,size %d",handler.name(),handler.length()));
         int  maxValueLength=0;
         do{
             i++;
@@ -48,11 +53,7 @@ public class WalLogParser implements KVParser {
             int position=extractIndex(to,indexBuffer,fileStartPosition+maxValueLength);
             maxValueLength+=position;
             if(to.hasRemaining()){
-                from.put(to);
-                to.clear();
-                from.flip();
-                to.put(from);
-                from.clear();
+                to.compact();
             }
         }while (remain==capacity);
         logTailerAndIndex(indexBuffer,maxValueLength);
@@ -96,7 +97,8 @@ public class WalLogParser implements KVParser {
      **/
     public void logTailerAndIndex(ByteBuffer  indexBuffer,int maxValueLength) throws IOException{
            if(handler.length()!=maxValueLength){
-               throw new IOException("value length wrong");
+               // 随机kill 可能写一半，丢弃
+               logger.info(" last log file, partial write");
            }
         long remain= logFileService.logWritableSize()-handler.length();
            if(remain>0) {

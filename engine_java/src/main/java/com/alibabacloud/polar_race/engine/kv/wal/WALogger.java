@@ -87,7 +87,7 @@ public class WALogger implements WALog<Put> {
         IOHandler handler=null;
         if(lastLogName!=null){
             WalLogParser logParser=new WalLogParser(logFileService,lastLogName+StoreConfig.LOG_FILE_SUFFIX);
-             ByteBuffer to=bufferAllocator.allocate(logFileService.tailerAndIndexSize(),false);
+             ByteBuffer to=bufferAllocator.allocate(logFileService.logWritableSize(),false);
              handler=logParser.doRecover(null,to,null);
              bufferAllocator.onRelease(to);
         }

@@ -17,6 +17,7 @@ public class IndexReader {
     private final static Logger logger= LoggerFactory.getLogger(IndexReader.class);
     private static AtomicInteger keyCounter=new AtomicInteger(0);
     private static AtomicInteger readBucketCounter=new AtomicInteger(0);
+    private static AtomicInteger duplicatedCounter=new AtomicInteger(0);
     public static LongLongMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
@@ -42,7 +43,8 @@ public class IndexReader {
                 if(oldValue>value){
                     // 保留大版本号
                     map.put(key,oldValue);
-                    logger.info(String.format("key %d,newer version %d,old version %  ",key,oldValue,value));
+                    if(duplicatedCounter.incrementAndGet()%1000==0)
+                        logger.info(String.format("duplicate key %d,newer version %d,old version %d",key,oldValue,value));
                 }
                 keyCounter.incrementAndGet();
             }

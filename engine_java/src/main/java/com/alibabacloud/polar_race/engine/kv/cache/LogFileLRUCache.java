@@ -59,7 +59,7 @@ public class LogFileLRUCache implements Lifecycle {
                  throw new IllegalArgumentException("read record error");
              }
              if(len!=StoreConfig.KEY_VALUE_SIZE) {
-                 logger.info(String.format("file %d,offset %d,key %,len %d ", fileId, offsetInFile, expectedKey, len));
+                 logger.info(String.format("file %d,offset %d,key %d,len %d ", fileId, offsetInFile, expectedKey, len));
                  throw  new EngineException(RetCodeEnum.CORRUPTION,"log error");
              }
              slice.limit(slice.position()+StoreConfig.VALUE_SIZE);

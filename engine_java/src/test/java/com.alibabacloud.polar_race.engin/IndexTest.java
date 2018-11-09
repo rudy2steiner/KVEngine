@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.BitSet;
+
 /**
  * only test index hash  and index Engine
  *
@@ -38,5 +40,17 @@ public class IndexTest {
     public void delDir(){
         logger.info("dir empty");
         Files.emptyDirIfExist(root);
+    }
+
+    @Test
+    public void byteFilp(){
+        BitSet bitSet;
+        byte b=(byte)3;
+        byte zero=(byte)1;
+        byte c=(byte)(b^zero);
+        System.out.println(c);
+         c=(byte)(4^zero);
+        System.out.println(c);
+
     }
 }
