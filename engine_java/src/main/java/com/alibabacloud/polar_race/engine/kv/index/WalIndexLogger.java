@@ -2,6 +2,7 @@ package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.kv.event.EventBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
@@ -18,10 +19,12 @@ public class WalIndexLogger {
     private int buckSize;
     private LogFileService fileService;
     private Map<Long, IOHandler> handlerMap;
-    public WalIndexLogger(String dir,int buckSize){
+    private EventBus ioHandlerCloseProcessor;
+    public WalIndexLogger(String dir, int buckSize, EventBus eventBus){
         this.dir=dir;
         this.buckSize=buckSize;
-        this.fileService=new LogFileServiceImpl(dir);
+        this.ioHandlerCloseProcessor=eventBus;
+        this.fileService=new LogFileServiceImpl(dir,ioHandlerCloseProcessor);
         this.handlerMap=new HashMap<>(buckSize*2);
 
     }

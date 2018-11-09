@@ -2,6 +2,8 @@ package com.alibabacloud.polar_race.engine.kv.index;
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
+import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,16 +14,18 @@ public class IndexHashAppender  implements Lifecycle {
     private int buckBufferSize ;
     private WalIndexLogger indexLogger;
     private String indexDir;
-    public IndexHashAppender(String indexDir,int capacity,int buckBufferSize){
+    private EventBus ioCloseProcessior;
+    public IndexHashAppender(String indexDir, int capacity, int buckBufferSize, EventBus ioCloseProcessior){
         this.indexDir=indexDir;
         this.capacity=capacity;
         this.buckBufferSize=buckBufferSize;
         this.buckets=new SSBucket[capacity];
+        this.ioCloseProcessior=ioCloseProcessior;
     }
 
     public void start() throws Exception{
         if(started.get()==false) {
-            this.indexLogger = new WalIndexLogger(indexDir, capacity);
+            this.indexLogger = new WalIndexLogger(indexDir, capacity,ioCloseProcessior);
             for (int i = 0; i < capacity; i++) {
                 buckets[i] = new SSBucket(i, new DoubleBuffer(buckBufferSize, true), indexLogger);
             }

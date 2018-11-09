@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LogFileServiceImpl implements LogFileService{
     private final static Logger logger= LoggerFactory.getLogger(LogFileServiceImpl.class);
@@ -25,6 +26,7 @@ public class LogFileServiceImpl implements LogFileService{
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
     private EventBus handlerCloseEventProcessor;
+    final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
     public LogFileServiceImpl(String dir,EventBus eventBus){
         this.dir=dir;
         this.handlerCloseEventProcessor=eventBus;
@@ -186,15 +188,29 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public void asyncCloseFileChannel(IOHandler handler) {
-        handlerCloseEventProcessor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    handler.closeFileChannel();
-                }catch (IOException e){
-                    logger.info(String.format("asyncClose %s exception,ignore",handler.name()));
+        handlerCloseEventProcessor.submit(new CloseFileTask(handler));
+    }
+
+
+    /**
+     * async close the handler
+     **/
+   public class CloseFileTask implements Runnable {
+        private IOHandler handler;
+        public CloseFileTask(IOHandler handler){
+            this.handler=handler;
+        }
+
+        @Override
+        public void run() {
+            try {
+                handler.closeFileChannel();
+                if(closeHandlerCounter.incrementAndGet()%5000==0){
+                    logger.info(String.format("closed %d io handler,and close this %s now",closeHandlerCounter.get(),handler.name()));
                 }
+            }catch (IOException e){
+                logger.info(String.format("asyncClose %s exception,ignore",handler.name()));
             }
-        });
+        }
     }
 }

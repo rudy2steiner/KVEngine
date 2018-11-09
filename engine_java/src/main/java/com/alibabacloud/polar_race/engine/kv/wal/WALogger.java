@@ -256,7 +256,7 @@ public class WALogger implements WALog<Put> {
     /**
      * */
     public void transferIndexLogToHashBucketInit(){
-        hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize());
+        hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize(),fileChannelCloseProcessor);
         indexLogReader=new IndexLogReader(walDir,logFileService, commonExecutorService);
     }
 
@@ -266,6 +266,7 @@ public class WALogger implements WALog<Put> {
          this.hashIndexAppender.close();
          this.indexLRUCache.close();
          this.logFileLRUCache.close();
+         this.fileChannelCloseProcessor.close();
          logger.info("asyncClose wal logger");
     }
 

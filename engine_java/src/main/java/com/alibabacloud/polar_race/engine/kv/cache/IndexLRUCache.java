@@ -38,7 +38,7 @@ public class IndexLRUCache implements Lifecycle {
         this.maxCache=cacheController.maxCacheIndex();
         this.indexHandlerMap =new HashMap(128);
         this.indexFileService=indexFileService;
-        this.indexReader=new IndexReader();
+        this.indexReader=new IndexReader(indexFileService);
         this.byteBuffers=new ByteBuffer[cacheController.maxHashBucketSize()];
         this.maxConcurrencyLoad=cacheController.cacheIndexInitLoadConcurrency();
         this.indexLoadThreadPool=indexLoadThreadPool;

@@ -129,12 +129,12 @@ public class IndexReader {
 
         }
         /**
-         *close 所有的io handler
+         * close 所有的io handler,hash bucket file always open
          **/
         public void close(){
-            for(int i=start;i<end;i++){
-               indexFileService.asyncCloseFileChannel(handlers.get(i));
-            }
+//            for(int i=start;i<end;i++){
+//               indexFileService.asyncCloseFileChannel(handlers.get(i));
+//            }
         }
     }
 }

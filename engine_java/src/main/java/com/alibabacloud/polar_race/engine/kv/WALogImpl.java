@@ -3,6 +3,7 @@ package com.alibabacloud.polar_race.engine.kv;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.event.EventBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.wal.WALog;
@@ -17,13 +18,15 @@ public class WALogImpl implements WALog<Cell> {
     private String dir;
     private  LogAppender logAppender;
     private LogFileService fileService;
-    public WALogImpl(String dir) throws FileNotFoundException {
+    private EventBus ioHandlerCloseProcessor;
+    public WALogImpl(String dir, EventBus eventBus) throws FileNotFoundException {
         this.dir=dir;
         makeDirIfNotExist(dir);
+        this.ioHandlerCloseProcessor=eventBus;
         if(!isEmptyDir(dir)){
             //throw new IllegalArgumentException("not empty dir");
         }
-        this.fileService=new LogFileServiceImpl(dir);
+        this.fileService=new LogFileServiceImpl(dir,ioHandlerCloseProcessor);
         this.logAppender=new LogAppender(fileService.bufferedIOHandler("0"+ StoreConfig.LOG_FILE_SUFFIX,StoreConfig.FILE_WRITE_BUFFER_SIZE),
                                          fileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
     }
