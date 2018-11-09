@@ -4,6 +4,8 @@ import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
+import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.BufferHolder;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
@@ -69,6 +71,53 @@ public class LogFileLRUCache implements Lifecycle {
          }
          holder.release();
     }
+
+
+    /**
+     * 根据key and offset 取value
+     **/
+    public  void readValueIfCacheMiss(long expectedKey,long offset,ByteBuffer buffer) throws ExecutionException,EngineException{
+        long fileId=sortedLogFiles.floor(offset);
+        int offsetInFile = (int) (offset - fileId);
+        BufferHolder holder=lru.getIfPresent(fileId);
+        if(!Null.isEmpty(holder)) {
+            holder.retain();
+            ByteBuffer slice = holder.value().slice();
+            slice.position(offsetInFile);
+            if (slice.remaining() > StoreConfig.LOG_ELEMNT_LEAST_SIZE) {
+                short len = slice.getShort();
+                long actualKey = slice.getLong();
+                if (actualKey != expectedKey) {
+                    throw new IllegalArgumentException("read record error");
+                }
+                if (len != StoreConfig.KEY_VALUE_SIZE) {
+                    logger.info(String.format("file %d,offset %d,key %d,len %d ", fileId, offsetInFile, expectedKey, len));
+                    throw new EngineException(RetCodeEnum.CORRUPTION, "log error");
+                }
+                slice.limit(slice.position() + StoreConfig.VALUE_SIZE);
+                buffer.put(slice);
+            }else {
+                throw new EngineException(RetCodeEnum.NOT_FOUND,String.format("%d missing in file %d",expectedKey,fileId));
+            }
+            holder.release();
+        }else{
+          //cache miss,direct io
+            try {
+                IOHandler handler = logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX);
+                buffer.limit(StoreConfig.VALUE_SIZE);
+                long valueOffset=offsetInFile+StoreConfig.LOG_ELEMNT_LEAST_SIZE;
+                if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
+                    handler.read(buffer);
+                }else {
+                    throw new EngineException(RetCodeEnum.NOT_FOUND,String.format("%d missing in file %d",expectedKey,fileId));
+                }
+            }catch (Exception e){
+               logger.info("direct io exception,"+e);
+            }
+        }
+
+    }
+
 
 
     @Override

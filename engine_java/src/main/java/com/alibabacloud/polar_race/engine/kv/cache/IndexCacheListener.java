@@ -9,12 +9,17 @@ public class IndexCacheListener implements CacheListener<LongLongMap>{
         this.lru=lru;
     }
     @Override
-    public void onRemove(Integer bucketId, LongLongMap map) {
+    public void onRemove(long bucketId, LongLongMap map) {
 
     }
 
     @Override
-    public void onCache(Integer bucketId, LongLongMap map) {
-        lru.put(bucketId,map);
+    public void onMissCache(long id) {
+
+    }
+
+    @Override
+    public void onCache(long bucketId, LongLongMap map) {
+        lru.put((int)bucketId,map);
     }
 }

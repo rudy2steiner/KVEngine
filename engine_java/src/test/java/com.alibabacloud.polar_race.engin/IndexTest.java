@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engin;
 
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,6 +52,19 @@ public class IndexTest {
         System.out.println(c);
          c=(byte)(4^zero);
         System.out.println(c);
+
+    }
+
+    /**
+     * hash 测试
+     **/
+    @Test
+    public void hashTest(){
+          long start=-100;
+          long end =100;
+          int bucket=64;
+          for(long i=start;i<end;i++)
+            logger.info(String.format("%d hash to bucket %d",i,IndexHashAppender.hash(i)%bucket));
 
     }
 }
