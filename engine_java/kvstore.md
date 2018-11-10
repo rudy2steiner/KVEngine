@@ -32,7 +32,7 @@
    对于同一个持久化的key,offset可以作为其版本号；
    内存中，ring buffer sequence 作为版本号；
    local jvm:   
-   -server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:MaxMetaspaceSize=300m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC 
+   -server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:MaxMetaspaceSize=200m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC 
    -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintGCDateStamps 
    -Xloggc:/export/test_gc.log 
     

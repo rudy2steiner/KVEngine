@@ -9,6 +9,8 @@ import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
 import com.google.common.cache.*;
+import gnu.trove.impl.hash.TLongLongHash;
+import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
@@ -20,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(IndexLRUCache.class);
-    private LoadingCache<Integer, LongLongMap> lru;
+    private LoadingCache<Integer, TLongLongHashMap> lru;
     private Map<Integer, IOHandler> indexHandlerMap;
     private IndexReader indexReader;
     private LogFileService indexFileService;
@@ -100,7 +102,7 @@ public class IndexLRUCache extends Service {
         if(!this.isStarted()) throw new IllegalStateException("not started");
          int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
          try {
-             LongLongMap longLongMap = lru.get(bucketId);
+             TLongLongHashMap longLongMap = lru.get(bucketId);
              if(longLongMap!=null) {
                 return longLongMap.get(key);
                 //to do read
@@ -113,23 +115,23 @@ public class IndexLRUCache extends Service {
          return -1;
     }
 
-    public class IndexRemoveListener implements RemovalListener<Integer,LongLongMap>{
+    public class IndexRemoveListener implements RemovalListener<Integer,TLongLongHashMap>{
         private int removeCount=0;
         @Override
-        public void onRemoval(RemovalNotification<Integer, LongLongMap> removalNotification) {
+        public void onRemoval(RemovalNotification<Integer, TLongLongHashMap> removalNotification) {
             if(++removeCount%1000==0)
                 logger.info(String.format("%d cache miss total,remove %d",removeCount,removalNotification.getKey()));
         }
     }
 
-    public class IndexMapLoad extends CacheLoader<Integer,LongLongMap>{
+    public class IndexMapLoad extends CacheLoader<Integer,TLongLongHashMap>{
         private Semaphore semaphore;
         private Object lock=new Object();
         public IndexMapLoad(int maxConcurrency){
                this.semaphore=new Semaphore(maxConcurrency);
         }
         @Override
-        public LongLongMap load(Integer bucketId) throws Exception {
+        public TLongLongHashMap load(Integer bucketId) throws Exception {
             this.semaphore.acquire();
             ByteBuffer byteBuffer;
             int index;
@@ -143,7 +145,7 @@ public class IndexLRUCache extends Service {
                     }
                 }
             }
-            LongLongMap map= IndexReader.read(indexHandlerMap.get(bucketId),byteBuffer);
+            TLongLongHashMap map= IndexReader.read(indexHandlerMap.get(bucketId),byteBuffer);
             // release buffer
             byteBuffers[index]=byteBuffer;
             this.semaphore.release();

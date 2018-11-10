@@ -1,15 +1,15 @@
 package com.alibabacloud.polar_race.engine.kv.cache;
 
-import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.google.common.cache.LoadingCache;
+import gnu.trove.map.hash.TLongLongHashMap;
 
-public class IndexCacheListener implements CacheListener<LongLongMap>{
-    LoadingCache<Integer, LongLongMap> lru;
-    public IndexCacheListener(LoadingCache<Integer, LongLongMap> lru){
+public class IndexCacheListener implements CacheListener<TLongLongHashMap>{
+    LoadingCache<Integer, TLongLongHashMap> lru;
+    public IndexCacheListener(LoadingCache<Integer, TLongLongHashMap> lru){
         this.lru=lru;
     }
     @Override
-    public void onRemove(long bucketId, LongLongMap map) {
+    public void onRemove(long bucketId, TLongLongHashMap map) {
 
     }
 
@@ -19,7 +19,7 @@ public class IndexCacheListener implements CacheListener<LongLongMap>{
     }
 
     @Override
-    public void onCache(long bucketId, LongLongMap map) {
+    public void onCache(long bucketId, TLongLongHashMap map) {
         lru.put((int)bucketId,map);
     }
 }

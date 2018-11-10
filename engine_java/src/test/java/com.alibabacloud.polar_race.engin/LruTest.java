@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engin;
 
+import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
@@ -8,6 +9,7 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.google.common.cache.*;
 import com.koloboke.collect.set.IntSet;
 import com.koloboke.collect.set.hash.HashIntSets;
+import gnu.trove.map.hash.TLongLongHashMap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -120,6 +122,44 @@ public class LruTest {
 
     @Test
     public void primitiveInt(){
+
+    }
+
+    @Test
+    public void primitiveMapMemory(){
+        long start=0;
+        long end=10*1024*1024;
+        /*1kw*/
+        LongLongMap rateMap = LongLongMap.withExpectedSize(1000_0000);
+        for(long i=start;i<end;i++){
+            rateMap.put(i,i);
+        }
+        try {
+            Thread.sleep(100000);
+        }catch (InterruptedException e){
+
+        }
+        logger.info("stop");
+    }
+
+    @Test
+    public void troveMap(){
+        long start=0;
+        long end=1000*1000;
+        int max=64;
+        TLongLongHashMap[] maps=new TLongLongHashMap[max];
+        for(int index=0;index<max;index++) {
+            maps[index]=new TLongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
+            for (long i = start; i < end; i++) {
+                maps[index].put(i, i);
+            }
+        }
+        try {
+            logger.info("stop"+(int)((64000000+100)/0.9)*16);
+            Thread.sleep(100000);
+        }catch (InterruptedException e){
+
+        }
 
     }
 }

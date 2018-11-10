@@ -213,4 +213,11 @@ public class LogFileServiceImpl implements LogFileService{
             }
         }
     }
+
+    @Override
+    public int mapInitSize(int expectSize, float loadFactor)
+    {
+            return  (int)(( expectSize+100)/loadFactor);
+    }
+
 }

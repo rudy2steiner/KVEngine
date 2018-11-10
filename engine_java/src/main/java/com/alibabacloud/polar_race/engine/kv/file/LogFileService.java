@@ -35,4 +35,9 @@ public interface LogFileService {
     boolean needReplayLog();
 
     String  fileName(long position);
+
+    /**
+     * 计算map 初始化大小
+     * */
+    int mapInitSize(int expectSize, float loadFactor);
 }
