@@ -41,7 +41,7 @@ public class LogBufferAllocator implements BufferSizeAware, Closeable {
     }
     public static void release(ByteBuffer buffer){
         if(buffer!=null&&buffer.isDirect()){
-            ((DirectBuffer)buffer).cleaner();
+            ((DirectBuffer)buffer).cleaner().clean();
         }
     }
 

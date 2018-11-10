@@ -3,6 +3,7 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.event.Event;
 import com.alibabacloud.polar_race.engine.kv.event.EventType;
 import com.alibabacloud.polar_race.engine.kv.LogEvent;
@@ -156,6 +157,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
      * asyncClose
      **/
     public void flush0() throws IOException{
+        LogBufferAllocator.release(handler.buffer());
         flushValueIndex(false);
     }
 

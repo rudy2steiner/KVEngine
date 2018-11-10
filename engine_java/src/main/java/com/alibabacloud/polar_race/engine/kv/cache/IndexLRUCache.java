@@ -91,6 +91,7 @@ public class IndexLRUCache extends Service {
           for(ByteBuffer buffer:byteBuffers){
               LogBufferAllocator.release(buffer);
           }
+          logger.info("index cache on stop!");
 
     }
 

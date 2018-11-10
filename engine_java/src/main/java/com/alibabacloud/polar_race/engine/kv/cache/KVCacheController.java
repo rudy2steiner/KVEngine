@@ -32,7 +32,7 @@ public class KVCacheController implements CacheController {
 
     @Override
     public double cacheLogLoadFactor() {
-        return 0.5;
+        return 0.3;
     }
 
     @Override

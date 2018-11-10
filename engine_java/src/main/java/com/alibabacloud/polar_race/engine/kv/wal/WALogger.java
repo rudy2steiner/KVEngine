@@ -7,6 +7,7 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
@@ -46,6 +47,7 @@ public class WALogger extends Service implements WALog<Put> {
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch latch;
     private TaskBus fileChannelCloseProcessor;
+    private Status storeStatus;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
@@ -65,7 +67,7 @@ public class WALogger extends Service implements WALog<Put> {
         this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator);
         this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
         this.transferIndexLogToHashBucketInit();
-
+        this.storeStatus=Status.START;
     }
 
 
@@ -90,10 +92,12 @@ public class WALogger extends Service implements WALog<Put> {
         String lastLogName= logFileService.lastLogName();
         IOHandler handler=null;
         if(lastLogName!=null){
+            storeStatus=Status.CORRUPTED;
             WalLogParser logParser=new WalLogParser(logFileService,lastLogName+StoreConfig.LOG_FILE_SUFFIX);
              ByteBuffer to=bufferAllocator.allocate(logFileService.logWritableSize(),false);
              handler=logParser.doRecover(null,to,null);
              bufferAllocator.onRelease(to);
+            storeStatus=Status.READ;
         }
         return handler;
     }
@@ -119,6 +123,7 @@ public class WALogger extends Service implements WALog<Put> {
                 public void onFinish() throws Exception{
                     if(concurrency.decrementAndGet()==0) {
                         hashIndexAppender.close();
+                        indexLogReader.close();
                         latch.countDown();
                         logger.info(String.format("hash task  finish, time %d ms",System.currentTimeMillis()-start));
 
@@ -187,13 +192,17 @@ public class WALogger extends Service implements WALog<Put> {
             handler=replayLastLog();
             nextLogName= logFileService.nextLogName(handler);
         }else{
+            storeStatus=Status.NORMAL_EXIT;
             nextLogName= logFileService.nextLogName();
         }
         // ensure hash bucket task is finished,possible optimize
         if(startAsyncHashBucketTask()) {
-            latch.await();
-            indexLRUCache.start();
-            logFileLRUCache.start();
+            // 依据store 的状态，看是否需要加载缓存
+           //List<Long> files=logFileService.allLogFiles();
+                latch.await();
+                indexLRUCache.start();
+                logFileLRUCache.start();
+
            // logger.info("hash bucket finished and load  index,log cache started");
         }else{
             logger.info("log and index cache engine start ignore");
@@ -272,6 +281,10 @@ public class WALogger extends Service implements WALog<Put> {
          this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.close();
          logger.info("asyncClose wal logger");
+    }
+
+    enum Status{
+         START,CORRUPTED,NORMAL_EXIT,READ,WRITE
     }
 
 
