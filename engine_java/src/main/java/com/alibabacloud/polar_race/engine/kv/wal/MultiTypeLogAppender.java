@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.wal;
 
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class MultiTypeLogAppender implements Lifecycle {
+public class MultiTypeLogAppender extends Service {
     private final static Logger logger= LoggerFactory.getLogger(MultiTypeLogAppender.class);
     public final  static EventFactory<LogEvent<Event>> EVENT_FACTORY=new EventFactory<LogEvent<Event>>() {
         public LogEvent<Event> newInstance() {
@@ -74,7 +75,7 @@ public class MultiTypeLogAppender implements Lifecycle {
      * shutdown gracefully
      *
      **/
-    public void close() throws Exception{
+    public void onStop() throws Exception{
         disruptor.shutdown();
         executor.shutdown();
         eventHandler.flush0();
@@ -83,7 +84,7 @@ public class MultiTypeLogAppender implements Lifecycle {
     /**
      *
      **/
-    public void start(){
+    public void onStart(){
         disruptor.start();
     }
 }

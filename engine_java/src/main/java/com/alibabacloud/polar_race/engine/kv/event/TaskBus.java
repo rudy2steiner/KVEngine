@@ -2,11 +2,11 @@ package com.alibabacloud.polar_race.engine.kv.event;
 
 import java.util.concurrent.*;
 
-public class EventBus {
+public class TaskBus {
 
     private ExecutorService executorService;
     private int concurrency;
-    public EventBus(int concurrency){
+    public TaskBus(int concurrency){
         this.concurrency=concurrency;
 
     }

@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
@@ -12,7 +13,7 @@ import com.lmax.disruptor.dsl.Disruptor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class LogAppender implements Lifecycle {
+public class LogAppender extends Service {
     public final  static EventFactory<LogEvent<Cell>> EVENT_FACTORY=new EventFactory<LogEvent<Cell>>() {
         public LogEvent<Cell> newInstance() {
             return new LogEvent<>();
@@ -41,13 +42,13 @@ public class LogAppender implements Lifecycle {
     }
 
 
-    public void close() throws Exception{
+    public void onStop() throws Exception{
         disruptor.shutdown();
         executor.shutdown();
         eventHander.flush0();
     }
 
-    public void start(){
+    public void onStart(){
         disruptor.start();
     }
 

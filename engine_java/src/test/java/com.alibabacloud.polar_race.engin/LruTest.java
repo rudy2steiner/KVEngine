@@ -2,18 +2,22 @@ package com.alibabacloud.polar_race.engin;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.event.Cell;
-import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.google.common.cache.*;
+import com.koloboke.collect.set.IntSet;
+import com.koloboke.collect.set.hash.HashIntSets;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
+import java.util.BitSet;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Random;
 
 
 @Ignore
@@ -52,7 +56,7 @@ public class LruTest {
     LogFileService fileService;
     @Before
     public void beforeAction(){
-        EventBus closeHandlerProcessor=new EventBus(1);
+        TaskBus closeHandlerProcessor=new TaskBus(1);
         fileService=new LogFileServiceImpl(root,closeHandlerProcessor);
 
     }
@@ -87,5 +91,35 @@ public class LruTest {
         }finally {
             logger.info(String.format("%d ms time",System.currentTimeMillis()-startTime));
         }
+    }
+
+    /**
+     *   miss 次数超过阈值，
+     **/
+    @Test
+    public void missFrequencyLoad(){
+        BitSet inMemory=new BitSet(100);
+        short[] miss=new short[100];
+        int limit=4;
+        int max=1000;
+        Random random=new Random(0);
+        while (max-->0){
+            int visit=random.nextInt(100);
+               if(!inMemory.get(visit)) {
+                   miss[visit] += 1;
+                   if (miss[visit] > limit) {
+                       logger.info(String.format("%d miss reach upper limit,load ", visit));
+                       inMemory.set(visit);
+                   }
+               }
+        }
+
+        PriorityQueue priorityQueue;
+
+    }
+
+    @Test
+    public void primitiveInt(){
+
     }
 }

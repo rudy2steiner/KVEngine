@@ -1,13 +1,11 @@
 package com.alibabacloud.polar_race;
+import com.alibabacloud.polar_race.collection.LongSet;
 import com.alibabacloud.polar_race.collection.LongLongMap;
-import com.alibabacloud.polar_race.collection.SynchronizedMap;
-import com.koloboke.compile.KolobokeMap;
-import com.koloboke.compile.MethodForm;
+
 import com.koloboke.function.LongLongConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 public class KolobokeMain {
 
     /**
@@ -17,9 +15,9 @@ public class KolobokeMain {
     public static void main(String[] args) throws InterruptedException {
             long start = System.currentTimeMillis();
             //SynchronizedMap rateMap = SynchronizedMap.withExpectedSize(1000_0000);
-          LongLongMap rateMap = LongLongMap.withExpectedSize(1000_0000);
+          LongLongMap rateMap = LongLongMap.withExpectedSize(1_00);
         System.out.println(rateMap.size());
-            for (long i = 0; i < 4000_0; i++) {
+            for (long i = 0; i < 400; i++) {
                 rateMap.put(i, i);
             }
             rateMap.forEach(new LongLongConsumer() {
@@ -32,7 +30,17 @@ public class KolobokeMain {
             long end = System.currentTimeMillis();
             System.out.println(end - start);
             System.out.println(rateMap.size());
-            Thread.sleep(1000_000);
+
+
+        final LongSet intSet= LongSet.withExpectedSize(100);
+        for(int i=0;i<1000;i++){
+            intSet.add(i);
+        }
+
+        logger.info(intSet.removeLong(2)+"");
+
+
+        Thread.sleep(1000_000);
     }
 
 }

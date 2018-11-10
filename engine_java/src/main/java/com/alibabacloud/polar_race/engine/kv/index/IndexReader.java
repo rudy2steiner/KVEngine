@@ -63,6 +63,11 @@ public class IndexReader {
     /**
      *
      * 限制初始加载缓存数量 handler 限制
+     * @param  concurrency if handler 数量大于并行度，则每个任务会分配多个index 加载index cache 任务
+     * @param service  执行加载cache 任务的 线程池
+     * @param handlers 所有待加载cache 的 index 文件句柄
+     * @param  cacheListener cache 加载任务完成回调
+     *
      **/
     public void concurrentLoadIndex(ExecutorService service,int concurrency,List<ByteBuffer> buffers, List<IOHandler> handlers , CacheListener cacheListener) throws Exception{
         if(!Null.isEmpty(handlers)){

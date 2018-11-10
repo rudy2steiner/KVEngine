@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
@@ -12,7 +13,7 @@ import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
-import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class WALogger implements WALog<Put> {
+public class WALogger extends Service implements WALog<Put> {
     private final static Logger logger= LoggerFactory.getLogger(WALogger.class);
     private ThreadLocal<ByteBuffer> valueBuf=new ThreadLocal<>();
     private String walDir;
@@ -44,7 +45,7 @@ public class WALogger implements WALog<Put> {
     private ExecutorService commonExecutorService;
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch latch;
-    private EventBus fileChannelCloseProcessor;
+    private TaskBus fileChannelCloseProcessor;
     public WALogger(String dir){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
@@ -53,7 +54,7 @@ public class WALogger implements WALog<Put> {
         // empty index ,每次起来都重建hash桶
         Files.emptyDirIfExist(indexDir);
         Files.makeDirIfNotExist(indexDir);
-        this.fileChannelCloseProcessor=new EventBus(1);
+        this.fileChannelCloseProcessor=new TaskBus(1);
         this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
         this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);
@@ -171,12 +172,12 @@ public class WALogger implements WALog<Put> {
                     valueBuf.set(valueBuffer);
                 }
                 valueBuffer.clear();
-                logFileLRUCache.readValue(expectedKey,offset,valueBuffer);
+                logFileLRUCache.readValueIfCacheMiss(expectedKey,offset,valueBuffer);
         return  valueBuffer.array();
     }
 
     @Override
-    public void start() throws Exception{
+    public void onStart() throws Exception{
         IOHandler handler;
         String nextLogName;
         // start to process io handler close
@@ -193,12 +194,15 @@ public class WALogger implements WALog<Put> {
             latch.await();
             indexLRUCache.start();
             logFileLRUCache.start();
+           // logger.info("hash bucket finished and load  index,log cache started");
+        }else{
+            logger.info("log and index cache engine start ignore");
         }
         commonExecutorService.shutdown();
-        if(commonExecutorService.awaitTermination(1000, TimeUnit.MILLISECONDS)){
-            logger.info("hash bucket and load  index,log cache finish");
+        if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
+            logger.info(" index and log cache finish");
         }else{
-            logger.info("hash bucket and load  index,log cache timeout,continue");
+            logger.info(" index and log cache timeout,continue");
         }
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
         this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
@@ -261,11 +265,11 @@ public class WALogger implements WALog<Put> {
     }
 
     @Override
-    public void close() throws Exception {
-         this.appender.close();
-         this.hashIndexAppender.close();
-         this.indexLRUCache.close();
-         this.logFileLRUCache.close();
+    public void onStop() throws Exception {
+         this.appender.stop();
+         this.commonExecutorService.shutdownNow();
+         this.indexLRUCache.stop();
+         this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.close();
          logger.info("asyncClose wal logger");
     }

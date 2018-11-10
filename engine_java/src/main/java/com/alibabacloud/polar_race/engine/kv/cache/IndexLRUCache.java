@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.cache;
 
 import com.alibabacloud.polar_race.collection.LongLongMap;
-import com.alibabacloud.polar_race.engine.common.Lifecycle;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -16,10 +16,9 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class IndexLRUCache implements Lifecycle {
+public class IndexLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(IndexLRUCache.class);
     private LoadingCache<Integer, LongLongMap> lru;
     private Map<Integer, IOHandler> indexHandlerMap;
@@ -27,7 +26,6 @@ public class IndexLRUCache implements Lifecycle {
     private LogFileService indexFileService;
     private volatile  ByteBuffer[]  byteBuffers;
     private int maxConcurrencyLoad=0;
-    private AtomicBoolean started=new AtomicBoolean(false);
     private AtomicInteger bufferHolder=new AtomicInteger(0);
     private int maxCache;
     private CacheController cacheController;
@@ -45,14 +43,10 @@ public class IndexLRUCache implements Lifecycle {
         this.bufferAllocator=bufferAllocator;
     }
 
-    @Override
-    public boolean isStart() {
-        return started.get();
-    }
+
 
     @Override
-    public void start() throws Exception {
-        if(!isStart()) {
+    public void onStart() throws Exception {
             List<Long> indexFiles = indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX);
             if(indexFiles.size()>0) {
                 for (Long fid : indexFiles) {
@@ -65,11 +59,8 @@ public class IndexLRUCache implements Lifecycle {
                         .maximumSize(maxCache)
                         .removalListener(new IndexRemoveListener())
                         .build(new IndexMapLoad(maxConcurrencyLoad));
-                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxCache, Arrays.asList(byteBuffers).subList(0,maxCache), initCacheIndexHandler(), new IndexCacheListener(lru));
-                started.compareAndSet(false, true);
+                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers).subList(0,maxConcurrencyLoad), initCacheIndexHandler(), new IndexCacheListener(lru));
             }
-        }
-
     }
 
     /**
@@ -94,12 +85,11 @@ public class IndexLRUCache implements Lifecycle {
     }
 
     @Override
-    public void close() throws Exception {
-      if(isStart()){
+    public void onStop() throws Exception {
           for(ByteBuffer buffer:byteBuffers){
               LogBufferAllocator.release(buffer);
           }
-      }
+
     }
 
     /**
@@ -107,7 +97,7 @@ public class IndexLRUCache implements Lifecycle {
      * @return  fileId for the key or -1
      */
     public long getOffset(long key){
-        if(!isStart()) throw new IllegalStateException("not starteds");
+        if(!this.isStarted()) throw new IllegalStateException("not started");
          int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
          try {
              LongLongMap longLongMap = lru.get(bucketId);

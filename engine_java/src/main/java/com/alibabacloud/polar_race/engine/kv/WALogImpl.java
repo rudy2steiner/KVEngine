@@ -1,9 +1,10 @@
 package com.alibabacloud.polar_race.engine.kv;
 
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
-import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.wal.WALog;
@@ -14,12 +15,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class WALogImpl implements WALog<Cell> {
+public class WALogImpl  extends Service implements WALog<Cell> {
     private String dir;
     private  LogAppender logAppender;
     private LogFileService fileService;
-    private EventBus ioHandlerCloseProcessor;
-    public WALogImpl(String dir, EventBus eventBus) throws FileNotFoundException {
+    private TaskBus ioHandlerCloseProcessor;
+    public WALogImpl(String dir, TaskBus eventBus) throws FileNotFoundException {
         this.dir=dir;
         makeDirIfNotExist(dir);
         this.ioHandlerCloseProcessor=eventBus;
@@ -53,12 +54,12 @@ public class WALogImpl implements WALog<Cell> {
     }
 
     @Override
-    public void start() {
+    public void onStart() throws Exception{
         this.logAppender.start();
     }
 
     @Override
-    public void close() throws Exception{
+    public void onStop() throws Exception{
         this.logAppender.close();
     }
 

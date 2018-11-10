@@ -7,7 +7,7 @@ import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
-import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +25,9 @@ public class LogFileServiceImpl implements LogFileService{
     private List<Long> sortedLogFiles;
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
-    private EventBus handlerCloseEventProcessor;
+    private TaskBus handlerCloseEventProcessor;
     final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
-    public LogFileServiceImpl(String dir,EventBus eventBus){
+    public LogFileServiceImpl(String dir, TaskBus eventBus){
         this.dir=dir;
         this.handlerCloseEventProcessor=eventBus;
         scanFiles();

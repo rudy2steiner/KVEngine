@@ -64,7 +64,7 @@ public class KVCacheController implements CacheController {
     @Override
     public int maxCacheIndex() {
               // 12* 16Mb= 192Mb
-        return 32;
+        return 85;
     }
 
     @Override

@@ -38,4 +38,9 @@ public class StoreConfig {
     public final static int  MAX_OLD_BUFFER_SIZE=750*1024*1024;  // 750Mb  full gc limit
     public final static int  MAX_CONCURRENCY_PRODUCER_AND_CONSUMER=64;
 
+    /**
+     *  失败 太多，直接cache 线程加载到缓存
+     * */
+    public final static int  CACHE_LOG_MISS_LIMIT=5;
+
 }

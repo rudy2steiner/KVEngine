@@ -1,53 +1,42 @@
 package com.alibabacloud.polar_race.engine.kv.index;
-import com.alibabacloud.polar_race.engine.common.Lifecycle;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
-import com.alibabacloud.polar_race.engine.kv.event.EventBus;
+import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IndexHashAppender  implements Lifecycle {
+public class IndexHashAppender  extends Service {
     private int capacity;
-    private AtomicBoolean started=new AtomicBoolean(false);
     private SSBucket buckets[];
     private int buckBufferSize ;
     private WalIndexLogger indexLogger;
     private String indexDir;
-    private EventBus ioCloseProcessior;
-    public IndexHashAppender(String indexDir, int capacity, int buckBufferSize, EventBus ioCloseProcessior){
+    private TaskBus ioCloseProcessor;
+    public IndexHashAppender(String indexDir, int capacity, int buckBufferSize, TaskBus ioCloseProcessior){
         this.indexDir=indexDir;
         this.capacity=capacity;
         this.buckBufferSize=buckBufferSize;
         this.buckets=new SSBucket[capacity];
-        this.ioCloseProcessior=ioCloseProcessior;
+        this.ioCloseProcessor =ioCloseProcessior;
     }
 
-    public void start() throws Exception{
-        if(started.get()==false) {
-            this.indexLogger = new WalIndexLogger(indexDir, capacity,ioCloseProcessior);
-            for (int i = 0; i < capacity; i++) {
-                buckets[i] = new SSBucket(i, new DoubleBuffer(buckBufferSize, true), indexLogger);
-            }
-            this.indexLogger.start();
-            started.compareAndSet(false,true);
+    public void onStart() throws Exception{
+        this.indexLogger = new WalIndexLogger(indexDir, capacity, ioCloseProcessor);
+        for (int i = 0; i < capacity; i++) {
+            buckets[i] = new SSBucket(i, new DoubleBuffer(buckBufferSize, true), indexLogger);
         }
+        this.indexLogger.start();
     }
+
 
     @Override
-    public boolean isStart() {
-        return started.get();
-    }
-
-    @Override
-    public void close() throws Exception {
-        if(isStart()) {
-            this.indexLogger.stop();
-            for (SSBucket bucket : buckets) {
-                bucket.close();
-            }
-            started.compareAndSet(true,false);
+    public void onStop() throws Exception {
+        this.indexLogger.stop();
+        for (SSBucket bucket : buckets) {
+            bucket.close();
         }
+
     }
 
 

@@ -67,4 +67,15 @@ public class IndexTest {
             logger.info(String.format("%d hash to bucket %d",i,IndexHashAppender.hash(i)%bucket));
 
     }
+
+    @Test
+    public  void shortIncrement(){
+        short v=0;
+        for(int i=0;i<10000;i++){
+            v+=1;
+            logger.info(v+"");
+        }
+
+
+    }
 }

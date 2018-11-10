@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 import com.alibabacloud.polar_race.engine.common.Lifecycle;
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-public class IndexLogReader implements Lifecycle {
+public class IndexLogReader extends Service {
     private final static Logger logger= LoggerFactory.getLogger(IndexLogReader.class);
     private String logDir;
     private LogFileService logFileService;
@@ -25,7 +26,7 @@ public class IndexLogReader implements Lifecycle {
     }
 
     @Override
-    public void start() throws Exception {
+    public void onStart() throws Exception {
           this.logFiles=logFileService.allLogFiles();
           if(indexHashService==null) {
               this.indexHashService = Executors.newFixedThreadPool(StoreConfig.HASH_CONCURRENCY);
@@ -34,7 +35,7 @@ public class IndexLogReader implements Lifecycle {
     }
 
     @Override
-    public void close() throws Exception {
+    public void onStop() throws Exception {
          if(!indexHashService.isShutdown()&&ownThreadPool){
              if(!indexHashService.isTerminated()){
                  if(indexHashService.awaitTermination(1, TimeUnit.SECONDS)){
@@ -113,6 +114,8 @@ public class IndexLogReader implements Lifecycle {
                     handler.read(buffer);
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
+                    handler.closeFileChannel();
+                    //logFileService.asyncCloseFileChannel(handler);
                 }
                 visitor.onFinish();
             }catch (Exception e){
@@ -137,7 +140,7 @@ public class IndexLogReader implements Lifecycle {
         }
 
         public void close(){
-            logFileService.asyncCloseFileChannel(handler);
+
             logger.info(String.format("read %d index log file",end-start));
             LogBufferAllocator.release(buffer);
             buffer=null;
