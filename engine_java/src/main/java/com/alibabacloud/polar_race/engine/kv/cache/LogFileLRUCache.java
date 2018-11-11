@@ -6,7 +6,6 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.BufferHolder;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
@@ -15,13 +14,14 @@ import com.google.common.cache.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/***
+ * no cache log file
+ **/
 public class LogFileLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(LogFileLRUCache.class);
     private LogFileService logFileService;
@@ -29,17 +29,17 @@ public class LogFileLRUCache extends Service {
     private LoadingCache<Long, BufferHolder> lru;
     private CacheController cacheController;
     private int maxCacheLog;
-    private LogBufferAllocator logBufferAllocator;
+//    private LogBufferAllocator logBufferAllocator;
     private WalReader logReader;
     private ExecutorService loadServcie;
-    private LogCacheMonitor logCacheMonitor;
+//    private LogCacheMonitor logCacheMonitor;
     public LogFileLRUCache(LogFileService logFileService,CacheController cacheController,ExecutorService loadService,LogBufferAllocator logBufferAllocator){
         this.logFileService=logFileService;
         this.sortedLogFiles=new TreeSet();
         this.cacheController=cacheController;//new KVCacheController(logFileService);
         this.maxCacheLog =cacheController.maxCacheLog();
         this.loadServcie=loadService;
-        this.logBufferAllocator=logBufferAllocator;
+//        this.logBufferAllocator=logBufferAllocator;
         this.logReader=new WalReader(logFileService);
     }
 
@@ -79,29 +79,7 @@ public class LogFileLRUCache extends Service {
     public  void readValueIfCacheMiss(long expectedKey,long offset,ByteBuffer buffer) throws EngineException{
         long fileId=sortedLogFiles.floor(offset);
         int offsetInFile = (int) (offset - fileId);
-        BufferHolder holder=lru.getIfPresent(fileId);
-        if(!Null.isEmpty(holder)) {
-            holder.retain();
-            ByteBuffer slice = holder.value().slice();
-            slice.position(offsetInFile);
-            if (slice.remaining() > StoreConfig.LOG_ELEMNT_LEAST_SIZE) {
-                short len = slice.getShort();
-                long actualKey = slice.getLong();
-                if (actualKey != expectedKey) {
-                    throw new IllegalArgumentException("read record error");
-                }
-                if (len != StoreConfig.KEY_VALUE_SIZE) {
-                    logger.info(String.format("file %d,offset %d,key %d,len %d ", fileId, offsetInFile, expectedKey, len));
-                    throw new EngineException(RetCodeEnum.CORRUPTION, "log error");
-                }
-                slice.limit(slice.position() + StoreConfig.VALUE_SIZE);
-                buffer.put(slice);
-            }else {
-                throw new EngineException(RetCodeEnum.NOT_FOUND,String.format("%d missing in file %d",expectedKey,fileId));
-            }
-            holder.release();
-        }else{
-          //cache miss,direct io
+       //cache miss,direct io
             IOHandler handler=null;
             try {
                 handler = logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX);
@@ -119,8 +97,9 @@ public class LogFileLRUCache extends Service {
             }catch (Exception e){
                logger.info("direct io exception,"+e);
             }finally {
+
             }
-        }
+
 
     }
 
@@ -131,21 +110,21 @@ public class LogFileLRUCache extends Service {
     public void onStart() throws Exception {
         if(logFileService.allLogFiles().size()>0){
             sortedLogFiles.addAll(logFileService.allLogFiles());
-            this.lru= CacheBuilder.newBuilder()
-                    .maximumSize(maxCacheLog)
-                    .removalListener(new LogFileRemoveListener())
-                    .build(new CacheLoader<Long, BufferHolder>() {
-                        @Override
-                        public BufferHolder load(Long logId) throws Exception {
-                            BufferHolder holder=getLogBufferHolder();
-                            logReader.read(logId+StoreConfig.LOG_FILE_SUFFIX,holder.value(),cacheController.cacheLogSize());
-                            holder.value().flip();
-                             return holder;
-                        }
-                    });
-            logCacheMonitor=new LogCacheMonitor(logFileService,lru,this);
-            logCacheMonitor.start();
-            concurrentInitLoadCache();
+//            this.lru= CacheBuilder.newBuilder()
+//                    .maximumSize(maxCacheLog)
+//                    .removalListener(new LogFileRemoveListener())
+//                    .build(new CacheLoader<Long, BufferHolder>() {
+//                        @Override
+//                        public BufferHolder load(Long logId) throws Exception {
+//                            BufferHolder holder=getLogBufferHolder();
+//                            logReader.read(logId+StoreConfig.LOG_FILE_SUFFIX,holder.value(),cacheController.cacheLogSize());
+//                            holder.value().flip();
+//                             return holder;
+//                        }
+//                    });
+//            logCacheMonitor=new LogCacheMonitor(logFileService,lru,this);
+//            logCacheMonitor.start();
+           // concurrentInitLoadCache();
         }
     }
 
@@ -153,8 +132,8 @@ public class LogFileLRUCache extends Service {
 
     @Override
     public void onStop() throws Exception {
-        logBufferAllocator.close();
-        logCacheMonitor.close();
+        //logBufferAllocator.close();
+//        logCacheMonitor.close();
         logger.info("log cache on stop!");
     }
 
@@ -165,17 +144,17 @@ public class LogFileLRUCache extends Service {
             if(removeCounter.incrementAndGet()%1000==0)
                  logger.info(String.format("cache miss %d total, lead remove %d",removeCounter.get(),removalNotification.getKey()));
             //  monitor record
-            try {
+//            try {
                 // notify cache miss
-            BufferHolder holder=removalNotification.getValue();
-                if (holder.value().isDirect()) {
-                    logBufferAllocator.rebackDirectLogCache(holder);
-                } else {
-                    logBufferAllocator.rebackHeapLogCache(holder);
-                }
-            }catch (InterruptedException e){
-                logger.info("lru cache out, interrupted");
-            }
+//            BufferHolder holder=removalNotification.getValue();
+//                if (holder.value().isDirect()) {
+//                    logBufferAllocator.rebackDirectLogCache(holder);
+//                } else {
+//                    logBufferAllocator.rebackHeapLogCache(holder);
+//                }
+//            }catch (InterruptedException e){
+//                logger.info("lru cache out, interrupted");
+//            }
         }
     }
 
@@ -184,28 +163,32 @@ public class LogFileLRUCache extends Service {
      * log cache buffer pool
      **/
     public BufferHolder getLogBufferHolder(){
-         BufferHolder holder= logBufferAllocator.allocateDirectLogCache();
-         if(holder==null) holder=logBufferAllocator.allocateHeapLogCache();
-         if(holder==null) {
-             throw new IllegalArgumentException("allocate log buffer failed");
-         }
-         return holder;
+//         BufferHolder holder= logBufferAllocator.allocateDirectLogCache();
+//         if(holder==null) holder=logBufferAllocator.allocateHeapLogCache();
+//         if(holder==null) {
+//             throw new IllegalArgumentException("allocate log buffer failed");
+//         }
+         return null;
     }
 
+    /**
+     *
+     **/
+    @Deprecated
     public void concurrentInitLoadCache(){
-        int concurrency=cacheController.cacheLogInitLoadConcurrency();
-        List<Long> logs=logFileService.allLogFiles();
-        concurrency=Math.min(concurrency,logs.size());
-        int initLoad=(int)(cacheController.cacheLogLoadFactor()*cacheController.maxCacheLog());
-        int logSize=logs.size();
-           initLoad=logSize>initLoad?initLoad:logSize;
-        if(concurrency>0) {
-            if(loadServcie==null)
-                loadServcie = Executors.newFixedThreadPool(concurrency);
-            for (int i=0;i<initLoad;i++){
-                loadServcie.submit(new LogLoadCacheTask(logReader,logs.get(i),cacheController,logCacheMonitor,this));
-            }
-        }
+//        int concurrency=cacheController.cacheLogInitLoadConcurrency();
+//        List<Long> logs=logFileService.allLogFiles();
+//        concurrency=Math.min(concurrency,logs.size());
+//        int initLoad=(int)(cacheController.cacheLogLoadFactor()*cacheController.maxCacheLog());
+//        int logSize=logs.size();
+//           initLoad=logSize>initLoad?initLoad:logSize;
+//        if(concurrency>0) {
+//            if(loadServcie==null)
+//                loadServcie = Executors.newFixedThreadPool(concurrency);
+//            for (int i=0;i<initLoad;i++){
+//                loadServcie.submit(new LogLoadCacheTask(logReader,logs.get(i),cacheController,logCacheMonitor,this));
+//            }
+//        }
 
     }
 
@@ -213,8 +196,9 @@ public class LogFileLRUCache extends Service {
     /**
      * load the log to cache
      **/
+    @Deprecated
     public void loadCache(long logFileName){
-        loadServcie.submit(new LogLoadCacheTask(logReader,logFileName,cacheController,logCacheMonitor,this));
+        loadServcie.submit(new LogLoadCacheTask(logReader,logFileName,cacheController,null,this));
     }
 
 }

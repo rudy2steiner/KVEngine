@@ -78,6 +78,14 @@
           <artifactId>guava</artifactId>
           <version>25.0-jre</version>
       </dependency>
+
+      <dependency>
+          <groupId>com.github.oshi</groupId>
+          <artifactId>oshi-core</artifactId>
+          <version>3.4.4</version>
+      </dependency>
+
+
   </dependencies>
     <build>
         <plugins>

@@ -66,7 +66,7 @@ public class MultiTypeLogAppender extends Service {
      **/
     public void onAppendFinish(SyncEvent syncEvent,Put event){
         if(syncEvent.value()%100000==0){
-            logger.info(String.format("key %d,%d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
+            logger.info(String.format("key %d,txId %d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
                                   syncEvent.txId(),syncEvent.elapse()));
         }
     }

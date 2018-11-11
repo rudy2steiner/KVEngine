@@ -7,7 +7,7 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
-import com.alibabacloud.polar_race.engine.common.utils.Null;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
@@ -47,6 +47,7 @@ public class WALogger extends Service implements WALog<Put> {
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch latch;
     private TaskBus fileChannelCloseProcessor;
+    private AtomicInteger readCounter=new AtomicInteger(0);
     private Status storeStatus;
     public WALogger(String dir){
         this.rootDir=dir;
@@ -178,6 +179,9 @@ public class WALogger extends Service implements WALog<Put> {
                 }
                 valueBuffer.clear();
                 logFileLRUCache.readValueIfCacheMiss(expectedKey,offset,valueBuffer);
+        if(readCounter.incrementAndGet()%100000==0){
+            logger.info(Memory.memory().toString());
+        }
         return  valueBuffer.array();
     }
 

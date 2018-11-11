@@ -5,6 +5,8 @@ import com.alibabacloud.polar_race.engine.common.io.BufferedIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
+import com.alibabacloud.polar_race.engine.common.utils.MemoryInfo;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LogFileServiceImpl implements LogFileService{
     private final static Logger logger= LoggerFactory.getLogger(LogFileServiceImpl.class);
+    private  final static StringBuilder memoryInfoB=new StringBuilder();
     private String dir;
     private List<Long> sortedLogFiles;
     private int  logWritableSize;
@@ -207,10 +210,10 @@ public class LogFileServiceImpl implements LogFileService{
      **/
    public class CloseFileTask implements Runnable {
         private IOHandler handler;
+
         public CloseFileTask(IOHandler handler){
             this.handler=handler;
         }
-
         @Override
         public void run() {
             try {
@@ -218,6 +221,15 @@ public class LogFileServiceImpl implements LogFileService{
                 handler.closeFileChannel();
                 if(closeHandlerCounter.incrementAndGet()%10000==0){
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closeHandlerCounter.get(),handler.name(),System.currentTimeMillis()-start));
+                    MemoryInfo memoryInfo = Memory.memory();
+                    memoryInfoB.append(memoryInfo.toString()).append("\n");
+                    if(closeHandlerCounter.get()%100000==0&&handler instanceof BufferedIOHandler) {
+                        if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
+                            Memory.sync();
+                            memoryInfoB.append(Memory.memory().toString());
+                        }
+                    }
+                   logger.info(memoryInfoB.toString());
                 }
             }catch (IOException e){
                 logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);

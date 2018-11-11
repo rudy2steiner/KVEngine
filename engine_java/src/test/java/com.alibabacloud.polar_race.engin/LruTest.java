@@ -4,21 +4,18 @@ import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
+import com.alibabacloud.polar_race.engine.common.utils.MemoryInfo;
+import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.google.common.cache.*;
-import com.koloboke.collect.set.IntSet;
-import com.koloboke.collect.set.hash.HashIntSets;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.List;
@@ -170,7 +167,12 @@ public class LruTest {
 
     @Test
     public void memoryLimit(){
-
+        Memory.momoryInfo();
+        MemoryInfo memoryInfo=Memory.memory();
+        if(!Null.isEmpty(memoryInfo)){
+            logger.info(memoryInfo.toString());
+        }
+        Memory.sync();
         System.out.println("limit");
     }
 

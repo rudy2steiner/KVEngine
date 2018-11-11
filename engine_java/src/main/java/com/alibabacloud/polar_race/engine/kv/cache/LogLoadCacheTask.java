@@ -30,7 +30,7 @@ public class LogLoadCacheTask implements Runnable{
             holder.value().flip();
             // cache
             //lru.put(fileName,holder);
-            logCacheListener.onCache(fileName,holder);
+            //logCacheListener.onCache(fileName,holder);
         }catch (Exception  e){
             logger.info("read log to cache failed",e);
         }
