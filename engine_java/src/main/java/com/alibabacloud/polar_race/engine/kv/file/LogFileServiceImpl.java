@@ -216,7 +216,7 @@ public class LogFileServiceImpl implements LogFileService{
             try {
                 long start=System.currentTimeMillis();
                 handler.closeFileChannel();
-                if(closeHandlerCounter.incrementAndGet()%5000==0){
+                if(closeHandlerCounter.incrementAndGet()%10000==0){
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closeHandlerCounter.get(),handler.name(),System.currentTimeMillis()-start));
                 }
             }catch (IOException e){

@@ -28,7 +28,7 @@ public class TaskBus {
      * 提交可执行任务
      **/
     public void submit(Runnable task){
-        if(submitCount.incrementAndGet()%1000==0){
+        if(submitCount.incrementAndGet()%10000==0){
             logger.info(String.format("task queued %d",taskQueue.size()));
         }
         executorService.submit(task);
