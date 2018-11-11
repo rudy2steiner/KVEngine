@@ -157,8 +157,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
      * asyncClose
      **/
     public void flush0() throws IOException{
-        LogBufferAllocator.release(handler.buffer());
         flushValueIndex(false);
+        LogBufferAllocator.release(handler.buffer());
     }
 
     /**

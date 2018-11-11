@@ -121,7 +121,12 @@ public class FileChannelIOHandler implements IOHandler {
 
     @Override
     public void closeFileChannel() throws IOException {
-        if(fileChannel.isOpen())
+        if(fileChannel.isOpen()) {
+            // flush os level page cache
+            fileChannel.force(true);
             fileChannel.close();
+            //randomAccessFile.getFD().sync();
+            randomAccessFile.close();
+        }
     }
 }

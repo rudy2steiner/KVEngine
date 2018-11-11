@@ -12,10 +12,8 @@ public class StoreConfig {
     public final static double  HASH_BUCKET_LOAD_FACTOR =0.5;
     public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
     public final static int  HASH_CONCURRENCY =32;
-
     public final static int  LOAD_HASH_INDEX_TIMEOUT =2000;
     public final static int  HASH_LOAD_BUFFER_SIZE =256*1024;
-
     public final static int  FILE_WRITE_BUFFER_SIZE =64*1024;
     public final static int  FILE_READ_BUFFER_SIZE=16*1024*1024;
     public final static int  DISRUPTOR_BUFFER_SIZE=1024;
@@ -37,8 +35,9 @@ public class StoreConfig {
     public final static int  MAX_DIRECT_BUFFER_SIZE=200*1024*1024; // 220Mb
     public final static int  MAX_OLD_BUFFER_SIZE=750*1024*1024;  // 750Mb  full gc limit
     public final static int  MAX_CONCURRENCY_PRODUCER_AND_CONSUMER=64;
-    public final static float   TROVE_LOAD_FACTOR=0.98F;
+    public final static float  TROVE_LOAD_FACTOR=0.98f;
 
+    public final static int   WRITE_HANDLER_CLOSE_PROCESSOR=8;
     /**
      *  失败 太多，直接cache 线程加载到缓存
      * */

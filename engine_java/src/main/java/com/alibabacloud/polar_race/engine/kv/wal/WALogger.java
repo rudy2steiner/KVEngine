@@ -56,7 +56,7 @@ public class WALogger extends Service implements WALog<Put> {
         // empty index ,每次起来都重建hash桶
         Files.emptyDirIfExist(indexDir);
         Files.makeDirIfNotExist(indexDir);
-        this.fileChannelCloseProcessor=new TaskBus(1);
+        this.fileChannelCloseProcessor=new TaskBus(StoreConfig.WRITE_HANDLER_CLOSE_PROCESSOR);
         this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
         this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);

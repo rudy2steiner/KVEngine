@@ -19,7 +19,16 @@ public interface LogFileService {
      **/
     IOHandler ioHandler(String fileName,String mode) throws FileNotFoundException;
     IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException;
+
+    /**
+     * @param mode
+     **/
+    IOHandler bufferedIOHandler(String fileName, int bufferSize,String mode) throws FileNotFoundException;
+    /**
+     *  default 'rw' ,'r','rwd','rds'
+     **/
     IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException;
+    IOHandler bufferedIOHandler(String fileName,IOHandler handler,String mode) throws FileNotFoundException;
     void asyncCloseFileChannel(IOHandler handler);
     List<Long> allLogFiles();
     List<Long> allSortedFiles(String suffix);

@@ -35,5 +35,16 @@
    -server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:MaxMetaspaceSize=200m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC 
    -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintGCDateStamps 
    -Xloggc:/export/test_gc.log 
+   
+   
+ -------------
+ 清理cache 
+ 
+ echo 1 > /proc/sys/vm/drop_caches  
+ 
+ 
+ cgroup
+ 
+ /sys/fs/cgroup/memory/test
     
    

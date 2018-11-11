@@ -6,6 +6,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,8 @@ public class EngineTest {
     AbstractEngine engine;
     @Before
     public void beforeAction(){
+        long memorySize=(long)6*512*1024*1024;
+        Memory.limit(memorySize);
         random=new Random(0);
         int len=template.length();
         values=new byte[4096];

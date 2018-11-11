@@ -54,18 +54,28 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public IOHandler bufferedIOHandler(String fileName, int bufferSize) throws FileNotFoundException {
+
+        return bufferedIOHandler(fileName,bufferSize,"rw");
+    }
+
+    @Override
+    public IOHandler bufferedIOHandler(String fileName, int bufferSize, String mode) throws FileNotFoundException {
         File file=new File(dir,fileName);
-        IOHandler handler=new FileChannelIOHandler(file,"rw");
+        IOHandler handler=new FileChannelIOHandler(file,mode);
         return new BufferedIOHandler(handler,bufferSize);
-        //return new FileChannelIOHandlerImpl(dir,fileName,"rw",bufferSize);
+    }
+
+    @Override
+    public IOHandler bufferedIOHandler(String fileName, IOHandler handler, String mode) throws FileNotFoundException {
+        File file=new File(dir,fileName);
+        IOHandler newHandler=new FileChannelIOHandler(file,mode);
+        asyncCloseFileChannel(handler);
+        return new BufferedIOHandler(newHandler,handler.buffer());
     }
 
     @Override
     public IOHandler bufferedIOHandler(String fileName,IOHandler handler) throws FileNotFoundException {
-        File file=new File(dir,fileName);
-        IOHandler newHandler=new FileChannelIOHandler(file,"rw");
-                  asyncCloseFileChannel(handler);
-        return new BufferedIOHandler(newHandler,handler.buffer());
+        return  bufferedIOHandler(fileName,handler,"rw");
     }
 
     @Override
@@ -204,12 +214,13 @@ public class LogFileServiceImpl implements LogFileService{
         @Override
         public void run() {
             try {
+                long start=System.currentTimeMillis();
                 handler.closeFileChannel();
                 if(closeHandlerCounter.incrementAndGet()%5000==0){
-                    logger.info(String.format("closed %d io handler,and close this %s now",closeHandlerCounter.get(),handler.name()));
+                    logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closeHandlerCounter.get(),handler.name(),System.currentTimeMillis()-start));
                 }
             }catch (IOException e){
-                logger.info(String.format("asyncClose %s exception,ignore",handler.name()));
+                logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);
             }
         }
     }

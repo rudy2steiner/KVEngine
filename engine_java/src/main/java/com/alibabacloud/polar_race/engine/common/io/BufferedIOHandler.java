@@ -1,11 +1,13 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
 import com.alibabacloud.polar_race.engine.common.utils.Files;
-import org.omg.CORBA.DATA_CONVERSION;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+
+/**
+ *  默认使用direct buffer
+ */
 public class BufferedIOHandler implements IOHandler {
     private IOHandler handler;
     private int bufferSize;

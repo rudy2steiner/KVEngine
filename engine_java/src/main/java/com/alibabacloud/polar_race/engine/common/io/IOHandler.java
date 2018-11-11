@@ -60,7 +60,7 @@ public interface IOHandler extends Flushable, Closeable {
     void flush() throws IOException;
 
     /**
-     * flush to disk
+     * flush to disk,flush page cache to disk
      */
     void flush0() throws IOException;
 
