@@ -26,7 +26,7 @@ public class IndexReader {
     public static TLongLongHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
-        int initSize = (int) (keyCount *StoreConfig.TROVE_LOAD_FACTOR);
+        int initSize = (int) ((keyCount +100)/StoreConfig.TROVE_LOAD_FACTOR);
         //logger.info("mapSize " +mapSize);
         TLongLongHashMap map = new TLongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
         int bufferSize=byteBuffer.capacity();
@@ -55,8 +55,9 @@ public class IndexReader {
             }
             byteBuffer.compact();
         }while (remaining==bufferSize);
-        if(readBucketCounter.incrementAndGet()<=100)
-            logger.info(String.format("file %s contain %d index,now total load key count %d,this key %d,v %d ",handler.name(),handler.length()/StoreConfig.VALUE_INDEX_RECORD_SIZE,keyCounter.get(),key,value));
+        if(readBucketCounter.incrementAndGet()<=100) {
+            logger.info(String.format("file %s contain %d index,init map %d,total key %d,this key %d,v %d ", handler.name(), handler.length() / StoreConfig.VALUE_INDEX_RECORD_SIZE,initSize, keyCounter.get(), key, value));
+        }
            return map;
     }
 
