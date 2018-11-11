@@ -176,6 +176,7 @@ public class WALogger extends Service implements WALog<Put> {
                 if( valueBuffer==null){
                     valueBuffer=bufferAllocator.allocate(StoreConfig.VALUE_SIZE,false);
                     valueBuf.set(valueBuffer);
+                    logger.info(String.format("allocate buffer for %d",Thread.currentThread().getId()));
                 }
                 valueBuffer.clear();
                 logFileLRUCache.readValueIfCacheMiss(expectedKey,offset,valueBuffer);

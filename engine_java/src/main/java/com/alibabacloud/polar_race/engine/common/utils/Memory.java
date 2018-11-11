@@ -69,7 +69,7 @@ public class Memory {
 
 
     public static MemoryInfo memory(){
-        MemoryInfo memoryBean=null;
+        MemoryInfo memoryBean=new MemoryInfo();
         try {
             Process pro = Runtime.getRuntime().exec("free -m");
             int result = pro.waitFor();
@@ -84,20 +84,21 @@ public class Memory {
                     listMemory.add(line);
                 }
             }while (line!=null);
-            if(listMemory.size()>=2){
-                memoryBean=new MemoryInfo();
-                String[] arr=listMemory.get(1).split("          ");
-                if(arr.length==2) {
-                    arr=arr[1].split("       ");
-                    memoryBean.setTotal(Long.valueOf(arr[0].trim()));
-                    memoryBean.setUsed(Long.valueOf(arr[1].trim()));
-                    memoryBean.setFree(Long.valueOf(arr[2].trim()));
-                    memoryBean.setShared(Long.valueOf(arr[3].trim()));
-                    memoryBean.setBufferCache(Long.valueOf(arr[4].trim()));
-                    memoryBean.setAvailable(Long.valueOf(arr[5].trim()));
-                }
-            }
-            //logger.info(memoryInfo.toString());
+            logger.info(memoryInfo.toString());
+//            if(listMemory.size()>=2){
+//                memoryBean=new MemoryInfo();
+//                String[] arr=listMemory.get(1).split("          ");
+//                if(arr.length==2) {
+//                    arr=arr[1].split("       ");
+//                    memoryBean.setTotal(Long.valueOf(arr[0].trim()));
+//                    memoryBean.setUsed(Long.valueOf(arr[1].trim()));
+//                    memoryBean.setFree(Long.valueOf(arr[2].trim()));
+//                    memoryBean.setShared(Long.valueOf(arr[3].trim()));
+//                    memoryBean.setBufferCache(Long.valueOf(arr[4].trim()));
+//                    memoryBean.setAvailable(Long.valueOf(arr[5].trim()));
+//                }
+//            }
+
         }catch (Exception e){
             logger.info("exception",e);
         }
