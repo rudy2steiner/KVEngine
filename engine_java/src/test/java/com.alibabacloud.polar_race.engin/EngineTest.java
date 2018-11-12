@@ -27,7 +27,7 @@ public class EngineTest {
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
-    private static String root="/mnt/export/wal000/";
+    private static String root="/export/wal000/";
     private int VALUES_MAX_LENGTH=4096;
     private static boolean local=true;
     private byte one=0b00000001;
