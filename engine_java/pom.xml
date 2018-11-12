@@ -11,7 +11,8 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     <maven.test.jvmargs></maven.test.jvmargs>
   </properties>
 
   <dependencies>
@@ -98,7 +99,6 @@
                 </configuration>
                 <version>3.0</version>
             </plugin>
-        </plugins>
-    </build>
-
+      </plugins>
+</build>
 </project>

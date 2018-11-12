@@ -17,15 +17,15 @@ import java.util.Random;
  *          64*10w  848s   233s
  *
  **/
-@Ignore
+
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=100000;
+    private long numPerThreadWrite=1000000;
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
-    private static String root="/export/wal000/";
+    private static String root="/mnt/export/wal000/";
     private int VALUES_MAX_LENGTH=4096;
     private static boolean local=true;
     private byte one=0b00000001;
