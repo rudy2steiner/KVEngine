@@ -227,8 +227,8 @@ public class LogFileServiceImpl implements LogFileService{
                     if(closeHandlerCounter.get()%100000==0&&handler instanceof BufferedIOHandler) {
                         if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
                             Memory.sync();
-                            memoryInfoB.append(Memory.memory().toString());
                         }
+                        memoryInfoB.append(Memory.memory().toString());
                     }
                    logger.info(memoryInfoB.toString());
                 }

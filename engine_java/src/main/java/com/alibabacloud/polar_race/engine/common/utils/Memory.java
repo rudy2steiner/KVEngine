@@ -83,9 +83,7 @@ public class Memory {
             String[] commmands= {"/bin/sh","-c",flushOSPagecache};
             Process pro=Runtime.getRuntime().exec(commmands);
             int result= pro.waitFor();
-            if(result==0){
-                logger.info("flush page cache exit 0");
-            }
+            logger.info("flush page cache exit "+result);
         }catch (Exception e){
             logger.info("flush os page cache failed",e);
         }
@@ -116,7 +114,7 @@ public class Memory {
                 } while (line != null);
                 logger.info(memoryInfo.toString());
                 if (listMemory.size() >= 2) {
-                    memoryBean = new MemoryInfo();
+//                    memoryBean = new MemoryInfo();
                     listMemory= parseMemory(listMemory.get(1));
                     if (listMemory.size() >= 7) {
                         memoryBean.setTotal(Long.valueOf(listMemory.get(1).trim()));
