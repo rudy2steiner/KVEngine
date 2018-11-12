@@ -279,15 +279,16 @@ public class WALogger extends Service implements WALog<Put> {
 
     @Override
     public void onStop() throws Exception {
+        long start=System.currentTimeMillis();
          this.appender.stop();
-         this.commonExecutorService.shutdownNow();
          this.indexLRUCache.stop();
          this.logFileLRUCache.stop();
-         this.fileChannelCloseProcessor.close();
+
+         this.fileChannelCloseProcessor.stop();
          logger.info(Memory.memory().toString());
          Memory.clearPageCache();
          logger.info(Memory.memory().toString());
-         logger.info("asyncClose wal logger");
+         logger.info("asyncClose wal logger,close time elapsed "+(System.currentTimeMillis()-start));
     }
 
     enum Status{

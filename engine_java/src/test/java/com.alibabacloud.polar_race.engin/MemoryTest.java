@@ -18,8 +18,6 @@ public class MemoryTest {
         logger.info(Memory.execute("cat /proc/sys/vm/drop_caches"));
         logger.info("flushed page cache");
         logger.info(Memory.memory().toString());
-        //Memory.jvmHeap();
-//        Memory.parseMemory();
     }
 
 
