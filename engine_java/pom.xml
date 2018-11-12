@@ -99,14 +99,14 @@
                 </configuration>
                 <version>3.0</version>
             </plugin>
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-plugin</artifactId>
-    <version>2.9</version>
-    <configuration>
-        <argLine>-server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails  -XX:+PrintGCDateStamps -Xloggc:/export/gc.log</argLine>
-    </configuration>
-</plugin>
+<!--<plugin>-->
+    <!--<groupId>org.apache.maven.plugins</groupId>-->
+    <!--<artifactId>maven-surefire-plugin</artifactId>-->
+    <!--<version>2.9</version>-->
+    <!--<configuration>-->
+        <!--<argLine>-server -Xms2560m -Xmx2560m -XX:MaxDirectMemorySize=256m -XX:NewRatio=1 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails  -XX:+PrintGCDateStamps -Xloggc:/export/gc.log</argLine>-->
+    <!--</configuration>-->
+<!--</plugin>-->
       </plugins>
 </build>
 </project>
