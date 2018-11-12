@@ -22,6 +22,8 @@ public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
     private long numPerThreadWrite=1000000;
+
+    private long keyValueOffset=0;  // default
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -258,7 +260,7 @@ public class EngineTest {
             int keyOffset;
             try {
                 while (i < num) {
-                    key = id * num + i;
+                    key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
                     keyOffset = (int) (key % VALUES_MAX_LENGTH);
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
@@ -306,6 +308,8 @@ public class EngineTest {
             keyBytes=new byte[StoreConfig.KEY_SIZE];
             vals=new byte[StoreConfig.VALUE_SIZE];
         }
+
+
         /**
          * value 中隐藏key 的信息
          *
@@ -316,7 +320,7 @@ public class EngineTest {
             int keyOffset;
             try {
                 while (i < num) {
-                    key = id * num + i;
+                    key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
                     keyOffset = (int) (key % VALUES_MAX_LENGTH);
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
