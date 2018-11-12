@@ -11,11 +11,11 @@ public class MemoryTest {
     public void flushPageCache(){
 
         logger.info(Memory.memory().toString());
-
         Memory.sync();
         logger.info(Memory.execute("whoami"));
         logger.info(Memory.execute("ls -l /"));
         logger.info(Memory.execute("ls -l /proc/sys/vm/drop_caches"));
+        logger.info(Memory.execute("cat /proc/sys/vm/drop_caches"));
         logger.info("flushed page cache");
         logger.info(Memory.memory().toString());
         //Memory.jvmHeap();
