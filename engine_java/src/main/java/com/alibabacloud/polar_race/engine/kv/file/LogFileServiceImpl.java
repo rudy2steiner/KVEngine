@@ -219,12 +219,13 @@ public class LogFileServiceImpl implements LogFileService{
             try {
                 long start=System.currentTimeMillis();
                 handler.closeFileChannel();
-                if(closeHandlerCounter.incrementAndGet()%10000==0){
+                int closed=closeHandlerCounter.incrementAndGet();
+                if(closed%10000==0){
                     memoryInfoB.setLength(0);
-                    logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closeHandlerCounter.get(),handler.name(),System.currentTimeMillis()-start));
+                    logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
                     MemoryInfo memoryInfo = Memory.memory();
                     memoryInfoB.append(memoryInfo.toString()).append("\n");
-                    if(closeHandlerCounter.get()%100000==0&&handler instanceof BufferedIOHandler) {
+                    if(closed%100000==0&&handler instanceof BufferedIOHandler) {
                         if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
                             Memory.sync();
                         }
