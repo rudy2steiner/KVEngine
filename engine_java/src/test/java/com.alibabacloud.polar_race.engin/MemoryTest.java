@@ -1,7 +1,6 @@
 package com.alibabacloud.polar_race.engin;
 
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
-import com.alibabacloud.polar_race.engine.common.utils.MemoryInfo;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +11,14 @@ public class MemoryTest {
     public void flushPageCache(){
 
         logger.info(Memory.memory().toString());
+
         Memory.sync();
+        logger.info(Memory.execute("whoami"));
+        logger.info(Memory.execute("ls -l /"));
+        logger.info(Memory.execute("ls -l /proc/sys/vm/drop_caches"));
         logger.info("flushed page cache");
         logger.info(Memory.memory().toString());
-        Memory.jvmHeap();
+        //Memory.jvmHeap();
 //        Memory.parseMemory();
     }
 

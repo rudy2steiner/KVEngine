@@ -75,13 +75,56 @@ public class Memory {
 
     /**
      *  flush os page cache
+     *  /bin/sh -c echo 1 > /proc/sys/vm/drop_caches
      *
      **/
     public static void sync(){
         try {
-            String flushOSPagecache="echo 1 > /proc/sys/vm/drop_caches";
-            String[] commmands= {"/bin/sh","-c",flushOSPagecache};
+            String sync="sync";
+            String[] commmands= {"/bin/sh","-c",sync};
             Process pro=Runtime.getRuntime().exec(commmands);
+            int result= pro.waitFor();
+            logger.info("flush page cache exit "+result);
+        }catch (Exception e){
+            logger.info("flush os page cache failed",e);
+        }
+    }
+
+    /**
+     *  执行任意命令
+     **/
+    public static String execute(String cmd){
+        StringBuilder resultBuilder = new StringBuilder("\n");
+        try {
+            Process pro=Runtime.getRuntime().exec(cmd);
+            int result= pro.waitFor();
+            if(result==0) {
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
+                String line;
+                do {
+                    line = bufferedReader.readLine();
+                    if (line != null) {
+                        resultBuilder.append(line).append("\n");
+                    }
+                } while (line != null);
+                logger.info("execute command and exit " + result);
+            }
+        }catch (Exception e){
+            logger.info("execute command failed",e);
+        }
+        resultBuilder.setLength(resultBuilder.length()-1);
+        return resultBuilder.toString();
+    }
+
+
+
+    /**
+     * 清除已同步的缓存，释放缓存空间
+     **/
+    public static void clearPageCache(){
+        try {
+            String flushOSPagecache="echo 1 > /proc/sys/vm/drop_caches";
+            Process pro=Runtime.getRuntime().exec(flushOSPagecache);
             int result= pro.waitFor();
             logger.info("flush page cache exit "+result);
         }catch (Exception e){
