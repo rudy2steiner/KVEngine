@@ -21,7 +21,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     private final static Logger logger= LoggerFactory.getLogger(MultiTypeEventHandler.class);
     public final static ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
     private final ByteBuffer valueIndexBuffer;
-    private final static byte[]     longBytes=new byte[StoreConfig.LONG_LEN];
+    private final static byte[]     shortByte=new byte[StoreConfig.SHORT_LEN];
     private IOHandler handler;
     private LogFileService logFileService;
     private SyncEvent[] syncEvents;
@@ -59,8 +59,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             long offset=fileId+offsetInFile;
             put.value().setOffset(offset);
             //logger.info(String.format("handler %d %d",Bytes.bytes2long(put.value().getKey(),0),put.value().getOffset()));
-            Bytes.short2bytes(put.value().size(),longBytes,0);
-            handler.append(longBytes,0,StoreConfig.SHORT_LEN);
+            Bytes.short2bytes(put.value().size(),shortByte,0);
+            handler.append(shortByte);
             handler.append(put.value().getKey());
             handler.append(put.value().getValue());
             // put value index

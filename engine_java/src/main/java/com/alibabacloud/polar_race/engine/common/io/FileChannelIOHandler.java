@@ -122,7 +122,7 @@ public class FileChannelIOHandler implements IOHandler {
     @Override
     public void closeFileChannel() throws IOException {
         if(fileChannel.isOpen()) {
-            // flush os level page cache,possible no work
+            // flush os level page cache,ensure all the change has persistent,
             fileChannel.force(true);
             fileChannel.close();
             //randomAccessFile.getFD().sync();

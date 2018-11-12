@@ -78,7 +78,7 @@ public class LogFileLRUCache extends Service {
      **/
     public  void readValueIfCacheMiss(long expectedKey,long offset,ByteBuffer buffer) throws EngineException{
         long fileId=sortedLogFiles.floor(offset);
-        int offsetInFile = (int) (offset - fileId);
+        long offsetInFile = offset - fileId;
        //cache miss,direct io
             IOHandler handler=null;
             try {

@@ -84,9 +84,9 @@ public class Memory {
             String[] commmands= {"/bin/sh","-c",sync};
             Process pro=Runtime.getRuntime().exec(commmands);
             int result= pro.waitFor();
-            logger.info("flush page cache exit "+result);
+            logger.info("sync page cache exit "+result);
         }catch (Exception e){
-            logger.info("flush os page cache failed",e);
+            logger.info("sync os page cache failed",e);
         }
     }
 
@@ -126,9 +126,9 @@ public class Memory {
             String flushOSPagecache="echo 1 > /proc/sys/vm/drop_caches";
             Process pro=Runtime.getRuntime().exec(flushOSPagecache);
             int result= pro.waitFor();
-            logger.info("flush page cache exit "+result);
+            logger.info("clear os page cache exit "+result);
         }catch (Exception e){
-            logger.info("flush os page cache failed",e);
+            logger.info("clear os page cache failed",e);
         }
     }
 
