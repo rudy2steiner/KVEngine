@@ -117,14 +117,14 @@ public class Memory {
                 logger.info(memoryInfo.toString());
                 if (listMemory.size() >= 2) {
                     memoryBean = new MemoryInfo();
-                    String[] arr = parseMemory(listMemory.get(1));
-                    if (arr.length >= 7) {
-                        memoryBean.setTotal(Long.valueOf(arr[1].trim()));
-                        memoryBean.setUsed(Long.valueOf(arr[2].trim()));
-                        memoryBean.setFree(Long.valueOf(arr[3].trim()));
-                        memoryBean.setShared(Long.valueOf(arr[4].trim()));
-                        memoryBean.setBufferCache(Long.valueOf(arr[5].trim()));
-                        memoryBean.setAvailable(Long.valueOf(arr[6].trim()));
+                    listMemory= parseMemory(listMemory.get(1));
+                    if (listMemory.size() >= 7) {
+                        memoryBean.setTotal(Long.valueOf(listMemory.get(1).trim()));
+                        memoryBean.setUsed(Long.valueOf(listMemory.get(2).trim()));
+                        memoryBean.setFree(Long.valueOf(listMemory.get(3).trim()));
+                        memoryBean.setShared(Long.valueOf(listMemory.get(4).trim()));
+                        memoryBean.setBufferCache(Long.valueOf(listMemory.get(5).trim()));
+                        memoryBean.setAvailable(Long.valueOf(listMemory.get(6).trim()));
                     }
                 }
             }
@@ -139,7 +139,7 @@ public class Memory {
      * to array
      * @return content array
      **/
-    private static String[] parseMemory(String memory){
+    private static List<String> parseMemory(String memory){
         String[] arr=memory.split(" ");
         List<String> infos=new ArrayList<>();
         for(String s:arr){
@@ -147,7 +147,7 @@ public class Memory {
                 infos.add(s.trim());
             }
         }
-       return (String[])infos.toArray();
+       return infos;
     }
 
 
