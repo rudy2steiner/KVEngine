@@ -449,7 +449,7 @@ public class EngineTest {
                         logger.error(String.format("%d,%d %d %s",id,key,value,new String(values)));
                     }else{
                         success++;
-                        if(success%1000==0)
+                        if(success%10000==0)
                                 logger.info(String.format("%d,%d %d",id,key,value));
                     }
                     i++;

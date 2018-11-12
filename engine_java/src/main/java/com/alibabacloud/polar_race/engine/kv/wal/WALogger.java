@@ -267,8 +267,7 @@ public class WALogger extends Service implements WALog<Put> {
      * to do release if need
      * */
     public void onStartFinish(){
-        logger.info("wal logger started");
-
+        logger.info(String.format("wal logger started,path %s",rootDir));
     }
 
     /**

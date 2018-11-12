@@ -1,6 +1,6 @@
 package com.alibabacloud.polar_race;
-import com.alibabacloud.polar_race.collection.LongSet;
-import com.alibabacloud.polar_race.collection.LongLongMap;
+import com.alibabacloud.polar_race.engine.common.collection.LongSet;
+import com.alibabacloud.polar_race.engine.common.collection.LongLongMap;
 
 import com.koloboke.function.LongLongConsumer;
 import org.slf4j.Logger;

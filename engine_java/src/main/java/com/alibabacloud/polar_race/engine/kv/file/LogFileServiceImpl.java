@@ -220,6 +220,7 @@ public class LogFileServiceImpl implements LogFileService{
                 long start=System.currentTimeMillis();
                 handler.closeFileChannel();
                 if(closeHandlerCounter.incrementAndGet()%10000==0){
+                    memoryInfoB.setLength(0);
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closeHandlerCounter.get(),handler.name(),System.currentTimeMillis()-start));
                     MemoryInfo memoryInfo = Memory.memory();
                     memoryInfoB.append(memoryInfo.toString()).append("\n");

@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.cache;
 
 
-import com.alibabacloud.polar_race.collection.LongSet;
+import com.alibabacloud.polar_race.engine.common.collection.LongSet;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.utils.Null;

@@ -59,6 +59,6 @@ public class MemoryInfo {
 
     @Override
     public String toString() {
-        return String.format("total %d,used %d,free %d, shared %d, buffer/cache %d, availabe %d",total,used,free,shared,bufferCache,available);
+        return String.format("total %d,used %d,free %d, shared %d, buffer/cache %d, available %d",total,used,free,shared,bufferCache,available);
     }
 }

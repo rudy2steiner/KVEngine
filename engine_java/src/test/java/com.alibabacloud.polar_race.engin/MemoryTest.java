@@ -13,6 +13,11 @@ public class MemoryTest {
 
         logger.info(Memory.memory().toString());
         Memory.sync();
+        logger.info("flushed page cache");
         logger.info(Memory.memory().toString());
+        Memory.jvmHeap();
+//        Memory.parseMemory();
     }
+
+
 }

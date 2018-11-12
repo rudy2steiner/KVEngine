@@ -1,6 +1,5 @@
 package com.alibabacloud.polar_race.engine.kv.cache;
 
-import com.alibabacloud.polar_race.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
@@ -9,7 +8,6 @@ import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
 import com.google.common.cache.*;
-import gnu.trove.impl.hash.TLongLongHash;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
