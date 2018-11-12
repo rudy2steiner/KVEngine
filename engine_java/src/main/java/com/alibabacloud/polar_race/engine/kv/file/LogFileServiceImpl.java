@@ -225,7 +225,7 @@ public class LogFileServiceImpl implements LogFileService{
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
                     MemoryInfo memoryInfo = Memory.memory();
                     memoryInfoB.append(memoryInfo.toString()).append("\n");
-                    if(closed%100000==0&&handler instanceof BufferedIOHandler) {
+                    if(closed%10000==0&&handler instanceof BufferedIOHandler) {
                         if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
                             Memory.sync();
                         }
