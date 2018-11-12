@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.common.utils;
 
+import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.sun.management.OperatingSystemMXBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class Memory {
@@ -22,17 +24,17 @@ public class Memory {
             String name = ManagementFactory.getRuntimeMXBean().getName();
             String pid = name.split("@")[0];
             logger.info("Pid is:" + pid+" limit "+size);
-            int result;
+            boolean result;
             try {
                 String momorySize="echo " + size + " >/sys/fs/cgroup/memory/test/memory.limit_in_bytes";
                 String[] commmands= {"/bin/sh","-c",momorySize};
                 Process pro=Runtime.getRuntime().exec(commmands);
-                result= pro.waitFor();
+                result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
 
                 String    setPid="echo " + pid + " >/sys/fs/cgroup/memory/test/cgroup.procs";
                           commmands[2]=setPid;
                           pro=Runtime.getRuntime().exec(commmands);
-                result= pro.waitFor();
+                result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
                 logger.info(setPid +" excc "+result);
             }catch (Exception e){
                 logger.info("limit memory failed",e);
@@ -83,7 +85,7 @@ public class Memory {
             String sync="sync";
             String[] commmands= {"/bin/sh","-c",sync};
             Process pro=Runtime.getRuntime().exec(commmands);
-            int result= pro.waitFor();
+            boolean result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
             logger.info("sync page cache exit "+result);
         }catch (Exception e){
             logger.info("sync os page cache failed",e);
@@ -97,8 +99,8 @@ public class Memory {
         StringBuilder resultBuilder = new StringBuilder("\n");
         try {
             Process pro=Runtime.getRuntime().exec(cmd);
-            int result= pro.waitFor();
-            if(result==0) {
+            boolean result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
+            if(result) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
                 String line;
                 do {
@@ -125,7 +127,7 @@ public class Memory {
         try {
             String flushOSPagecache="echo 1 > /proc/sys/vm/drop_caches";
             Process pro=Runtime.getRuntime().exec(flushOSPagecache);
-            int result= pro.waitFor();
+            boolean result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
             logger.info("clear os page cache exit "+result);
         }catch (Exception e){
             logger.info("clear os page cache failed",e);
@@ -142,8 +144,8 @@ public class Memory {
         MemoryInfo memoryBean=new MemoryInfo();
         try {
             Process pro = Runtime.getRuntime().exec("free -m");
-            int result = pro.waitFor();
-            if(result==0) {
+            boolean result = pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
+            if(result) {
                 StringBuilder memoryInfo = new StringBuilder("\n");
                 List<String> listMemory = new ArrayList<>();
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
