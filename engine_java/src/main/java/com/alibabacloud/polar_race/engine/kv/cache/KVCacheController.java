@@ -47,7 +47,7 @@ public class KVCacheController implements CacheController {
 
     @Override
     public double cacheIndexLoadFactor() {
-        return 0.5;
+        return 1;
     }
 
     @Override

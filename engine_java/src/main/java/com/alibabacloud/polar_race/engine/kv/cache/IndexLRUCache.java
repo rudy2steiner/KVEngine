@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
@@ -31,7 +32,8 @@ public class IndexLRUCache extends Service {
     private CacheController cacheController;
     private ExecutorService indexLoadThreadPool;
     private LogBufferAllocator bufferAllocator;
-    public IndexLRUCache(CacheController cacheController ,LogFileService indexFileService,ExecutorService indexLoadThreadPool,LogBufferAllocator bufferAllocator){
+    private CountDownLatch loadComplete;
+    public IndexLRUCache(CacheController cacheController , LogFileService indexFileService, ExecutorService indexLoadThreadPool, LogBufferAllocator bufferAllocator, CountDownLatch latch){
         this.cacheController=cacheController;
         this.maxCache=cacheController.maxCacheIndex();
         this.indexHandlerMap =new HashMap(128);
@@ -41,6 +43,7 @@ public class IndexLRUCache extends Service {
         this.maxConcurrencyLoad=cacheController.cacheIndexInitLoadConcurrency();
         this.indexLoadThreadPool=indexLoadThreadPool;
         this.bufferAllocator=bufferAllocator;
+        this.loadComplete=latch;
     }
 
 
@@ -59,7 +62,7 @@ public class IndexLRUCache extends Service {
                         .maximumSize(maxCache)
                         .removalListener(new IndexRemoveListener())
                         .build(new IndexMapLoad(maxConcurrencyLoad));
-                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers).subList(0,maxConcurrencyLoad), initCacheIndexHandler(), new IndexCacheListener(lru));
+                indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers).subList(0,maxConcurrencyLoad), initCacheIndexHandler(), new IndexCacheListener(lru,loadComplete,cacheController.maxHashBucketSize()));
             }
     }
 
@@ -80,7 +83,7 @@ public class IndexLRUCache extends Service {
     }
 
     public List<IOHandler> initCacheIndexHandler(){
-        int initLoadSize=(int)(StoreConfig.HASH_BUCKET_SIZE*StoreConfig.HASH_BUCKET_LOAD_FACTOR);
+        int initLoadSize=(int)(StoreConfig.HASH_BUCKET_SIZE*cacheController.cacheIndexLoadFactor());
         return new ArrayList<>(indexHandlerMap.values()).subList(0,initLoadSize);
     }
 

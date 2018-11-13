@@ -449,7 +449,7 @@ public class EngineTest {
                         values = engine.read(keyBytes);
                     }catch (Exception e){
                         notFound++;
-//                        if(notFound%1000==0)
+                      if(notFound%1000==0)
                             logger.info("read exception ",e);
                         i++;
                         continue;

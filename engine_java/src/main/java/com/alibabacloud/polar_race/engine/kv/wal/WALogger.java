@@ -8,6 +8,7 @@ import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
+import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
@@ -46,6 +47,7 @@ public class WALogger extends Service implements WALog<Put> {
     private ExecutorService commonExecutorService;
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch latch;
+    private CountDownLatch indexLoadComplete;
     private TaskBus fileChannelCloseProcessor;
     private AtomicInteger readCounter=new AtomicInteger(0);
     private Status storeStatus;
@@ -65,8 +67,7 @@ public class WALogger extends Service implements WALog<Put> {
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
-        this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator);
-        this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
+
         this.transferIndexLogToHashBucketInit();
         this.storeStatus=Status.START;
     }
@@ -205,6 +206,9 @@ public class WALogger extends Service implements WALog<Put> {
             // 依据store 的状态，看是否需要加载缓存
            //List<Long> files=logFileService.allLogFiles();
                 latch.await();
+                indexLoadComplete=new CountDownLatch(1);
+                this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator,indexLoadComplete);
+                this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
                 indexLRUCache.start();
                 logFileLRUCache.start();
 
@@ -212,6 +216,8 @@ public class WALogger extends Service implements WALog<Put> {
         }else{
             logger.info("log and index cache engine start ignore");
         }
+        if(!Null.isEmpty(indexLoadComplete))
+                 indexLoadComplete.await();
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
             logger.info(" index and log cache finish");
@@ -282,8 +288,10 @@ public class WALogger extends Service implements WALog<Put> {
         long start=System.currentTimeMillis();
          logger.info(Memory.memory().toString());
          this.appender.stop();
-         this.indexLRUCache.stop();
-         this.logFileLRUCache.stop();
+         if(!Null.isEmpty(indexLRUCache))
+            this.indexLRUCache.stop();
+        if(!Null.isEmpty(logFileLRUCache))
+            this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.stop();
          logger.info(Memory.memory().toString());
          logger.info("asyncClose wal logger,close time elapsed "+(System.currentTimeMillis()-start));
