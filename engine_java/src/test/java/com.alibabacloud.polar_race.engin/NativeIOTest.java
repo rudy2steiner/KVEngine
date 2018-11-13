@@ -2,6 +2,7 @@ package com.alibabacloud.polar_race.engin;
 
 import com.alibabacloud.polar_race.engine.common.io.NativeIO;
 import com.sun.jna.Platform;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-
+@Ignore
 public class NativeIOTest {
 
     @Test
