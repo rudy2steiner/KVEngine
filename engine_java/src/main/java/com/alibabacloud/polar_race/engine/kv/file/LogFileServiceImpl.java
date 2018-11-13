@@ -218,21 +218,22 @@ public class LogFileServiceImpl implements LogFileService{
         public void run() {
             try {
                 long start=System.currentTimeMillis();
-                handler.closeFileChannel();
                 int closed=closeHandlerCounter.incrementAndGet();
                 if(closed%10000==0){
                     memoryInfoB.setLength(0);
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
                     MemoryInfo memoryInfo = Memory.memory();
                     memoryInfoB.append(memoryInfo.toString()).append("\n");
-                    if(closed%10000==0&&handler instanceof BufferedIOHandler) {
-                        if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
-                            Memory.sync();
-                        }
-                        memoryInfoB.append(Memory.memory().toString());
-                    }
+                    handler.closeFileChannel();
+                    memoryInfoB.append(Memory.memory().toString());
+//                    if(closed%10000==0&&handler instanceof BufferedIOHandler) {
+//                        if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
+//                            Memory.sync();
+//                        }
+//                        memoryInfoB.append(Memory.memory().toString());
+//                    }
                    logger.info(memoryInfoB.toString());
-                }
+                }else   handler.closeFileChannel();
             }catch (IOException e){
                 logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);
             }
@@ -245,4 +246,8 @@ public class LogFileServiceImpl implements LogFileService{
             return  (int)(( expectSize+100)/loadFactor);
     }
 
+    @Override
+    public File file(long fileName,String suffix) {
+        return  new File(dir,fileName+suffix);
+    }
 }

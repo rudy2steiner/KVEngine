@@ -127,6 +127,8 @@ public class FileChannelIOHandler implements IOHandler {
             fileChannel.close();
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();
+
+            NativeIO.posixFadvise(randomAccessFile.getFD(), 0, file.length());
         }
     }
 }

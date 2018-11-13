@@ -49,4 +49,7 @@ public interface LogFileService {
      * 计算map 初始化大小
      * */
     int mapInitSize(int expectSize, float loadFactor);
+
+
+    File file(long fileName,String suffix);
 }
