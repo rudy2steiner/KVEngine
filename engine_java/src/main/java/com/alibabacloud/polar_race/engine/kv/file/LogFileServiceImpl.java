@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LogFileServiceImpl implements LogFileService{
     private final static Logger logger= LoggerFactory.getLogger(LogFileServiceImpl.class);
-    private  final static StringBuilder memoryInfoB=new StringBuilder();
     private String dir;
     private List<Long> sortedLogFiles;
     private int  logWritableSize;
@@ -219,21 +218,15 @@ public class LogFileServiceImpl implements LogFileService{
             try {
                 long start=System.currentTimeMillis();
                 int closed=closeHandlerCounter.incrementAndGet();
-                if(closed%10000==0){
-                    memoryInfoB.setLength(0);
+                if(closed%100000==0){
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
-                    MemoryInfo memoryInfo = Memory.memory();
-                    memoryInfoB.append(memoryInfo.toString()).append("\n");
                     handler.closeFileChannel();
-                    memoryInfoB.append(Memory.memory().toString());
-//                    if(closed%10000==0&&handler instanceof BufferedIOHandler) {
-//                        if (memoryInfo.getBufferCache() > StoreConfig.PAGE_CACHE_LIMIT){
-//                            Memory.sync();
-//                        }
-//                        memoryInfoB.append(Memory.memory().toString());
-//                    }
-                   logger.info(memoryInfoB.toString());
-                }else   handler.closeFileChannel();
+                    logger.info(Memory.memory().toString());
+                }else {
+                    handler.closeFileChannel();
+                }
+                // don't cache
+                handler.dontNeed(0,handler.length());
             }catch (IOException e){
                 logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);
             }

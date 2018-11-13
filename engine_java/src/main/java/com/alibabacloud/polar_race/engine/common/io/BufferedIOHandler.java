@@ -161,4 +161,10 @@ public class BufferedIOHandler implements IOHandler {
     public void closeFileChannel() throws IOException {
         handler.close();
     }
+
+    @Override
+    public void dontNeed(long offset, long len) throws IOException {
+        handler.dontNeed(offset,len);
+    }
+
 }

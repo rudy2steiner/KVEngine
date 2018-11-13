@@ -121,6 +121,7 @@ public class Memory {
     /**
      * 清除已同步的缓存，释放缓存空间
      **/
+    @Deprecated
     public static void clearPageCache(){
         try {
             String flushOSPagecache="echo 1 > /proc/sys/vm/drop_caches";

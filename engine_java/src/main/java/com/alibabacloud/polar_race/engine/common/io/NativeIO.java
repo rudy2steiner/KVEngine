@@ -18,7 +18,7 @@ import com.sun.jna.Platform;
 public class NativeIO {
     private final static Logger logger = Logger.getLogger(NativeIO.class.getName());
 
-    private static final int POSIX_FADV_DONTNEED = 4; // See /usr/include/linux/fadvise.h
+    public static final int POSIX_FADV_DONTNEED = 4; // See /usr/include/linux/fadvise.h
 
     private static boolean initialized = false;
     private static Throwable initError = null;
@@ -56,6 +56,7 @@ public class NativeIO {
     /**
      * Will hint the OS that this is will not be accessed again and should hence be dropped from the buffer cache.
      * @param fd The file descriptor to drop from buffer cache.
+     * @param  length 0 表示整个文件
      */
     public void dropFileFromCache(FileDescriptor fd) {
         try {
@@ -71,10 +72,14 @@ public class NativeIO {
     /***
      *  no need any more
      *  http://hadoop.apache.org/docs/stable1/api/constant-values.html#org.apache.hadoop.io.nativeio.NativeIO.POSIX_FADV_WILLNEED
+     *  flush buffer and cache for the file
+     *  extending for len bytes (or until the end of the file if len is 0)
+     *
      **/
-    public static void posixFadvise(FileDescriptor fd,long  offset,long length){
-        NativeIO.posix_fadvise(getNativeFD(fd), offset,length, POSIX_FADV_DONTNEED);
+    public static void posixFadvise(FileDescriptor fd,long  offset,long length,int flag){
+        posix_fadvise(getNativeFD(fd), offset,length, flag);
     }
+
 
     /**
      * Will hint the OS that this is will not be accessed again and should hence be dropped from the buffer cache.

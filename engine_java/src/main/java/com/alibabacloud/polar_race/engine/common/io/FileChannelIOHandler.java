@@ -123,12 +123,18 @@ public class FileChannelIOHandler implements IOHandler {
     public void closeFileChannel() throws IOException {
         if(fileChannel.isOpen()) {
             // flush os level page cache,ensure all the change has persistent,
+            // fsync
             fileChannel.force(true);
             fileChannel.close();
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();
+            // 且不再需要
 
-            NativeIO.posixFadvise(randomAccessFile.getFD(), 0, file.length());
         }
+    }
+
+    @Override
+    public void dontNeed(long offset,long len) throws IOException{
+        NativeIO.posixFadvise(randomAccessFile.getFD(), offset, len,NativeIO.POSIX_FADV_DONTNEED);
     }
 }

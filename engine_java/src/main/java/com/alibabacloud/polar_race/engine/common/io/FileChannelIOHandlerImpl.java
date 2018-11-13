@@ -160,4 +160,10 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     public void closeFileChannel() throws IOException {
         this.close();
     }
+
+    @Override
+    public void dontNeed(long offset, long len) throws IOException {
+
+    }
+
 }

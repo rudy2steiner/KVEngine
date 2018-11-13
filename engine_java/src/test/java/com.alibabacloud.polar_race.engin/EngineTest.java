@@ -22,13 +22,13 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=300000;
+    private long numPerThreadWrite=10000;
 
     private long keyValueOffset=0;  // default
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
-    private static String root="/export/wal000/";
+    private static String root="/export/wal000";
     private int VALUES_MAX_LENGTH=4096;
     private static boolean local=true;
     private byte one=0b00000001;
