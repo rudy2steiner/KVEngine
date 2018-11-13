@@ -28,7 +28,7 @@ public class IndexReader {
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
         int initSize = (int) ((keyCount +30)/StoreConfig.TROVE_LOAD_FACTOR);
         //logger.info("mapSize " +mapSize);
-        TLongLongHashMap map = new TLongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
+        TLongLongHashMap map = new TLongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR,Long.MIN_VALUE,-1);
         int bufferSize=byteBuffer.capacity();
         long key=0;
         long value=0;

@@ -43,7 +43,7 @@ public class WALogEngine extends AbstractEngine {
         try{
             this.walLogger.close();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.info("close engine exception",e);
         }
     }
 
@@ -62,6 +62,7 @@ public class WALogEngine extends AbstractEngine {
         try {
             return walLogger.get(key);
         }catch (Exception e){
+            if(e instanceof EngineException) throw (EngineException)e;
             logger.error("read error",e);
             throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());
         }

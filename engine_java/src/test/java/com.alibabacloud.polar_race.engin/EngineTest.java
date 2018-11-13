@@ -17,11 +17,11 @@ import java.util.Random;
  *          64*10w  848s   233s
  *
  **/
-
+@Ignore
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=1000000;
+    private long numPerThreadWrite=10000;
 
     private long keyValueOffset=-16000000;  // default
     private byte[] values;
@@ -97,7 +97,7 @@ public class EngineTest {
         long start=System.currentTimeMillis();
         Thread[] t=new Thread[(int)concurrency];
         for (int i = 0; i < concurrency; i++) {
-            t[i]=new Thread(new FlipKeyPutThread(i, (int)numPerThreadWrite, engine),"write"+i);
+            t[i]=new Thread(new FlipKeyThread(i, (int)numPerThreadWrite, engine),"write"+i);
             t[i].start();
         }
         try {
@@ -147,7 +147,7 @@ public class EngineTest {
             if(i%2==0) {
                 t[i] = new Thread(new FlipKeyOutPutThread(i, (int) numPerThreadWrite, engine), "write" + i);
             }else{
-                t[i] = new Thread(new FlipKeyPutThread(i, (int) numPerThreadWrite, engine), "write" + i);
+                t[i] = new Thread(new FlipKeyThread(i, (int) numPerThreadWrite, engine), "write" + i);
             }
             t[i].start();
         }
@@ -284,7 +284,7 @@ public class EngineTest {
     /***
      * 唯一kv 写入线程
      **/
-    public class FlipKeyPutThread implements Runnable{
+    public class FlipKeyThread implements Runnable{
         private int id;
         private int num;
         private AbstractEngine engine;
@@ -292,7 +292,7 @@ public class EngineTest {
         private byte[] keyBytes;
         private byte[] vals;
         private Random random;
-        public FlipKeyPutThread(int id, int num,AbstractEngine engine){
+        public FlipKeyThread(int id, int num, AbstractEngine engine){
             this.id=id;
             this.num=num;
             this.engine=engine;
@@ -330,9 +330,12 @@ public class EngineTest {
                         vals[keyOffset + k] = keyBytes[k];
                     }
                     if(random.nextDouble()<0.2){
-                        keyBytes[6]=(byte)(keyBytes[6]^one);
-                        if(key%10000==0)
-                            logger.info(String.format("original %d,offset %d",key,Bytes.bytes2long(keyBytes,0)));
+//                        keyBytes[6]=(byte)(keyBytes[6]^one);
+//                        if(key%10000==0)
+//                            logger.info(String.format("original %d,offset %d",key,Bytes.bytes2long(keyBytes,0)));
+                        logger.info("key skip:"+key);
+                        i++;
+                        continue;
                     }
                     engine.write(keyBytes, vals);
                     i++;
@@ -437,20 +440,26 @@ public class EngineTest {
             int keyOffset;
             long value;
             int success=0;
+            int failed=0;
+            int notFound=0;
             while (i < num) {
                     key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
                     try {
                         values = engine.read(keyBytes);
                     }catch (Exception e){
-                        if(success%1000==0)
-                        logger.info("read exception ",e);
+                        notFound++;
+//                        if(notFound%1000==0)
+                            logger.info("read exception ",e);
+                        i++;
                         continue;
                     }
                     keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     value=Bytes.bytes2long(values,keyOffset);
                     if(value!=key){
+                        failed++;
+                        if(failed%10000==0)
                         logger.error(String.format("%d,%d %d %s",id,key,value,new String(values)));
                     }else{
                         success++;
