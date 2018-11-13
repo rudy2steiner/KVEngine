@@ -158,7 +158,6 @@ public class Memory {
                 } while (line != null);
                 logger.info(memoryInfo.toString());
                 if (listMemory.size() >= 2) {
-//                    memoryBean = new MemoryInfo();
                     listMemory= parseMemory(listMemory.get(1));
                     if (listMemory.size() >= 7) {
                         memoryBean.setTotal(Long.valueOf(listMemory.get(1).trim()));

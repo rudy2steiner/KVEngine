@@ -4,7 +4,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 
 import java.nio.ByteBuffer;
 
-public class Cell {
+public class Cell implements freeable{
     private final static int KEY_LENGTH=StoreConfig.KEY_SIZE;
     private byte[] key;
     private byte[] value;
@@ -60,5 +60,11 @@ public class Cell {
 
     public void setOffset(long offset) {
         this.offset = offset;
+    }
+
+    @Override
+    public void free() {
+        this.key=null;
+        this.value=null;
     }
 }

@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.AbstractEngine;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.wal.WALog;
@@ -20,6 +21,7 @@ public class WALogEngine extends AbstractEngine {
     }
     @Override
     public void open(String path) throws EngineException {
+        logger.info("start before memory occupy"+Memory.memory().toString());
         try {
             if(!Null.isEmpty(path)) {
                 String realPath=path;
@@ -33,6 +35,7 @@ public class WALogEngine extends AbstractEngine {
             logger.info("wal exception",e);
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }
+        logger.info("started memory occupy"+Memory.memory().toString());
     }
 
     @Override

@@ -69,6 +69,8 @@ public class MultiTypeLogAppender extends Service {
             logger.info(String.format("key %d,txId %d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
                                   syncEvent.txId(),syncEvent.elapse()));
         }
+        // help gc
+        event.value().free();
     }
 
     /**

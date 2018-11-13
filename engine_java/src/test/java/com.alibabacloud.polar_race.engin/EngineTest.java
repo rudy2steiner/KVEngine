@@ -22,7 +22,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=10000;
+    private long numPerThreadWrite=500000;
 
     private long keyValueOffset=0;  // default
     private byte[] values;

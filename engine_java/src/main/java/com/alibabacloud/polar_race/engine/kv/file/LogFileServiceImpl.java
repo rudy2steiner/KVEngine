@@ -158,9 +158,7 @@ public class LogFileServiceImpl implements LogFileService{
                      file.delete();
                      sortedLogFiles.remove(sortedLogFiles.size()-1);
                 }else{
-                    //
-                    logger.info("last time shutdown gracefully,"+lastName);
-
+                    logger.info("last time shutdown gracefully,last log "+lastName);
                 }
             }
         }
@@ -226,7 +224,7 @@ public class LogFileServiceImpl implements LogFileService{
                     handler.closeFileChannel();
                 }
                 // don't cache
-                handler.dontNeed(0,handler.length());
+                handler.dontNeed(0,0);
             }catch (IOException e){
                 logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);
             }

@@ -26,7 +26,7 @@ public class IndexReader {
     public static TLongLongHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
-        int initSize = (int) ((keyCount +100)/StoreConfig.TROVE_LOAD_FACTOR);
+        int initSize = (int) ((keyCount +30)/StoreConfig.TROVE_LOAD_FACTOR);
         //logger.info("mapSize " +mapSize);
         TLongLongHashMap map = new TLongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
         int bufferSize=byteBuffer.capacity();
