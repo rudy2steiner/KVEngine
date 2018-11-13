@@ -1,6 +1,8 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -167,4 +169,8 @@ public class BufferedIOHandler implements IOHandler {
         handler.dontNeed(offset,len);
     }
 
+    @Override
+    public FileDescriptor fileDescriptor() throws IOException {
+        return handler.fileDescriptor();
+    }
 }

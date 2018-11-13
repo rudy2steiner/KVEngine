@@ -46,5 +46,11 @@
  cgroup
  
  /sys/fs/cgroup/memory/test
+ 
+ mvn -Dtest=com.alibabacloud.polar_race.engin.EngineTest#benchmark8b4kbWrite
+ 
+  vim src/test/java/com.alibabacloud.polar_race.engin/EngineTest.java 
+
+ 
     
    

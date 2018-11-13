@@ -24,7 +24,7 @@ public class EngineTest {
     long concurrency=64;
     private long numPerThreadWrite=500000;
 
-    private long keyValueOffset=0;  // default
+    private long keyValueOffset=-16000000;  // default
     private byte[] values;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
@@ -263,7 +263,7 @@ public class EngineTest {
                 while (i < num) {
                     key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
-                    keyOffset = (int) (key % VALUES_MAX_LENGTH);
+                    keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
@@ -323,7 +323,7 @@ public class EngineTest {
                 while (i < num) {
                     key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
-                    keyOffset = (int) (key % VALUES_MAX_LENGTH);
+                    keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
@@ -332,7 +332,8 @@ public class EngineTest {
                     }
                     if(random.nextDouble()<0.2){
                         keyBytes[6]=(byte)(keyBytes[6]^one);
-                        logger.info(String.format("original %d,offset %d",key,Bytes.bytes2long(keyBytes,0)));
+                        if(key%10000==0)
+                            logger.info(String.format("original %d,offset %d",key,Bytes.bytes2long(keyBytes,0)));
                     }
                     engine.write(keyBytes, vals);
                     i++;
@@ -390,7 +391,7 @@ public class EngineTest {
                         key = id * num + i;
                     }
                     Bytes.long2bytes(key, keyBytes, 0);
-                    keyOffset = (int) (key % VALUES_MAX_LENGTH);
+                    keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     System.arraycopy(values,0,vals,0,vals.length);
                     for (int k = 0; k < 8; k++) {
@@ -438,7 +439,7 @@ public class EngineTest {
             long value;
             int success=0;
             while (i < num) {
-                    key = id * num + i;
+                    key = keyValueOffset+id * num + i;
                     Bytes.long2bytes(key, keyBytes, 0);
                     try {
                         values = engine.read(keyBytes);
@@ -447,7 +448,7 @@ public class EngineTest {
                         logger.info("read exception ",e);
                         continue;
                     }
-                    keyOffset = (int) (key % VALUES_MAX_LENGTH);
+                    keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
                     value=Bytes.bytes2long(values,keyOffset);
                     if(value!=key){

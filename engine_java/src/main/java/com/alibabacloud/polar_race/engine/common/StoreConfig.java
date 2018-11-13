@@ -37,7 +37,7 @@ public class StoreConfig {
     public final static int  MAX_CONCURRENCY_PRODUCER_AND_CONSUMER=64;
     public final static float  TROVE_LOAD_FACTOR=0.99f;
 
-    public final static int   WRITE_HANDLER_CLOSE_PROCESSOR=4;
+    public final static int   WRITE_HANDLER_CLOSE_PROCESSOR=2;
     public final static int   PAGE_CACHE_LIMIT=1560;  //MB
 
     /**

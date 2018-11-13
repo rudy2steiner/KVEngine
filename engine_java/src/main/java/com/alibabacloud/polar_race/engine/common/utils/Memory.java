@@ -141,37 +141,37 @@ public class Memory {
      **/
     public static MemoryInfo memory(){
         MemoryInfo memoryBean=new MemoryInfo();
-        try {
-            Process pro = Runtime.getRuntime().exec("free -m");
-            boolean result = pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
-            if(result) {
-                StringBuilder memoryInfo = new StringBuilder("\n");
-                List<String> listMemory = new ArrayList<>();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
-                String line;
-                do {
-                    line = bufferedReader.readLine();
-                    if (line != null) {
-                        memoryInfo.append(line).append("\n");
-                        listMemory.add(line);
-                    }
-                } while (line != null);
-                logger.info(memoryInfo.toString());
-                if (listMemory.size() >= 2) {
-                    listMemory= parseMemory(listMemory.get(1));
-                    if (listMemory.size() >= 7) {
-                        memoryBean.setTotal(Long.valueOf(listMemory.get(1).trim()));
-                        memoryBean.setUsed(Long.valueOf(listMemory.get(2).trim()));
-                        memoryBean.setFree(Long.valueOf(listMemory.get(3).trim()));
-                        memoryBean.setShared(Long.valueOf(listMemory.get(4).trim()));
-                        memoryBean.setBufferCache(Long.valueOf(listMemory.get(5).trim()));
-                        memoryBean.setAvailable(Long.valueOf(listMemory.get(6).trim()));
-                    }
-                }
-            }
-        }catch (Exception e){
-            logger.info("exception",e);
-        }
+//        try {
+//            Process pro = Runtime.getRuntime().exec("free -m");
+//            boolean result = pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
+//            if(result) {
+//                StringBuilder memoryInfo = new StringBuilder("\n");
+//                List<String> listMemory = new ArrayList<>();
+//                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
+//                String line;
+//                do {
+//                    line = bufferedReader.readLine();
+//                    if (line != null) {
+//                        memoryInfo.append(line).append("\n");
+//                        listMemory.add(line);
+//                    }
+//                } while (line != null);
+//                logger.info(memoryInfo.toString());
+//                if (listMemory.size() >= 2) {
+//                    listMemory= parseMemory(listMemory.get(1));
+//                    if (listMemory.size() >= 7) {
+//                        memoryBean.setTotal(Long.valueOf(listMemory.get(1).trim()));
+//                        memoryBean.setUsed(Long.valueOf(listMemory.get(2).trim()));
+//                        memoryBean.setFree(Long.valueOf(listMemory.get(3).trim()));
+//                        memoryBean.setShared(Long.valueOf(listMemory.get(4).trim()));
+//                        memoryBean.setBufferCache(Long.valueOf(listMemory.get(5).trim()));
+//                        memoryBean.setAvailable(Long.valueOf(listMemory.get(6).trim()));
+//                    }
+//                }
+//            }
+//        }catch (Exception e){
+//            logger.info("exception",e);
+//        }
         return memoryBean;
     }
     /**

@@ -19,6 +19,8 @@ public class NativeIO {
     private final static Logger logger = Logger.getLogger(NativeIO.class.getName());
 
     public static final int POSIX_FADV_DONTNEED = 4; // See /usr/include/linux/fadvise.h
+    public static final int POSIX_FADV_NORMAL=0;   //POSIX_FADV_NORMAL
+
 
     private static boolean initialized = false;
     private static Throwable initError = null;

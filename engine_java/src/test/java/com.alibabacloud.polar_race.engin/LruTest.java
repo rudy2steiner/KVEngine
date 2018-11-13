@@ -147,13 +147,25 @@ public class LruTest {
         long start=0;
         long end=1000*1000;
         int max=128;
-        TLongLongHashMap[] maps=new TLongLongHashMap[max];
-        for(int index=0;index<max;index++) {
-            maps[index]=new TLongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
-            for (long i = start; i < end; i++) {
-                maps[index].put(i, i);
-            }
+//        TLongLongHashMap[] maps=new TLongLongHashMap[max];
+//        for(int index=0;index<max;index++) {
+//            maps[index]=new TLongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
+//            for (long i = start; i < end; i++) {
+//                maps[index].put(i, i);
+//            }
+//            maps[index].put(-7,-1);
+//           long value= maps[index].get(-7);
+//            logger.info("key 0 value"+value);
+//        }
+        TLongLongHashMap negative=new TLongLongHashMap(10);
+        for(long l=-10;l<=0;l++){
+            negative.put(l,l);
+
         }
+        negative.put(0,-19);
+        logger.info(" "+negative.get(0));
+
+
         try {
             logger.info("stop "+(int)((64000000+100)/0.9)*16);
             Thread.sleep(100000);

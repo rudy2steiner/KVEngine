@@ -3,7 +3,6 @@ package com.alibabacloud.polar_race.engine.kv.event;
 import com.alibabacloud.polar_race.engine.common.thread.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,7 +43,7 @@ public class TaskBus {
                 logger.info("close file timeout 10s ");
             }
         }catch (InterruptedException e){
-
+            logger.info("await task bus finish interrupted",e);
         }
     }
 

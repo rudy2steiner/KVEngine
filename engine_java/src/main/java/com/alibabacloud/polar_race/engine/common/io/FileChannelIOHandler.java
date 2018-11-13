@@ -1,9 +1,8 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import com.jcraft.jsch.IO;
+
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -129,12 +128,16 @@ public class FileChannelIOHandler implements IOHandler {
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();
             // 且不再需要
-
         }
     }
 
     @Override
     public void dontNeed(long offset,long len) throws IOException{
         NativeIO.posixFadvise(randomAccessFile.getFD(), offset, len,NativeIO.POSIX_FADV_DONTNEED);
+    }
+
+    @Override
+    public FileDescriptor fileDescriptor() throws IOException {
+        return randomAccessFile.getFD();
     }
 }

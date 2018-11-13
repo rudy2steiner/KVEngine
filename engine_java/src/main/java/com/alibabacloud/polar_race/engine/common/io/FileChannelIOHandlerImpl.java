@@ -1,9 +1,6 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -166,4 +163,8 @@ public class FileChannelIOHandlerImpl implements IOHandler {
 
     }
 
+    @Override
+    public FileDescriptor fileDescriptor() throws IOException {
+        return null;
+    }
 }

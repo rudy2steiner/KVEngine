@@ -3,6 +3,7 @@ import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.io.NativeIO;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import org.slf4j.Logger;
@@ -115,6 +116,7 @@ public class IndexLogReader extends Service {
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
                     handler.closeFileChannel();
+                    //NativeIO.posixFadvise(handler.fileDescriptor(),0,readOffset,NativeIO.POSIX_FADV_NORMAL);
                     //handler.dontNeed(readOffset,logFileService.tailerAndIndexSize());
                     //logFileService.asyncCloseFileChannel(handler);
                 }

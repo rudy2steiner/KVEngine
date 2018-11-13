@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
 import java.io.Closeable;
+import java.io.FileDescriptor;
 import java.io.Flushable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -107,4 +108,6 @@ public interface IOHandler extends Flushable, Closeable {
      *
      **/
     void dontNeed(long offset,long len) throws IOException;
+
+    FileDescriptor fileDescriptor() throws IOException;
 }
