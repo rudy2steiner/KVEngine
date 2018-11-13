@@ -110,6 +110,7 @@ public class LogFileLRUCache extends Service {
     public void onStart() throws Exception {
         if(logFileService.allLogFiles().size()>0){
             sortedLogFiles.addAll(logFileService.allLogFiles());
+//            for()
 //            this.lru= CacheBuilder.newBuilder()
 //                    .maximumSize(maxCacheLog)
 //                    .removalListener(new LogFileRemoveListener())

@@ -115,7 +115,7 @@ public class IndexLogReader extends Service {
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
                     handler.closeFileChannel();
-                    handler.dontNeed(readOffset,logFileService.tailerAndIndexSize());
+                    //handler.dontNeed(readOffset,logFileService.tailerAndIndexSize());
                     //logFileService.asyncCloseFileChannel(handler);
                 }
                 visitor.onFinish();
