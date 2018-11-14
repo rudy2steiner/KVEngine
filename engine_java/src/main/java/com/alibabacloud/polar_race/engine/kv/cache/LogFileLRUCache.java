@@ -95,9 +95,11 @@ public class LogFileLRUCache extends Service {
                 // notify cache miss
                 handler.closeFileChannel();
             }catch (Exception e){
+                if(e instanceof EngineException)
+                    throw  (EngineException) e;
                logger.info("direct io exception",e);
             }finally {
-
+                //
             }
 
 
