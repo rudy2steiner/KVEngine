@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * only test index hash  and index Engine
@@ -77,5 +78,13 @@ public class IndexTest {
         }
 
 
+    }
+
+    @Test
+    public void atomicInteger(){
+         int v=Integer.MAX_VALUE-3;
+        AtomicInteger a=new AtomicInteger(v);
+        for(int i=0;i<1000;i++)
+            logger.info(a.addAndGet(5)+"");
     }
 }

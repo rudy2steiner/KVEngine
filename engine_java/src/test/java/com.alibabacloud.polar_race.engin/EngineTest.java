@@ -21,7 +21,7 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     long concurrency=64;
-    private long numPerThreadWrite=10000;
+    private long numPerThreadWrite=100000;
 
     private long keyValueOffset=-16000000;  // default
     private byte[] values;
@@ -331,7 +331,7 @@ public class EngineTest {
                     }
                     if(random.nextDouble()<0.2){
 //                        keyBytes[6]=(byte)(keyBytes[6]^one);
-//                        if(key%10000==0)
+                        if(key%10000==0)
 //                            logger.info(String.format("original %d,offset %d",key,Bytes.bytes2long(keyBytes,0)));
                         logger.info("key skip:"+key);
                         i++;
@@ -449,7 +449,7 @@ public class EngineTest {
                         values = engine.read(keyBytes);
                     }catch (Exception e){
                         notFound++;
-                      if(notFound%1000==0) {
+                      if(notFound%10000==0) {
                           logger.info("read exception,ignore ", e);
                       }
                         i++;

@@ -123,6 +123,7 @@ public class IndexLogReader extends Service {
                 visitor.onFinish();
             }catch (Exception e){
                 logger.info("read exception and stop",e);
+                visitor.onException();
             }finally {
                 close();
             }

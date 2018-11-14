@@ -173,4 +173,9 @@ public class BufferedIOHandler implements IOHandler {
     public FileDescriptor fileDescriptor() throws IOException {
         return handler.fileDescriptor();
     }
+
+    @Override
+    public void truncate(long size) throws IOException {
+        handler.truncate(size);
+    }
 }

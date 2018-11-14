@@ -1,13 +1,15 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
+import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SSBucket {
@@ -21,6 +23,8 @@ public class SSBucket {
     private final static Logger logger= LoggerFactory.getLogger(SSBucket.class);
     private AtomicInteger writeCounter=new AtomicInteger(0);
     private int maxWriteCounter;
+    private AtomicBoolean flushing=new AtomicBoolean(false);
+    private Object lock=new Object();
     public void SSBucket(){
     }
     public SSBucket(int id,int bufferSize){
@@ -30,6 +34,7 @@ public class SSBucket {
          this.id=id;
          this.buffer=buffer;
          this.bufferSize=buffer.capacity();
+
     }
     public SSBucket(int id, DoubleBuffer doubleBUffer){
          this(id,doubleBUffer.get(false));
@@ -44,7 +49,8 @@ public class SSBucket {
 
     public void put(ByteBuffer index,int offset) throws Exception{
         if(buffer.remaining()==0){
-            logger.info("bug");
+            //logger.info("bug");
+            throw new EngineException(RetCodeEnum.IO_ERROR,"bucket buffer remaining 0");
         }
         ByteBuffer buf = buffer.slice();
         buf.position(offset);
@@ -61,16 +67,29 @@ public class SSBucket {
      */
     public int getNextOffset() throws Exception{
               int offset=index.getAndAdd(indexSize);
-              if(offset+indexSize<=bufferSize) {
-                  return offset;
+              if(offset+indexSize>bufferSize||offset<0) {
+                    sync();
+                    return -1;
+
               }
-              //swap(offset);
-              return -1;
+              return offset;
     }
 
+
     public synchronized void swap(int position) throws Exception{
-          //if(position<=bufferSize)
-            flushBuffer(position);
+                flushBuffer(position);
+                notifyAll();
+    }
+    /**
+     * 让所有想获取写入位置的线程等待
+     **/
+    public synchronized void sync(){
+        try {
+            if(index.get()>bufferSize)
+               wait();
+        }catch (InterruptedException e){
+            logger.info("interrupted "+Thread.currentThread().getId());
+        }
     }
     /**
      *

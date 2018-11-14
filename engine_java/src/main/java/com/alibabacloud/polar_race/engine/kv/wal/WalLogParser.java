@@ -27,6 +27,9 @@ public class WalLogParser implements KVParser {
         this.logFileService=logFileService;
         // no buffer cache
         this.handler=logFileService.ioHandler(fileName);
+        if(handler.length()>logFileService.logWritableSize()){
+            handler.truncate(logFileService.logWritableSize());
+        }
     }
 
     @Override
@@ -47,6 +50,7 @@ public class WalLogParser implements KVParser {
         int  maxValueLength=0;
         do{
             i++;
+            handler.position(maxValueLength);
             handler.read(to);
             to.flip();
             remain=to.remaining();
@@ -54,7 +58,7 @@ public class WalLogParser implements KVParser {
             maxValueLength+=position;
             if(to.hasRemaining()){
                 to.compact();
-            }
+            }else to.clear();
         }while (remain==capacity);
         logTailerAndIndex(indexBuffer,maxValueLength);
         // no need anymore

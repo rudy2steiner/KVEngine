@@ -128,6 +128,7 @@ public class FileChannelIOHandler implements IOHandler {
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();
             // 且不再需要
+            //fileChannel.truncate()
         }
     }
 
@@ -139,5 +140,10 @@ public class FileChannelIOHandler implements IOHandler {
     @Override
     public FileDescriptor fileDescriptor() throws IOException {
         return randomAccessFile.getFD();
+    }
+
+    @Override
+    public void truncate(long size) throws IOException {
+        fileChannel.truncate(size);
     }
 }

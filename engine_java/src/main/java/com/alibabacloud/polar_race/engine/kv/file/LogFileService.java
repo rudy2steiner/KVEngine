@@ -52,4 +52,5 @@ public interface LogFileService {
 
 
     File file(long fileName,String suffix);
+    long addSize(long size);
 }

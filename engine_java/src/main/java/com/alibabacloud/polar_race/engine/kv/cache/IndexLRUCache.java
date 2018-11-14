@@ -2,6 +2,8 @@ package com.alibabacloud.polar_race.engine.kv.cache;
 
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
+import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
@@ -100,8 +102,8 @@ public class IndexLRUCache extends Service {
      * @param key
      * @return  fileId for the key or -1
      */
-    public long getOffset(long key){
-        if(!this.isStarted()) throw new IllegalStateException("not started");
+    public long getOffset(long key) throws EngineException{
+        if(!this.isStarted()) throw new EngineException(RetCodeEnum.CORRUPTION,"not started");
          int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
          try {
              TLongLongHashMap longLongMap = lru.get(bucketId);
@@ -113,6 +115,7 @@ public class IndexLRUCache extends Service {
              }
          }catch (ExecutionException e){
              logger.info("get exception ",e);
+             throw  new EngineException(RetCodeEnum.CORRUPTION,"get exception");
          }
          return -1;
     }

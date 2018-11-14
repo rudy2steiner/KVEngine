@@ -24,6 +24,8 @@ import com.alibabacloud.polar_race.engine.kv.index.IndexLogReader;
 import com.alibabacloud.polar_race.engine.kv.index.IndexVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -50,6 +52,7 @@ public class WALogger extends Service implements WALog<Put> {
     private CountDownLatch indexLoadComplete;
     private TaskBus fileChannelCloseProcessor;
     private AtomicInteger readCounter=new AtomicInteger(0);
+    private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
     private Status storeStatus;
     public WALogger(String dir){
         this.rootDir=dir;
@@ -119,7 +122,13 @@ public class WALogger extends Service implements WALog<Put> {
                 private AtomicInteger concurrency=new AtomicInteger(cacheController.maxHashBucketSize());
                 @Override
                 public void visit(ByteBuffer buffer) throws Exception {
-                    hashIndexAppender.append(buffer);
+                    try {
+                        hashIndexAppender.append(buffer);
+                    }catch (Exception e){
+                        logger.info("hash appender exception",e);
+                        onException();
+                        throw e;
+                    }
                 }
                 @Override
                 public void onFinish() throws Exception{
@@ -130,6 +139,11 @@ public class WALogger extends Service implements WALog<Put> {
                         logger.info(String.format("hash task  finish, time %d ms",System.currentTimeMillis()-start));
 
                     }
+                }
+
+                @Override
+                public void onException()  {
+                      latch.countDown();
                 }
             },cacheController.maxHashBucketSize());
             return true;
@@ -184,6 +198,10 @@ public class WALogger extends Service implements WALog<Put> {
         if(readCounter.incrementAndGet()%100000==0){
             logger.info(Memory.memory().toString());
         }
+        valueBuffer.flip();
+        if(valueBuffer.remaining()!=StoreConfig.VALUE_SIZE){
+            throw new EngineException(RetCodeEnum.INCOMPLETE,"读取出错");
+        }
         return  valueBuffer.array();
     }
 
@@ -205,7 +223,7 @@ public class WALogger extends Service implements WALog<Put> {
         if(startAsyncHashBucketTask()) {
             // 依据store 的状态，看是否需要加载缓存
            //List<Long> files=logFileService.allLogFiles();
-                latch.await();
+                latch.await(60,TimeUnit.SECONDS);
                 indexLoadComplete=new CountDownLatch(1);
                 this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator,indexLoadComplete);
                 this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
@@ -218,6 +236,7 @@ public class WALogger extends Service implements WALog<Put> {
         }
         if(!Null.isEmpty(indexLoadComplete))
                  indexLoadComplete.await();
+        infoLogAndHashIndex();
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
             logger.info(" index and log cache finish");
@@ -229,6 +248,18 @@ public class WALogger extends Service implements WALog<Put> {
         this.appender.start();
         onStartFinish();
     }
+
+    public void infoLogAndHashIndex(){
+        int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
+        long indexTotal=indexFileService.addSize(0l);
+        long logTotal=logFileService.addSize(0l);
+                        logFileService.addSize(-logTotal);
+         int logFiles=logFileService.allLogFiles().size();
+        logTotal=logFileService.addSize(0l);
+        logger.info(String.format("index file %d,total size %d ;log file %d ,total %d",indexFiles,indexTotal,logFiles,logTotal));
+    }
+
+
 
 
     /**
@@ -274,6 +305,19 @@ public class WALogger extends Service implements WALog<Put> {
      * */
     public void onStartFinish(){
         logger.info(String.format("wal logger started,path %s",rootDir));
+        timer.schedule(new StoreGuardTimeout(),StoreConfig.STORE_TIMEOUT,TimeUnit.SECONDS);
+    }
+
+    public class StoreGuardTimeout implements Runnable{
+        @Override
+        public void run() {
+            logger.info("timeout");
+            try {
+                stop();
+            }catch (Exception e){
+                logger.info("time stop exception",e);
+            }
+        }
     }
 
     /**
@@ -293,7 +337,9 @@ public class WALogger extends Service implements WALog<Put> {
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.stop();
+         this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
+         infoLogAndHashIndex();
          logger.info("asyncClose wal logger,close time elapsed "+(System.currentTimeMillis()-start));
     }
 

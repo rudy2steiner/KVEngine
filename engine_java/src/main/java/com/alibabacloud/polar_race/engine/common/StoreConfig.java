@@ -40,6 +40,8 @@ public class StoreConfig {
     public final static int   WRITE_HANDLER_CLOSE_PROCESSOR=2;
     public final static int   PAGE_CACHE_LIMIT=1560;  //MB
 
+    public final static long   STORE_TIMEOUT=1200;  //second
+
     /**
      *  失败 太多，直接cache 线程加载到缓存
      * */

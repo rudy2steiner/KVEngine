@@ -167,4 +167,9 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     public FileDescriptor fileDescriptor() throws IOException {
         return null;
     }
+
+    @Override
+    public void truncate(long size) throws IOException {
+
+    }
 }

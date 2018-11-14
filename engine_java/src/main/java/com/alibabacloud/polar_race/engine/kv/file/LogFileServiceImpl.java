@@ -28,6 +28,7 @@ public class LogFileServiceImpl implements LogFileService{
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
     private TaskBus handlerCloseEventProcessor;
+    private volatile long fileTotalSpace;
     final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
     public LogFileServiceImpl(String dir, TaskBus eventBus){
         this.dir=dir;
@@ -36,6 +37,7 @@ public class LogFileServiceImpl implements LogFileService{
     }
 
     public void scanFiles(){
+        fileTotalSpace=0;
         this.sortedLogFiles =allLogFiles();
     }
     @Override
@@ -103,6 +105,7 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public List<Long> allSortedFiles(String suffix) {
+        fileTotalSpace=0;
         File file=new File(dir);
         List<Long> logNames=new ArrayList<>();
         if(!file.isDirectory()) return null;
@@ -110,10 +113,16 @@ public class LogFileServiceImpl implements LogFileService{
         for(String name:names){
             if(name.endsWith(suffix)){
                 logNames.add(Long.valueOf(name.substring(0,name.indexOf('.'))));
+                addSize(new File(dir,name).length());
             }
         }
         Collections.sort(logNames);
         return logNames;
+    }
+
+    public long addSize(long size){
+        fileTotalSpace+=size;
+        return fileTotalSpace;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
+import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -44,14 +46,14 @@ public class WalIndexLogger {
     /**
      * wait until put success
      **/
-    public void put(IndexLogEvent event) throws IOException{
+    public void put(IndexLogEvent event) throws IOException,EngineException{
         IOHandler handler=handlerMap.get(event.txId());
         if(handler!=null) {
             handler.append(event.value().get(true));
             event.value().state(true,false);
         }else{
             logger.info("index log thread handler not init");
-            throw new IllegalArgumentException("io handler not found");
+            throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
         }
     }
     /**

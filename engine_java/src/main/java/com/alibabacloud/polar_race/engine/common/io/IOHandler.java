@@ -110,4 +110,6 @@ public interface IOHandler extends Flushable, Closeable {
     void dontNeed(long offset,long len) throws IOException;
 
     FileDescriptor fileDescriptor() throws IOException;
+
+    void truncate(long size) throws IOException;
 }

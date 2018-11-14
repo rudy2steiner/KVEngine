@@ -7,4 +7,6 @@ public interface IndexVisitor {
     void visit(ByteBuffer buffer) throws Exception;
 
     void onFinish() throws Exception;
+
+    void onException() ;
 }

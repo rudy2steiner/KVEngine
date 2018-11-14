@@ -51,6 +51,7 @@ public class IndexHashAppender  extends Service {
         while(index.remaining()>=StoreConfig.VALUE_INDEX_RECORD_SIZE){
               index.mark();
               bukId=hash(index.getLong())%capacity;
+              // 注意死循环
               while(offset<0) offset=buckets[bukId].getNextOffset();
               index.reset();
               buffer=index.slice();
