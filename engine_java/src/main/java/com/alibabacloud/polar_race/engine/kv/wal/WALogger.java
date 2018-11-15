@@ -51,7 +51,6 @@ public class WALogger extends Service implements WALog<Put> {
     private CountDownLatch latch;
     private CountDownLatch indexLoadComplete;
     private TaskBus fileChannelCloseProcessor;
-    private AtomicInteger readCounter=new AtomicInteger(0);
     private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
     private Status storeStatus;
     public WALogger(String dir){
@@ -195,13 +194,13 @@ public class WALogger extends Service implements WALog<Put> {
                 }
                 valueBuffer.clear();
                 logFileLRUCache.readValueIfCacheMiss(expectedKey,offset,valueBuffer);
-        if(readCounter.incrementAndGet()%100000==0){
-            logger.info(Memory.memory().toString());
-        }
+//        if(readCounter.incrementAndGet()%1000000==0){
+//            logger.info(Memory.memory().toString());
+//        }
         valueBuffer.flip();
-        if(valueBuffer.remaining()!=StoreConfig.VALUE_SIZE){
-            throw new EngineException(RetCodeEnum.INCOMPLETE,"读取出错");
-        }
+//        if(valueBuffer.remaining()!=StoreConfig.VALUE_SIZE){
+//            throw new EngineException(RetCodeEnum.INCOMPLETE,"读取出错");
+//        }
         return  valueBuffer.array();
     }
 
@@ -235,7 +234,7 @@ public class WALogger extends Service implements WALog<Put> {
             logger.info("log and index cache engine start ignore");
         }
         if(!Null.isEmpty(indexLoadComplete))
-                 indexLoadComplete.await();
+            indexLoadComplete.await();
         infoLogAndHashIndex();
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
@@ -249,14 +248,14 @@ public class WALogger extends Service implements WALog<Put> {
         onStartFinish();
     }
 
+    /**
+     * 统计文件下索引和日志数量及占用空间
+     **/
     public void infoLogAndHashIndex(){
         int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
         long indexTotal=indexFileService.addSize(0l);
-        long logTotal=logFileService.addSize(0l);
-                        logFileService.addSize(-logTotal);
-         int logFiles=logFileService.allLogFiles().size();
-        logTotal=logFileService.addSize(0l);
-        logger.info(String.format("index file %d,total size %d ;log file %d ,total %d",indexFiles,indexTotal,logFiles,logTotal));
+        long logTotal=logFileService.lastWriteLogName(true);// 不准确
+        logger.info(String.format("index file %d,total size %d ;log file total %d",indexFiles,indexTotal,logTotal));
     }
 
 

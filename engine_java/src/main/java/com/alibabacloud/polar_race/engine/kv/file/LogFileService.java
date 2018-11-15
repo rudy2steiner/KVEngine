@@ -12,6 +12,10 @@ public interface LogFileService {
     String nextLogName(IOHandler handler);
     String nextLogName();
     String lastLogName();
+    /**
+     * without suffixe
+     **/
+    long lastWriteLogName(boolean realTime);
     File   nextLogFile(Cell cell);
     IOHandler ioHandler(String fileName) throws FileNotFoundException;
     /**
@@ -53,4 +57,7 @@ public interface LogFileService {
 
     File file(long fileName,String suffix);
     long addSize(long size);
+
+
+
 }

@@ -20,8 +20,8 @@ import java.util.Random;
 @Ignore
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
-    long concurrency=64;
-    private long numPerThreadWrite=100000;
+    int concurrency=64;
+    private long numPerThreadWrite=500000;
 
     private long keyValueOffset=-16000000;  // default
     private byte[] values;
@@ -86,6 +86,62 @@ public class EngineTest {
          }
          long end=System.currentTimeMillis();
          logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+    }
+
+    /**
+     * 整个long 区间
+     **/
+    @Test
+    public void benchmark8b4kbRangeRead(){
+        logger.info(new String(values));
+        long start=System.currentTimeMillis();
+        long startkey=Long.MIN_VALUE;
+        long endKey=Long.MAX_VALUE;
+        long span=endKey/concurrency*2;
+        Thread[] t=new Thread[(int)concurrency];
+        for (int i = 0; i < concurrency; i++) {
+            t[i]=new Thread(new GetRangKeyThread(i,startkey+ i*span,startkey+(i+1)*span, engine),"write"+i);
+            t[i].start();
+        }
+        try {
+            for (int i = 0; i < concurrency; i++) {
+                t[i].join();
+            }
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        long end=System.currentTimeMillis();
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+    }
+    @Test
+    public void benchmark8b4kbRangeWrite(){
+        logger.info(new String(values));
+        long start=System.currentTimeMillis();
+        long startkey=Long.MIN_VALUE;
+        long endKey=Long.MAX_VALUE;
+        long span=endKey/(concurrency/2);
+        Thread[] t=new Thread[(int)concurrency];
+        long startx[]=new long[concurrency];
+        long end[]=new long[concurrency];
+        Runnable task;
+        for (int i = 0; i < concurrency; i++) {
+            startx[i]=startkey+ i*span;
+            end[i]=startkey+(i+1)*span;
+        }
+        for (int i = 0; i < concurrency; i++) {
+            task=new UniqueRangeKeyPutThread(i,startx[i],end[i], engine);
+            t[i]=new Thread(task,"write"+i);
+            t[i].start();
+        }
+        try {
+            for (int i = 0; i < concurrency; i++) {
+                t[i].join();
+            }
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        long endt=System.currentTimeMillis();
+        logger.info(String.format("time elapsed %d ms,qps %d",endt-start,numPerThreadWrite*concurrency*1000/(endt-start)));
     }
 
     /**
@@ -161,9 +217,6 @@ public class EngineTest {
         long end=System.currentTimeMillis();
         logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
-
-
-
 
 
     @Test
@@ -471,6 +524,132 @@ public class EngineTest {
             }
             logger.info(String.format("thread %d exit",id));
 
+        }
+    }
+    public class GetRangKeyThread implements Runnable{
+        private int id;
+        private int num;
+        private AbstractEngine engine;
+        private long start;
+        private long end;
+        private long step;
+        public GetRangKeyThread(int id,long start,long end,AbstractEngine engine){
+            this.id=id;
+            this.num=num;
+            this.start=start;
+            this.end=end;
+            this.engine=engine;
+            this.step=(end-start)/numPerThreadWrite;
+
+        }
+
+        /**
+         * value 中隐藏key 的信息
+         * 处理runtime exception
+         **/
+        public void run()  {
+            long i=0;
+            long key;
+            byte[] keyBytes=new byte[8];
+            byte[] values;
+            int keyOffset;
+            long value;
+            int success=0;
+            int failed=0;
+            int notFound=0;
+            key = start;
+            while (i < numPerThreadWrite) {
+                Bytes.long2bytes(key, keyBytes, 0);
+                try {
+                    values = engine.read(keyBytes);
+                }catch (Exception e){
+                    notFound++;
+                    if(notFound%10000==0) {
+                        logger.info("read exception,ignore ", e);
+                    }
+                    key+=step;
+                    continue;
+                }
+                keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
+                keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
+                value=Bytes.bytes2long(values,keyOffset);
+                if(value!=key){
+                    failed++;
+                    if(failed%10000==0)
+                        logger.error(String.format("%d,%d %d %s",id,key,value,new String(values)));
+                }else{
+                    success++;
+                    if(success%10000==0)
+                        logger.info(String.format("%d,%d %d",id,key,value));
+                }
+                key+=step;
+            }
+            logger.info(String.format("thread %d exit",id));
+        }
+    }
+
+    /***
+     * 唯一kv 写入线程
+     **/
+    public class UniqueRangeKeyPutThread implements Runnable{
+        private int id;
+        private int num;
+        private AbstractEngine engine;
+        private byte[] values;
+        private byte[] keyBytes;
+        private byte[] vals;
+        private Random random;
+        private long start;
+        private long end;
+        private long step;
+        private long meet=1000000000000L;
+        public UniqueRangeKeyPutThread(int id, long start,long end,AbstractEngine engine){
+            this.id=id;
+            this.start=start;
+            this.end=end;
+            this.step=(end-start)/numPerThreadWrite;
+            this.engine=engine;
+            init();
+            logger.info(String.format("start %d,end %d, time %d",start,end,(end-start)/step));
+        }
+        public void init(){
+            random=new Random(0);
+            int len=template.length();
+            values=new byte[4096];
+            for(int i=0;i<4096;i++){
+                values[i]=(byte) template.charAt(random.nextInt(len));
+            }
+            keyBytes=new byte[StoreConfig.KEY_SIZE];
+            vals=new byte[StoreConfig.VALUE_SIZE];
+        }
+        /**
+         * value 中隐藏key 的信息
+         *
+         **/
+        public void run()  {
+            long  i=0;
+            long key=start;
+            int keyOffset;
+            try {
+                while ( i< numPerThreadWrite) {
+                    Bytes.long2bytes(key, keyBytes, 0);
+                    keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
+                    keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
+                    System.arraycopy(values,0,vals,0,vals.length);
+                    for (int k = 0; k < 8; k++) {
+                        vals[keyOffset + k]=keyBytes[k];
+                    }
+                    key+=step;
+                    i++;
+                    engine.write(keyBytes, vals);
+                    if(i%meet==0){
+                        logger.info(String.format("%d write key:%s",id,Bytes.bytes2long(keyBytes,0)));
+                    }
+                }
+                logger.info(String.format("%d write finish",id));
+            }catch (EngineException e){
+                logger.info(String.format("thread %d",id),e);
+            }
         }
     }
 

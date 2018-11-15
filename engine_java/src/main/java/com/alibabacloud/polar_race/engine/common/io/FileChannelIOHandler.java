@@ -1,11 +1,9 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
-import com.jcraft.jsch.IO;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-
 public class FileChannelIOHandler implements IOHandler {
 
     private File file;

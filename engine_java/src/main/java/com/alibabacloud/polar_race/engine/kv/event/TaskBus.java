@@ -27,24 +27,24 @@ public class TaskBus {
      * 提交可执行任务
      **/
     public void submit(Runnable task){
-        if(submitCount.incrementAndGet()%10000==0){
+        if(submitCount.incrementAndGet()%100000==0){
             logger.info(String.format("task queued %d",taskQueue.size()));
         }
         executorService.submit(task);
     }
 
     public void stop(){
-        executorService.shutdown();
-        try {
-            logger.info("task queued "+taskQueue.size());
-            if(executorService.awaitTermination(10, TimeUnit.SECONDS)){
-                logger.info("close file finished");
-            }else{
-                logger.info("close file timeout 10s ");
-            }
-        }catch (InterruptedException e){
-            logger.info("await task bus finish interrupted",e);
-        }
+        executorService.shutdownNow();
+//        try {
+//            logger.info("task queued "+taskQueue.size());
+//            if(executorService.awaitTermination(10, TimeUnit.SECONDS)){
+//                logger.info("close file finished");
+//            }else{
+//                logger.info("close file timeout 10s ");
+//            }
+//        }catch (InterruptedException e){
+//            logger.info("await task bus finish interrupted",e);
+//        }
     }
 
 

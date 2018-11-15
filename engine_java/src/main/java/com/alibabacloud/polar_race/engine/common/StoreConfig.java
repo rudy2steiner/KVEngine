@@ -30,13 +30,12 @@ public class StoreConfig {
     public final static int  INT_LEN=4;
     public final static int  SHORT_LEN=2;
     public final static int  LOG_ELEMNT_LEAST_SIZE=SHORT_LEN+KEY_SIZE;
-    public final static int  MAX_TIMEOUT=2000;
+    public final static int  MAX_TIMEOUT=1000;
     public final static byte verison=(byte) 1;
     public final static int  MAX_DIRECT_BUFFER_SIZE=200*1024*1024; // 220Mb
     public final static int  MAX_OLD_BUFFER_SIZE=750*1024*1024;  // 750Mb  full gc limit
     public final static int  MAX_CONCURRENCY_PRODUCER_AND_CONSUMER=64;
-    public final static float  TROVE_LOAD_FACTOR=0.99f;
-
+    public final static float  TROVE_LOAD_FACTOR=0.98f;
     public final static int   WRITE_HANDLER_CLOSE_PROCESSOR=2;
     public final static int   PAGE_CACHE_LIMIT=1560;  //MB
 

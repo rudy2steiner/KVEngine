@@ -98,8 +98,6 @@ public class LogFileLRUCache extends Service {
                 if(e instanceof EngineException)
                     throw  (EngineException) e;
                logger.info("direct io exception",e);
-            }finally {
-                //
             }
 
 

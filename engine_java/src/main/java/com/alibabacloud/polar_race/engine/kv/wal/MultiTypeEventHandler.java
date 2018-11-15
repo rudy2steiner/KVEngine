@@ -175,7 +175,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
             logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
         }else{
             timeoutAndNoEventCounter++;
-            if(timeoutAndNoEventCounter%1000==0)
+            if(timeoutAndNoEventCounter%100000==0)
                 logger.info(Thread.currentThread().getId()+" timeout  and now write,consider asyncClose ");
         }
     }

@@ -29,6 +29,7 @@ public class LogFileServiceImpl implements LogFileService{
     private int  logTailerAndIndexSize;
     private TaskBus handlerCloseEventProcessor;
     private volatile long fileTotalSpace;
+    private long lastWriteFile;
     final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
     public LogFileServiceImpl(String dir, TaskBus eventBus){
         this.dir=dir;
@@ -47,7 +48,8 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public String nextLogName(IOHandler handler) {
-        return String.valueOf(Long.valueOf(handler.name())+StoreConfig.SEGMENT_LOG_FILE_SIZE)+StoreConfig.LOG_FILE_SUFFIX;
+        lastWriteFile=Long.valueOf(handler.name())+StoreConfig.SEGMENT_LOG_FILE_SIZE;
+        return String.valueOf(lastWriteFile)+StoreConfig.LOG_FILE_SUFFIX;
     }
 
     @Override
@@ -249,5 +251,10 @@ public class LogFileServiceImpl implements LogFileService{
     @Override
     public File file(long fileName,String suffix) {
         return  new File(dir,fileName+suffix);
+    }
+
+    @Override
+    public long lastWriteLogName(boolean realTime) {
+        return lastWriteFile;
     }
 }
