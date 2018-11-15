@@ -160,8 +160,8 @@ public class BufferedIOHandler implements IOHandler {
     }
 
     @Override
-    public void closeFileChannel() throws IOException {
-        handler.close();
+    public void closeFileChannel(boolean write) throws IOException {
+        handler.closeFileChannel(write);
     }
 
     @Override

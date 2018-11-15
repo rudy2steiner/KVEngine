@@ -229,11 +229,10 @@ public class LogFileServiceImpl implements LogFileService{
                 int closed=closeHandlerCounter.incrementAndGet();
                 if(closed%100000==0){
                     logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
-                    handler.closeFileChannel();
+//                    handler.closeFileChannel(true);
                     logger.info(Memory.memory().toString());
-                }else {
-                    handler.closeFileChannel();
                 }
+                handler.closeFileChannel(true);
                 // don't cache
                 handler.dontNeed(0,0);
             }catch (IOException e){

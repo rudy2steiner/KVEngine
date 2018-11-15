@@ -138,7 +138,7 @@ public class IndexReader {
          * close 所有的io handler,hash bucket file always open
          **/
         public void onIndexClose() throws IOException{
-                handler.closeFileChannel();
+                handler.closeFileChannel(false);
                 // whole file
                 handler.dontNeed(0,0);
         }

@@ -154,7 +154,7 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     }
 
     @Override
-    public void closeFileChannel() throws IOException {
+    public void closeFileChannel(boolean write) throws IOException {
         this.close();
     }
 

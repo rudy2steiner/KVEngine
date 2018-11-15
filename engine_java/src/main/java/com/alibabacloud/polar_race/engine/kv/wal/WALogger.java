@@ -24,8 +24,6 @@ import com.alibabacloud.polar_race.engine.kv.index.IndexLogReader;
 import com.alibabacloud.polar_race.engine.kv.index.IndexVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -51,6 +49,7 @@ public class WALogger extends Service implements WALog<Put> {
     private CountDownLatch latch;
     private CountDownLatch indexLoadComplete;
     private TaskBus fileChannelCloseProcessor;
+    private AtomicInteger readCounter=new AtomicInteger(0);
     private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
     private Status storeStatus;
     public WALogger(String dir){
@@ -194,9 +193,9 @@ public class WALogger extends Service implements WALog<Put> {
                 }
                 valueBuffer.clear();
                 logFileLRUCache.readValueIfCacheMiss(expectedKey,offset,valueBuffer);
-//        if(readCounter.incrementAndGet()%1000000==0){
-//            logger.info(Memory.memory().toString());
-//        }
+        if(readCounter.incrementAndGet()%1000000==0){
+            logger.info(Memory.memory().toString());
+        }
         valueBuffer.flip();
 //        if(valueBuffer.remaining()!=StoreConfig.VALUE_SIZE){
 //            throw new EngineException(RetCodeEnum.INCOMPLETE,"读取出错");

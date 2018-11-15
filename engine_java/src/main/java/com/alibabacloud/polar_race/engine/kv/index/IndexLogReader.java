@@ -115,7 +115,7 @@ public class IndexLogReader extends Service {
                     handler.read(buffer);
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
-                    handler.closeFileChannel();
+                    handler.closeFileChannel(false);
                     //NativeIO.posixFadvise(handler.fileDescriptor(),0,readOffset,NativeIO.POSIX_FADV_NORMAL);
                     //handler.dontNeed(readOffset,logFileService.tailerAndIndexSize());
                     //logFileService.asyncCloseFileChannel(handler);

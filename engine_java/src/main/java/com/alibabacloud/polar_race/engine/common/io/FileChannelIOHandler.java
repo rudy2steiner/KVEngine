@@ -108,7 +108,7 @@ public class FileChannelIOHandler implements IOHandler {
 
     @Override
     public void close() throws IOException {
-        closeFileChannel();
+        closeFileChannel(false);
     }
 
     @Override
@@ -117,11 +117,12 @@ public class FileChannelIOHandler implements IOHandler {
     }
 
     @Override
-    public void closeFileChannel() throws IOException {
+    public void closeFileChannel(boolean write) throws IOException {
         if(fileChannel.isOpen()) {
             // flush os level page cache,ensure all the change has persistent,
             // fsync
-            fileChannel.force(true);
+            if(write)
+                fileChannel.force(true);
             fileChannel.close();
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();

@@ -97,7 +97,7 @@ public class EngineTest {
         long start=System.currentTimeMillis();
         long startkey=Long.MIN_VALUE;
         long endKey=Long.MAX_VALUE;
-        long span=endKey/concurrency*2;
+        long span=endKey/(concurrency/2);
         Thread[] t=new Thread[(int)concurrency];
         for (int i = 0; i < concurrency; i++) {
             t[i]=new Thread(new GetRangKeyThread(i,startkey+ i*span,startkey+(i+1)*span, engine),"write"+i);

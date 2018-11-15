@@ -93,7 +93,7 @@ public class LogFileLRUCache extends Service {
                     throw new EngineException(RetCodeEnum.INCOMPLETE,String.format("%d missing in file %d",expectedKey,fileId));
                 }
                 // notify cache miss
-                handler.closeFileChannel();
+                handler.closeFileChannel(false);
             }catch (Exception e){
                 if(e instanceof EngineException)
                     throw  (EngineException) e;

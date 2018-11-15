@@ -101,7 +101,7 @@ public interface IOHandler extends Flushable, Closeable {
     /**
      * asyncClose underlying file channel
      **/
-    void closeFileChannel() throws IOException;
+    void closeFileChannel(boolean write) throws IOException;
 
     /**
      *  such as fadvise ,implement by linux native api
