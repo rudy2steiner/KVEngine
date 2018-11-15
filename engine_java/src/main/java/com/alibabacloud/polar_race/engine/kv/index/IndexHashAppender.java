@@ -3,10 +3,14 @@ import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
+import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
 public class IndexHashAppender  extends Service {
+    private final static Logger logger= LoggerFactory.getLogger(IndexHashAppender.class);
     private int capacity;
     private SSBucket buckets[];
     private int buckBufferSize ;
@@ -47,10 +51,16 @@ public class IndexHashAppender  extends Service {
     public void append(ByteBuffer index) throws Exception{
         ByteBuffer buffer;
         int bukId;
+        long key;
         int offset=-1;
+        int n=capacity-1;
         while(index.remaining()>=StoreConfig.VALUE_INDEX_RECORD_SIZE){
               index.mark();
-              bukId=hash(index.getLong())%capacity;
+              key=index.getLong();
+              bukId=hash(key)&n;
+              if(bukId<0){
+                  logger.info(String.format("%d %d",key,bukId));
+              }
               // 注意死循环
               while(offset<0) offset=buckets[bukId].getNextOffset();
               index.reset();

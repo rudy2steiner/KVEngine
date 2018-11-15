@@ -35,6 +35,7 @@ public class IndexLRUCache extends Service {
     private ExecutorService indexLoadThreadPool;
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch loadComplete;
+    private int n;
     public IndexLRUCache(CacheController cacheController , LogFileService indexFileService, ExecutorService indexLoadThreadPool, LogBufferAllocator bufferAllocator, CountDownLatch latch){
         this.cacheController=cacheController;
         this.maxCache=cacheController.maxCacheIndex();
@@ -46,6 +47,7 @@ public class IndexLRUCache extends Service {
         this.indexLoadThreadPool=indexLoadThreadPool;
         this.bufferAllocator=bufferAllocator;
         this.loadComplete=latch;
+        this.n=cacheController.maxHashBucketSize()-1;// ensure
     }
 
 
@@ -104,7 +106,7 @@ public class IndexLRUCache extends Service {
      */
     public long getOffset(long key) throws EngineException{
         if(!this.isStarted()) throw new EngineException(RetCodeEnum.CORRUPTION,"not started");
-         int bucketId=IndexHashAppender.hash(key)%StoreConfig.HASH_BUCKET_SIZE;
+         int bucketId=IndexHashAppender.hash(key)&n;
          try {
              TLongLongHashMap longLongMap = lru.get(bucketId);
              if(longLongMap!=null) {

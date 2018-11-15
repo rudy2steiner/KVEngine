@@ -61,11 +61,12 @@ public class IndexTest {
      **/
     @Test
     public void hashTest(){
-          long start=-100;
-          long end =100;
+          long start=Long.MIN_VALUE;
+          long end =Long.MAX_VALUE;
           int bucket=64;
+          int n=bucket-1;
           for(long i=start;i<end;i++)
-            logger.info(String.format("%d hash to bucket %d",i,IndexHashAppender.hash(i)%bucket));
+            logger.info(String.format("%d hash to bucket %d",i,IndexHashAppender.hash(i)&n));
 
     }
 
