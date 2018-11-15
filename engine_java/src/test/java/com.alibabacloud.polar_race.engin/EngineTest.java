@@ -567,6 +567,7 @@ public class EngineTest {
                     if(notFound%10000==0) {
                         logger.info("read exception,ignore ", e);
                     }
+                    i++;
                     key+=step;
                     continue;
                 }
@@ -582,6 +583,7 @@ public class EngineTest {
                     if(success%10000==0)
                         logger.info(String.format("%d,%d %d",id,key,value));
                 }
+                i++;
                 key+=step;
             }
             logger.info(String.format("thread %d exit",id));
