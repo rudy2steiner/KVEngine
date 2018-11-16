@@ -121,8 +121,8 @@ public class FileChannelIOHandler implements IOHandler {
         if(fileChannel.isOpen()) {
             // flush os level page cache,ensure all the change has persistent,
             // fsync
-            if(write)
-                fileChannel.force(true);
+//            if(write)
+//                fileChannel.force(true);
             fileChannel.close();
             //randomAccessFile.getFD().sync();
             randomAccessFile.close();

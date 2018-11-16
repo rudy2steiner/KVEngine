@@ -27,4 +27,9 @@ public class CacheEvent implements Event<Long> {
     public void setTxId(long txId) {
 
     }
+
+    @Override
+    public void set(Long aLong) {
+
+    }
 }

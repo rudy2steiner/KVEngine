@@ -1,6 +1,4 @@
 package com.alibabacloud.polar_race.engine.kv.wal;
-
-import com.alibabacloud.polar_race.engine.common.Lifecycle;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
@@ -35,6 +33,7 @@ public class MultiTypeLogAppender extends Service {
     private int ringBufferSize;
     private MultiTypeEventProducerTranslator translator;
     // Construct the Disruptor
+    private ThreadLocal<SyncEvent> syncs=new ThreadLocal<>();
     private  static Disruptor<LogEvent<Event>> disruptor;
     private  static RingBuffer<LogEvent<Event>> ringBuffer;
     private MultiTypeEventHandler eventHandler;
@@ -54,10 +53,20 @@ public class MultiTypeLogAppender extends Service {
     public long append(Put event) throws Exception{
         translator.publish(event);
         long txId=event.txId();
-        SyncEvent syncEvent=new SyncEvent(txId);
+        SyncEvent syncEvent=syncs.get();
+                  if(syncEvent==null){
+                      syncEvent=new SyncEvent();
+                      syncs.set(syncEvent);
+                  }
+                  syncEvent.set(txId);
         translator.publish(syncEvent);
-        syncEvent.get(StoreConfig.MAX_TIMEOUT);
-        onAppendFinish(syncEvent,event);
+                 syncEvent.get(StoreConfig.MAX_TIMEOUT);
+        if(syncEvent.value()%1000000==0) {
+            onAppendFinish(syncEvent, event);
+        }
+        // help gc
+        event.value().free();
+        syncEvent.free();
         return txId;
     }
 
@@ -65,12 +74,9 @@ public class MultiTypeLogAppender extends Service {
      * on append finish
      **/
     public void onAppendFinish(SyncEvent syncEvent,Put event){
-        if(syncEvent.value()%500000==0){
-            logger.info(String.format("key %d,txId %d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
+       logger.info(String.format("key %d,txId %d time elapsed %d", Bytes.bytes2long(event.value().getKey(),0),
                                   syncEvent.txId(),syncEvent.elapse()));
-        }
-        // help gc
-        event.value().free();
+
     }
 
     /**

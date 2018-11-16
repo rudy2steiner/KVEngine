@@ -31,4 +31,9 @@ public class IndexLogEvent implements Event<DoubleBuffer> {
     public void setTxId(long txId) {
         this.buckId=txId;
     }
+
+    @Override
+    public void set(DoubleBuffer doubleBuffer) {
+
+    }
 }

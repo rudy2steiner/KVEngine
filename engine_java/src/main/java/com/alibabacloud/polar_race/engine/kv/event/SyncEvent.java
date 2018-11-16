@@ -1,8 +1,9 @@
 package com.alibabacloud.polar_race.engine.kv.event;
 
+import com.alibabacloud.polar_race.engine.common.recyclable;
 import java.util.concurrent.TimeoutException;
 
-public class SyncEvent implements Event<Long> {
+public class SyncEvent implements Event<Long> , recyclable {
     private final static Long NOT_DONE_ID =-1l;
     private volatile Long maxDoneTxId= NOT_DONE_ID;
     private volatile Long txId;
@@ -10,6 +11,9 @@ public class SyncEvent implements Event<Long> {
     private long finishTimestamp;
     public SyncEvent(Long txId){
         this.txId = txId;
+    }
+    public SyncEvent(){
+
     }
     @Override
     public EventType type() {
@@ -60,5 +64,18 @@ public class SyncEvent implements Event<Long> {
 
     public long elapse(){
         return finishTimestamp-startTimestamp;
+    }
+
+    @Override
+    public void set(Long aLong) {
+           txId=aLong;
+    }
+
+    @Override
+    public void free() {
+        maxDoneTxId= NOT_DONE_ID;
+        txId=NOT_DONE_ID;
+        finishTimestamp=-1;
+        startTimestamp=-1;
     }
 }

@@ -25,4 +25,9 @@ public class Put implements Event<Cell> {
     public void setTxId(long txId) {
               cell.setTxId(txId);
     }
+
+    @Override
+    public void set(Cell cell) {
+        this.cell=cell;
+    }
 }

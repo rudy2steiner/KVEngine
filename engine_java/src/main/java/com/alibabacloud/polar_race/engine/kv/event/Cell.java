@@ -1,10 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv.event;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.recyclable;
 
 import java.nio.ByteBuffer;
 
-public class Cell implements freeable{
+public class Cell implements recyclable {
     private final static int KEY_LENGTH=StoreConfig.KEY_SIZE;
     private byte[] key;
     private byte[] value;
