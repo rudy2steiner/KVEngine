@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheListener;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.carrotsearch.hppc.LongLongHashMap;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +24,12 @@ public class IndexReader {
     public IndexReader(LogFileService indexFileService){
         this.indexFileService=indexFileService;
     }
-    public static TLongLongHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
+    public static LongLongHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
         int initSize = (int) ((keyCount+100)/StoreConfig.TROVE_LOAD_FACTOR);
         //logger.info("mapSize " +mapSize);
-        TLongLongHashMap map = new TLongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR,Long.MIN_VALUE,-1);
+        LongLongHashMap map = new LongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
         int bufferSize=byteBuffer.capacity();
         long key=0;
         long value=0;
@@ -124,7 +125,7 @@ public class IndexReader {
             try {
                 for(int i=start;i<end;i++) {
                     handler=handlers.get(i);
-                    TLongLongHashMap map = IndexReader.read(handler, buffer);
+                    LongLongHashMap map = IndexReader.read(handler, buffer);
                     if(cacheListener!=null)
                         cacheListener.onCache(Integer.valueOf(handler.name()),map);
                     onIndexClose();

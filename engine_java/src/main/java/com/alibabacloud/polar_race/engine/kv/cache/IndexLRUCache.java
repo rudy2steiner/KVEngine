@@ -9,6 +9,7 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
+import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(IndexLRUCache.class);
-    private LoadingCache<Integer, TLongLongHashMap> lru;
+    private LoadingCache<Integer, LongLongHashMap> lru;
     private Map<Integer, IOHandler> indexHandlerMap;
     private IndexReader indexReader;
     private LogFileService indexFileService;
@@ -36,6 +37,7 @@ public class IndexLRUCache extends Service {
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch loadComplete;
     private int n;
+    private long defaultValue=-1l;
     public IndexLRUCache(CacheController cacheController , LogFileService indexFileService, ExecutorService indexLoadThreadPool, LogBufferAllocator bufferAllocator, CountDownLatch latch){
         this.cacheController=cacheController;
         this.maxCache=cacheController.maxCacheIndex();
@@ -108,9 +110,9 @@ public class IndexLRUCache extends Service {
         if(!this.isStarted()) throw new EngineException(RetCodeEnum.CORRUPTION,"not started");
          int bucketId=IndexHashAppender.hash(key)&n;
          try {
-             TLongLongHashMap longLongMap = lru.get(bucketId);
+             LongLongHashMap longLongMap = lru.get(bucketId);
              if(longLongMap!=null) {
-                return longLongMap.get(key);
+                return longLongMap.getOrDefault(key,defaultValue);
                 //to do read
              }else {
                  logger.info(String.format("cache miss %d int %d",key,bucketId));
@@ -122,23 +124,23 @@ public class IndexLRUCache extends Service {
          return -1;
     }
 
-    public class IndexRemoveListener implements RemovalListener<Integer,TLongLongHashMap>{
+    public class IndexRemoveListener implements RemovalListener<Integer,LongLongHashMap>{
         private int removeCount=0;
         @Override
-        public void onRemoval(RemovalNotification<Integer, TLongLongHashMap> removalNotification) {
+        public void onRemoval(RemovalNotification<Integer, LongLongHashMap> removalNotification) {
             if(++removeCount%1000==0)
                 logger.info(String.format("%d cache miss total,remove %d",removeCount,removalNotification.getKey()));
         }
     }
 
-    public class IndexMapLoad extends CacheLoader<Integer,TLongLongHashMap>{
+    public class IndexMapLoad extends CacheLoader<Integer,LongLongHashMap>{
         private Semaphore semaphore;
         private Object lock=new Object();
         public IndexMapLoad(int maxConcurrency){
                this.semaphore=new Semaphore(maxConcurrency);
         }
         @Override
-        public TLongLongHashMap load(Integer bucketId) throws Exception {
+        public LongLongHashMap load(Integer bucketId) throws Exception {
             this.semaphore.acquire();
             ByteBuffer byteBuffer;
             int index;
@@ -152,7 +154,7 @@ public class IndexLRUCache extends Service {
                     }
                 }
             }
-            TLongLongHashMap map= IndexReader.read(indexHandlerMap.get(bucketId),byteBuffer);
+            LongLongHashMap map= IndexReader.read(indexHandlerMap.get(bucketId),byteBuffer);
             // release buffer
             byteBuffers[index]=byteBuffer;
             this.semaphore.release();

@@ -8,7 +8,7 @@ public class StoreConfig {
     public final static String INDEX_CHILD_DIR="index/";
     public final static String LOG_INDEX_FILE_SUFFIX=".index";
     public final static int  HASH_INDEX_QUEUE_SIZE=500;
-    public final static int  HASH_BUCKET_SIZE =64; // 2^n
+    public final static int  HASH_BUCKET_SIZE =128; // 2^n
     public final static double  HASH_BUCKET_LOAD_FACTOR =0.5;
     public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
     public final static int  HASH_CONCURRENCY =32;

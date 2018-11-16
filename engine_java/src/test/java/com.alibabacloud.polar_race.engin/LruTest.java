@@ -7,6 +7,7 @@ import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
+import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.junit.Before;
@@ -146,34 +147,48 @@ public class LruTest {
         Memory.limit(3*512*1024*1024);
         long start=0;
         long end=1000*1000;
-        int max=128;
-//        TLongLongHashMap[] maps=new TLongLongHashMap[max];
-//        for(int index=0;index<max;index++) {
-//            maps[index]=new TLongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
-//            for (long i = start; i < end; i++) {
-//                maps[index].put(i, i);
-//            }
-//            maps[index].put(-7,-1);
-//           long value= maps[index].get(-7);
-//            logger.info("key 0 value"+value);
-//        }
-        TLongLongHashMap negative=new TLongLongHashMap(10);
-        for(long l=-10;l<=0;l++){
-            negative.put(l,l);
+        int max=64;
+        TLongLongHashMap[] maps=new TLongLongHashMap[max];
+        for(int index=0;index<max;index++) {
+            maps[index]=new TLongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
+            for (long i = start; i < end; i++) {
+                maps[index].put(i, i);
+            }
 
         }
-        negative.put(0,-19);
-        logger.info(" "+negative.get(0));
-
-
         try {
-            logger.info("stop "+(int)((64000000+100)/0.9)*16);
             Thread.sleep(100000);
         }catch (InterruptedException e){
 
         }
 
+
     }
+    @Test
+    public void hppcMap(){
+        Memory.limit(3*512*1024*1024);
+        long start=0;
+        long end=1000*1000;
+        int max=64;
+        LongLongHashMap[] maps=new LongLongHashMap[max];
+        for(int index=0;index<max;index++) {
+            maps[index]=new LongLongHashMap((int) ((1000000 + 100) / 0.98), 0.98f);
+            for (long i = start; i < end; i++) {
+                maps[index].put(i, i);
+            }
+
+        }
+        try {
+            Thread.sleep(100000);
+        }catch (InterruptedException e){
+
+        }
+//        maps[index].put(-7,-1);
+//        long value= maps[index].get(-7);
+
+        logger.info("key 0 value");
+    }
+
 
 
 }

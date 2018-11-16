@@ -137,7 +137,7 @@ public class LogFileServiceImpl implements LogFileService{
     @Override
     public int tailerAndIndexSize() {
         if(logTailerAndIndexSize<=0) {
-            int size = (int)(StoreConfig.SEGMENT_LOG_FILE_SIZE / StoreConfig.VALUE_SIZE) * StoreConfig.KEY_SIZE;
+            int size = (int)(StoreConfig.SEGMENT_LOG_FILE_SIZE / StoreConfig.VALUE_SIZE) * StoreConfig.VALUE_INDEX_RECORD_SIZE;
             if (size % StoreConfig.K4_SIZE == 0) {
                 logTailerAndIndexSize = size;
             } else {

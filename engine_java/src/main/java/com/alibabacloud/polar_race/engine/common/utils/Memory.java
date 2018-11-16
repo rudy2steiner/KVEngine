@@ -33,6 +33,10 @@ public class Memory {
                           commmands[2]=setPid;
                           pro=Runtime.getRuntime().exec(commmands);
                 result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
+                // 禁用交换分区
+                String   forbiddenSwap="swapoff -a" ;
+                pro=Runtime.getRuntime().exec(forbiddenSwap);
+                result= pro.waitFor((long)StoreConfig.MAX_TIMEOUT, TimeUnit.MILLISECONDS);
                 logger.info(setPid +" excc "+result);
             }catch (Exception e){
                 logger.info("limit memory failed",e);
