@@ -89,9 +89,11 @@ public class LogFileLRUCache extends Service {
                 buffer.limit(StoreConfig.VALUE_SIZE);
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
-                    //skip to value offset
-                    handler.position(valueOffset);
-                    handler.read(buffer);
+                    //skip to value offset, 对同一个文件的并发读
+                    synchronized (handler) {
+                        handler.position(valueOffset);
+                        handler.read(buffer);
+                    }
                 }else {
                     throw new EngineException(RetCodeEnum.INCOMPLETE,String.format("%d missing in file %d",expectedKey,fileId));
                 }
