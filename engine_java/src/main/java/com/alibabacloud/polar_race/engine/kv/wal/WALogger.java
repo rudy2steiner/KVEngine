@@ -331,6 +331,7 @@ public class WALogger extends Service implements WALog<Put> {
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.stop();
+         logHandlerCache.stop();
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
          infoLogAndHashIndex();
