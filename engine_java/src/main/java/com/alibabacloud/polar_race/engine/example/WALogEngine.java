@@ -23,7 +23,7 @@ public class WALogEngine extends AbstractEngine {
     }
     @Override
     public void open(String path) throws EngineException {
-        logger.info("start before memory occupy"+Memory.memory().toString());
+        logger.info("start before memory occupy "+Memory.memory().toString());
         try {
             if(!Null.isEmpty(path)) {
                 String realPath=path;
