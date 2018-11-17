@@ -67,7 +67,7 @@ public class WALogger extends Service implements WALog<Put> {
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
 
-        this.transferIndexLogToHashBucketInit();
+        //this.transferIndexLogToHashBucketInit();
         this.storeStatus=Status.START;
     }
 
@@ -110,6 +110,7 @@ public class WALogger extends Service implements WALog<Put> {
 
     public boolean startAsyncHashBucketTask() throws Exception{
         if(logFileService.allLogFiles().size()>0) {
+            transferIndexLogToHashBucketInit();
             this.latch=new CountDownLatch(1);
             long start=System.currentTimeMillis();
             hashIndexAppender.start();
@@ -211,6 +212,7 @@ public class WALogger extends Service implements WALog<Put> {
             storeStatus=Status.NORMAL_EXIT;
             nextLogName= logFileService.nextLogName();
         }
+
         // ensure hash bucket task is finished,possible optimize
         if(startAsyncHashBucketTask()) {
             // 依据store 的状态，看是否需要加载缓存
@@ -331,7 +333,8 @@ public class WALogger extends Service implements WALog<Put> {
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.stop();
-         logHandlerCache.stop();
+         if(!Null.isEmpty(logHandlerCache))
+                logHandlerCache.stop();
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
          infoLogAndHashIndex();
