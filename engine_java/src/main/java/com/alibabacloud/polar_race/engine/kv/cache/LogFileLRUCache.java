@@ -33,8 +33,10 @@ public class LogFileLRUCache extends Service {
     private WalReader logReader;
     private ExecutorService loadServcie;
 //    private LogCacheMonitor logCacheMonitor;
-    public LogFileLRUCache(LogFileService logFileService,CacheController cacheController,ExecutorService loadService,LogBufferAllocator logBufferAllocator){
+    private IOHandlerLRUCache logHandlerCache;
+    public LogFileLRUCache(LogFileService logFileService,IOHandlerLRUCache logHandlerCache,CacheController cacheController,ExecutorService loadService,LogBufferAllocator logBufferAllocator){
         this.logFileService=logFileService;
+        this.logHandlerCache=logHandlerCache;
         this.sortedLogFiles=new TreeSet();
         this.cacheController=cacheController;//new KVCacheController(logFileService);
         this.maxCacheLog =cacheController.maxCacheLog();
@@ -79,10 +81,11 @@ public class LogFileLRUCache extends Service {
     public  void readValueIfCacheMiss(long expectedKey,long offset,ByteBuffer buffer) throws EngineException{
         long fileId=sortedLogFiles.floor(offset);
         long offsetInFile = offset - fileId;
-       //cache miss,direct io
+        //cache miss,direct io
             IOHandler handler=null;
             try {
-                handler = logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX);
+                handler = logHandlerCache.get(fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
+                if(handler==null) throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
                 buffer.limit(StoreConfig.VALUE_SIZE);
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
@@ -93,7 +96,7 @@ public class LogFileLRUCache extends Service {
                     throw new EngineException(RetCodeEnum.INCOMPLETE,String.format("%d missing in file %d",expectedKey,fileId));
                 }
                 // notify cache miss
-                handler.closeFileChannel(false);
+                //handler.closeFileChannel(false);
             }catch (Exception e){
                 if(e instanceof EngineException)
                     throw  (EngineException) e;
@@ -109,7 +112,7 @@ public class LogFileLRUCache extends Service {
     @Override
     public void onStart() throws Exception {
         if(logFileService.allLogFiles().size()>0){
-            sortedLogFiles.addAll(logFileService.allLogFiles());
+            sortedLogFiles.addAll(logHandlerCache.files());
 //            for()
 //            this.lru= CacheBuilder.newBuilder()
 //                    .maximumSize(maxCacheLog)
@@ -179,9 +182,9 @@ public class LogFileLRUCache extends Service {
     public void concurrentInitLoadCache(){
 //        int concurrency=cacheController.cacheLogInitLoadConcurrency();
 //        List<Long> logs=logFileService.allLogFiles();
-//        concurrency=Math.min(concurrency,logs.size());
+//        concurrency=Math.min(concurrency,logs.expectedSize());
 //        int initLoad=(int)(cacheController.cacheLogLoadFactor()*cacheController.maxCacheLog());
-//        int logSize=logs.size();
+//        int logSize=logs.expectedSize();
 //           initLoad=logSize>initLoad?initLoad:logSize;
 //        if(concurrency>0) {
 //            if(loadServcie==null)

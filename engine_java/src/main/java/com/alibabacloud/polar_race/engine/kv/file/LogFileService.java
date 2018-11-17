@@ -56,7 +56,17 @@ public interface LogFileService {
 
 
     File file(long fileName,String suffix);
-    long addSize(long size);
+    long addByteSize(long size);
+
+    /**
+     *
+     * 预计的文件数量
+     **/
+    int expectedSize();
+    /**
+     * 目录下文件数量
+     **/
+    int size();
 
 
 

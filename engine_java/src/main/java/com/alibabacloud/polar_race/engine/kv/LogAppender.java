@@ -20,7 +20,7 @@ public class LogAppender extends Service {
         }
     };
     private final static ExecutorService executor = Executors.newSingleThreadExecutor();
-    // Specify the size of the ring buffer, must be power of 2.
+    // Specify the expectedSize of the ring buffer, must be power of 2.
     private final static int DEFAULT_RING_BUFFER_SIZE = 1024*8;
     private int ringBufferSize;
     private LogEventProducerTranslator translator;

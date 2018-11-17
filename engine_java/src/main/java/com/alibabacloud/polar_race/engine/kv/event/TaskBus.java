@@ -33,9 +33,10 @@ public class TaskBus {
         executorService.submit(task);
     }
     public void stop(){
+
         executorService.shutdownNow();
 //        try {
-//            logger.info("task queued "+taskQueue.size());
+//            logger.info("task queued "+taskQueue.expectedSize());
 //            if(executorService.awaitTermination(10, TimeUnit.SECONDS)){
 //                logger.info("close file finished");
 //            }else{

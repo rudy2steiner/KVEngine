@@ -110,7 +110,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         boolean flushed=false;
         if(flushedMaxTxId<processedMaxTxId) {
             handler.flush();
-            //logger.info(String.format("%d flushed and ack,batch size %d", processedMaxTxId,syncIndex));
+            //logger.info(String.format("%d flushed and ack,batch expectedSize %d", processedMaxTxId,syncIndex));
             flushedMaxTxId = processedMaxTxId;
             flushed=true;
         }
@@ -137,7 +137,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
      **/
     public void flushValueIndex(boolean roll) throws IOException{
         int size=valueIndexBuffer.position();
-        // store tail and value index real size
+        // store tail and value index real expectedSize
         valueIndexBuffer.position(0);
         valueIndexBuffer.put(StoreConfig.VERSION);
         valueIndexBuffer.putInt(size);

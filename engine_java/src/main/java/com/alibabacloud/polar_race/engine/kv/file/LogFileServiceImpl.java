@@ -6,7 +6,6 @@ import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
-import com.alibabacloud.polar_race.engine.common.utils.MemoryInfo;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
@@ -75,7 +74,8 @@ public class LogFileServiceImpl implements LogFileService{
     public IOHandler bufferedIOHandler(String fileName, IOHandler handler, String mode) throws FileNotFoundException {
         File file=new File(dir,fileName);
         IOHandler newHandler=new FileChannelIOHandler(file,mode);
-        asyncCloseFileChannel(handler);
+        //asyncCloseFileChannel(handler);
+        //asyncCloseFileChannel(handler);
         return new BufferedIOHandler(newHandler,handler.buffer());
     }
 
@@ -115,14 +115,14 @@ public class LogFileServiceImpl implements LogFileService{
         for(String name:names){
             if(name.endsWith(suffix)){
                 logNames.add(Long.valueOf(name.substring(0,name.indexOf('.'))));
-                addSize(new File(dir,name).length());
+                addByteSize(new File(dir,name).length());
             }
         }
         Collections.sort(logNames);
         return logNames;
     }
 
-    public long addSize(long size){
+    public long addByteSize(long size){
         fileTotalSpace+=size;
         return fileTotalSpace;
     }
@@ -255,5 +255,17 @@ public class LogFileServiceImpl implements LogFileService{
     @Override
     public long lastWriteLogName(boolean realTime) {
         return lastWriteFile;
+    }
+
+    @Override
+    public int expectedSize() {
+        return (int)(StoreConfig.MAX_LOG_SPACE_SIZE/StoreConfig.SEGMENT_LOG_FILE_SIZE);
+    }
+
+    @Override
+    public int size() {
+        File file=new File(dir);
+        if(!file.isDirectory()) return 0;
+        return  file.list().length ;
     }
 }

@@ -23,9 +23,7 @@ public final synchronized long put(long key, long value) {
         return subPut(key, value);
         }
 
-public final synchronized int size() {
-        return subSize();
-        }
+
 public final void forEach(LongLongConsumer action){
           forEachx(action);
 }
@@ -36,8 +34,7 @@ abstract long subGet(long key);
 @MethodForm("put")
 abstract long subPut(long key, long value);
 
-@MethodForm("size")
-abstract int subSize();
+
 
 @MethodForm("forEach")
 public abstract void  forEachx(LongLongConsumer action);

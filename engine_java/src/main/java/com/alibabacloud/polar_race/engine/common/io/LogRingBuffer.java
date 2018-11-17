@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 public class LogRingBuffer {
 
     private final static ExecutorService executor = Executors.newSingleThreadExecutor();
-    // Specify the size of the ring buffer, must be power of 2.
+    // Specify the expectedSize of the ring buffer, must be power of 2.
     private final static int DEFAULT_BUFFER_SIZE = 10240;
     private int bufferSize=DEFAULT_BUFFER_SIZE;
    // private ByteEventProducerWithTranslator TRANSLATOR;

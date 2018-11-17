@@ -89,7 +89,7 @@ public class LogCacheMonitor extends Service implements CacheListener<BufferHold
 
     @Override
     public String toString() {
-        return "unsupport";//Arrays.toString(topK(Math.min(1000,logFileService.allLogFiles().size())));
+        return "unsupport";//Arrays.toString(topK(Math.min(1000,logFileService.allLogFiles().expectedSize())));
     }
     public AtomicInteger[] topK(int k){
         Arrays.sort(atomicMissCount, new Comparator<AtomicInteger>() {

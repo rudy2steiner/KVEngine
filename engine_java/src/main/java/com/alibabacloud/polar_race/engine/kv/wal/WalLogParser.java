@@ -45,7 +45,7 @@ public class WalLogParser implements KVParser {
         indexBuffer.put(StoreConfig.VERSION);
         indexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
         long fileStartPosition=Long.valueOf(handler.name());
-        logger.info(String.format("recovering last file %s,size %d",handler.name(),handler.length()));
+        logger.info(String.format("recovering last file %s,expectedSize %d",handler.name(),handler.length()));
         int  maxValueLength=0;
         do{
             i++;
@@ -120,7 +120,7 @@ public class WalLogParser implements KVParser {
                handler.append(MultiTypeEventHandler.EMPTY_BUFFER);
            }
         int size=indexBuffer.position();
-        // store tail and value index real size
+        // store tail and value index real expectedSize
         indexBuffer.position(1);
         indexBuffer.putInt(size);
         indexBuffer.position(indexBuffer.capacity());

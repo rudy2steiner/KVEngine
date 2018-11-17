@@ -11,10 +11,7 @@ import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
-import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
-import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
-import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
-import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
+import com.alibabacloud.polar_race.engine.kv.cache.*;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -49,6 +46,7 @@ public class WALogger extends Service implements WALog<Put> {
     private CountDownLatch latch;
     private CountDownLatch indexLoadComplete;
     private TaskBus fileChannelCloseProcessor;
+    private IOHandlerLRUCache logHandlerCache;
     private AtomicInteger readCounter=new AtomicInteger(0);
     private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
     private Status storeStatus;
@@ -116,6 +114,7 @@ public class WALogger extends Service implements WALog<Put> {
             long start=System.currentTimeMillis();
             hashIndexAppender.start();
             indexLogReader.start();
+            logHandlerCache.start(); // cache io handler
             indexLogReader.iterate(new IndexVisitor() {
                 private AtomicInteger concurrency=new AtomicInteger(cacheController.maxHashBucketSize());
                 @Override
@@ -203,7 +202,7 @@ public class WALogger extends Service implements WALog<Put> {
         IOHandler handler;
         String nextLogName;
         // start to process io handler close
-        fileChannelCloseProcessor.start();
+        //fileChannelCloseProcessor.start();
         boolean redo=logFileService.needReplayLog();
         if(redo){
             handler=replayLastLog();
@@ -219,7 +218,7 @@ public class WALogger extends Service implements WALog<Put> {
                 latch.await(60,TimeUnit.SECONDS);
                 indexLoadComplete=new CountDownLatch(1);
                 this.indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,bufferAllocator,indexLoadComplete);
-                this.logFileLRUCache=new LogFileLRUCache(logFileService,cacheController, commonExecutorService,bufferAllocator);
+                this.logFileLRUCache=new LogFileLRUCache(logFileService,logHandlerCache,cacheController, commonExecutorService,bufferAllocator);
                 indexLRUCache.start();
                 logFileLRUCache.start();
 
@@ -247,9 +246,9 @@ public class WALogger extends Service implements WALog<Put> {
      **/
     public void infoLogAndHashIndex(){
         int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
-        long indexTotal=indexFileService.addSize(0l);
+        long indexTotal=indexFileService.addByteSize(0l);
         long logTotal=logFileService.lastWriteLogName(true);// 不准确
-        logger.info(String.format("index file %d,total size %d ;log file total %d",indexFiles,indexTotal,logTotal));
+        logger.info(String.format("index file %d,total expectedSize %d ;log file total %d",indexFiles,indexTotal,logTotal));
     }
 
 
@@ -314,10 +313,12 @@ public class WALogger extends Service implements WALog<Put> {
     }
 
     /**
-     * */
+     *
+     **/
     public void transferIndexLogToHashBucketInit(){
+        logHandlerCache=new IOHandlerLRUCache(logFileService);
         hashIndexAppender=new IndexHashAppender(indexDir,cacheController.maxHashBucketSize(),cacheController.hashBucketWriteCacheSize(),fileChannelCloseProcessor);
-        indexLogReader=new IndexLogReader(walDir,logFileService, commonExecutorService);
+        indexLogReader=new IndexLogReader(walDir,logFileService, logHandlerCache,commonExecutorService);
     }
 
     @Override
@@ -329,7 +330,7 @@ public class WALogger extends Service implements WALog<Put> {
             this.indexLRUCache.stop();
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
-         this.fileChannelCloseProcessor.stop();
+         //this.fileChannelCloseProcessor.stop();
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
          infoLogAndHashIndex();

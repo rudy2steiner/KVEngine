@@ -1,9 +1,9 @@
 package com.alibabacloud.polar_race.engine.kv.index;
-import com.alibabacloud.polar_race.engine.common.Lifecycle;
+
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.common.io.NativeIO;
+import com.alibabacloud.polar_race.engine.kv.cache.IOHandlerLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import org.slf4j.Logger;
@@ -20,15 +20,17 @@ public class IndexLogReader extends Service {
     private List<Long>  logFiles;
     private ExecutorService indexHashService;
     private boolean ownThreadPool=false;
-    public IndexLogReader(String logDir, LogFileService logFileService,ExecutorService executorService){
+    private IOHandlerLRUCache logHandlerCache;
+    public IndexLogReader(String logDir, LogFileService logFileService, IOHandlerLRUCache logHandlerCache, ExecutorService executorService){
            this.logDir=logDir;
            this.logFileService=logFileService;
+           this.logHandlerCache=logHandlerCache;
            this.indexHashService=executorService;
     }
 
     @Override
     public void onStart() throws Exception {
-          this.logFiles=logFileService.allLogFiles();
+          this.logFiles=logHandlerCache.files();
           if(indexHashService==null) {
               this.indexHashService = Executors.newFixedThreadPool(StoreConfig.HASH_CONCURRENCY);
               ownThreadPool=true;
@@ -109,13 +111,14 @@ public class IndexLogReader extends Service {
             try {
                 for (int i = start; i < end; i++) {
                     //logger.info("start process wal "+files.get(i));
-                    handler = logFileService.ioHandler(files.get(i) + StoreConfig.LOG_FILE_SUFFIX);
+                    handler = logHandlerCache.get(files.get(i));//logFileService.ioHandler(files.get(i) + StoreConfig.LOG_FILE_SUFFIX);
+                    if(handler==null) throw new IllegalArgumentException("log handler not found");
                     handler.position(readOffset);
                     buffer.clear();
                     handler.read(buffer);
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
-                    handler.closeFileChannel(false);
+                    //handler.closeFileChannel(false);
                     //NativeIO.posixFadvise(handler.fileDescriptor(),0,readOffset,NativeIO.POSIX_FADV_NORMAL);
                     //handler.dontNeed(readOffset,logFileService.tailerAndIndexSize());
                     //logFileService.asyncCloseFileChannel(handler);
@@ -134,7 +137,7 @@ public class IndexLogReader extends Service {
                     byte version = buffer.get();
                     int size = buffer.getInt();
                     if(size<2000)
-                    logger.info(String.format("version %d,index buffer size %d,file %d", (int) version, size,fileNO));
+                        logger.info(String.format("version %d,index buffer expected Size %d,file %d", (int) version, size,fileNO));
                     buffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
                     buffer.limit(size);
                     visitor.visit(buffer);
