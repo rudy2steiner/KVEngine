@@ -54,7 +54,7 @@ public class LogFileLRUCache extends Service {
          int offsetInFile=(int)(offset-fileId);
          ByteBuffer  slice=holder.value().slice();
                      slice.position(offsetInFile);
-         if(slice.remaining()>StoreConfig.LOG_ELEMNT_LEAST_SIZE){
+         if(slice.remaining()>StoreConfig.LOG_ELEMENT_LEAST_SIZE){
              short len=slice.getShort();
              long  actualKey=slice.getLong();
              if(actualKey!=expectedKey){
@@ -84,7 +84,7 @@ public class LogFileLRUCache extends Service {
             try {
                 handler = logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX);
                 buffer.limit(StoreConfig.VALUE_SIZE);
-                long valueOffset=offsetInFile+StoreConfig.LOG_ELEMNT_LEAST_SIZE;
+                long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
                     //skip to value offset
                     handler.position(valueOffset);

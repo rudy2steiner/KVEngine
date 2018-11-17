@@ -4,7 +4,6 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.cache.LogFileLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class WalLogParser implements KVParser {
         int remain=0;
         int i=0;
         ByteBuffer indexBuffer=ByteBuffer.allocate(logFileService.tailerAndIndexSize());
-        indexBuffer.put(StoreConfig.verison);
+        indexBuffer.put(StoreConfig.VERSION);
         indexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
         long fileStartPosition=Long.valueOf(handler.name());
         logger.info(String.format("recovering last file %s,size %d",handler.name(),handler.length()));

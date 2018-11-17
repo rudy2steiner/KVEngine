@@ -5,7 +5,6 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 public class FileChannelIOHandler implements IOHandler {
-
     private File file;
     private String fileName;
     private RandomAccessFile randomAccessFile;

@@ -39,7 +39,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         this.syncEvents=new SyncEvent[StoreConfig.batchSyncSize];
         this.fileId=Long.valueOf(handler.name());
         // init value index buffer
-        //this.valueIndexBuffer.put(StoreConfig.verison);
+        //this.valueIndexBuffer.put(StoreConfig.VERSION);
         this.valueIndexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
     }
     @Override
@@ -139,7 +139,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         int size=valueIndexBuffer.position();
         // store tail and value index real size
         valueIndexBuffer.position(0);
-        valueIndexBuffer.put(StoreConfig.verison);
+        valueIndexBuffer.put(StoreConfig.VERSION);
         valueIndexBuffer.putInt(size);
         valueIndexBuffer.position(valueIndexBuffer.capacity());
         valueIndexBuffer.flip();

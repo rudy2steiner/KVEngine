@@ -176,8 +176,6 @@ public class WALogger extends Service implements WALog<Put> {
     public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) {
 
     }
-
-
     @Override
     public byte[] get(final byte[] key) throws Exception{
             long expectedKey=Bytes.bytes2long(key,0);
@@ -197,9 +195,6 @@ public class WALogger extends Service implements WALog<Put> {
             logger.info(Memory.memory().toString());
         }
         valueBuffer.flip();
-//        if(valueBuffer.remaining()!=StoreConfig.VALUE_SIZE){
-//            throw new EngineException(RetCodeEnum.INCOMPLETE,"读取出错");
-//        }
         return  valueBuffer.array();
     }
 
