@@ -202,7 +202,7 @@ public class WALogger extends Service implements WALog<Put> {
         IOHandler handler;
         String nextLogName;
         // start to process io handler close
-        //fileChannelCloseProcessor.start();
+        fileChannelCloseProcessor.start();
         boolean redo=logFileService.needReplayLog();
         if(redo){
             handler=replayLastLog();
@@ -330,7 +330,7 @@ public class WALogger extends Service implements WALog<Put> {
             this.indexLRUCache.stop();
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
-         //this.fileChannelCloseProcessor.stop();
+         this.fileChannelCloseProcessor.stop();
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
          infoLogAndHashIndex();

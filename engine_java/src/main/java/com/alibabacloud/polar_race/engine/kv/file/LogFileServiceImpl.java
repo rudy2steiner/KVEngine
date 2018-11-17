@@ -75,7 +75,7 @@ public class LogFileServiceImpl implements LogFileService{
         File file=new File(dir,fileName);
         IOHandler newHandler=new FileChannelIOHandler(file,mode);
         //asyncCloseFileChannel(handler);
-        //asyncCloseFileChannel(handler);
+        asyncCloseFileChannel(handler);
         return new BufferedIOHandler(newHandler,handler.buffer());
     }
 
