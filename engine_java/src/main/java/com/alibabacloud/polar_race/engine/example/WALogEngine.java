@@ -86,7 +86,8 @@ public class WALogEngine extends AbstractEngine {
     @Override
     public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) throws EngineException {
         try {
-            walLogger.iterate(visitor);
+           // walLogger.iterate(visitor);
+            throw new EngineException(RetCodeEnum.CORRUPTION,"not support");
         }catch (Exception e){
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }

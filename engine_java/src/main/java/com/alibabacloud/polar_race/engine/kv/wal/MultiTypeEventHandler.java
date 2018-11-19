@@ -159,7 +159,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     public void flush0() throws IOException{
         flushValueIndex(false);
         // 最后一个log 文件handler，退出时保正写入文件
-        //handler.closeFileChannel();
+        handler.closeFileChannel(false);
         LogBufferAllocator.release(handler.buffer());
     }
 

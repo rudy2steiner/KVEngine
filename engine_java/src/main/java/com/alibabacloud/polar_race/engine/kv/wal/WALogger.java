@@ -250,7 +250,7 @@ public class WALogger extends Service implements WALog<Put> {
         int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
         long indexTotal=indexFileService.addByteSize(0l);
         long logTotal=logFileService.lastWriteLogName(true);// 不准确
-        logger.info(String.format("index file %d,total expectedSize %d ;log file total %d",indexFiles,indexTotal,logTotal));
+        logger.info(String.format("index file %d,total size %d ;log file total %d",indexFiles,indexTotal,logTotal));
     }
 
 

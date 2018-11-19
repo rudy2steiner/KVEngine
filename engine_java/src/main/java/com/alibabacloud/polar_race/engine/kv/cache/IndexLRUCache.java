@@ -11,7 +11,6 @@ import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
-import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
