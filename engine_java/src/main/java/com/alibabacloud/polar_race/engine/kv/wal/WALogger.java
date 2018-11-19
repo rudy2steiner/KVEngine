@@ -66,7 +66,6 @@ public class WALogger extends Service implements WALog<Put> {
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
-
         //this.transferIndexLogToHashBucketInit();
         this.storeStatus=Status.START;
     }
@@ -179,10 +178,12 @@ public class WALogger extends Service implements WALog<Put> {
     @Override
     public byte[] get(final byte[] key) throws Exception{
             long expectedKey=Bytes.bytes2long(key,0);
-            long offset= indexLRUCache.getOffset(expectedKey);
+            int offset= indexLRUCache.getOffset(expectedKey);
             if(offset<0){
                 throw new EngineException(RetCodeEnum.NOT_FOUND,"not found "+expectedKey);
             }
+
+
             ByteBuffer valueBuffer=valueBuf.get();
                 if( valueBuffer==null){
                     valueBuffer=bufferAllocator.allocate(StoreConfig.VALUE_SIZE,false);

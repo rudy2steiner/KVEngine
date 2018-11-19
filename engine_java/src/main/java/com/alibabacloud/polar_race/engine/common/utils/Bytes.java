@@ -55,6 +55,16 @@ public class Bytes {
                 (((long) b[off + 0]) << 56);
     }
 
+    public static int  bitSpace(int value){
+        if(value<=0) return 0;
+        int bit=0;
+        while(value>0){
+            value>>>=1;
+            bit++;
+        }
+        return bit-1;
+    }
+
 
 
 }

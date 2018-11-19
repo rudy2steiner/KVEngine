@@ -1,9 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.cache.CacheListener;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.carrotsearch.hppc.LongIntHashMap;
 import com.carrotsearch.hppc.LongLongHashMap;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.slf4j.Logger;
@@ -24,19 +26,26 @@ public class IndexReader {
     public IndexReader(LogFileService indexFileService){
         this.indexFileService=indexFileService;
     }
-    public static LongLongHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
+    public static LongIntHashMap read(IOHandler handler, ByteBuffer byteBuffer) throws IOException {
         int fileSize = (int) handler.length();
         int keyCount = fileSize / StoreConfig.VALUE_INDEX_RECORD_SIZE;
         int initSize = (int) ((keyCount+100)/StoreConfig.TROVE_LOAD_FACTOR);
         //logger.info("mapSize " +mapSize);
-        LongLongHashMap map = new LongLongHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
+        LongIntHashMap map = new LongIntHashMap(initSize,StoreConfig.TROVE_LOAD_FACTOR);
         int bufferSize=byteBuffer.capacity();
         long key=0;
         long value=0;
         int remaining=0;
         byteBuffer.clear();
         handler.position(0);
-        long oldValue=0;
+        int oldValue;
+        int segmentNo;
+        int segmentOffset;
+        long segmentSizeMask=StoreConfig.SEGMENT_LOG_FILE_SIZE-1;
+        long rightShift= Bytes.bitSpace(StoreConfig.SEGMENT_LOG_FILE_SIZE);
+        int  maxRecordInSingleLog=StoreConfig.SEGMENT_LOG_FILE_SIZE/StoreConfig.VALUE_SIZE;
+        int leftShift=Bytes.bitSpace(maxRecordInSingleLog);
+        int intValue;
         do {
             handler.read(byteBuffer);
             byteBuffer.flip();
@@ -44,9 +53,13 @@ public class IndexReader {
             while (byteBuffer.remaining() >= StoreConfig.VALUE_INDEX_RECORD_SIZE) {
                 key = byteBuffer.getLong();
                 value = byteBuffer.getLong();
-                oldValue=map.put(key, value);
+                segmentNo=(int)(value>>>rightShift);
+                segmentOffset=(int)(value&segmentSizeMask)/StoreConfig.LOG_ELEMENT_SIZE;
+                intValue=(segmentNo<<leftShift)+segmentOffset;
+                //logger.info(String.format("segment %d,segment offset %d,int value %d",segmentNo,segmentOffset,intValue));
+                oldValue=map.put(key, intValue);
                 // value 版本号
-                if(oldValue>value){
+                if(oldValue>intValue){
                     // 保留大版本号
                     map.put(key,oldValue);
                     if(duplicatedCounter.incrementAndGet()%1000==0)
@@ -125,7 +138,7 @@ public class IndexReader {
             try {
                 for(int i=start;i<end;i++) {
                     handler=handlers.get(i);
-                    LongLongHashMap map = IndexReader.read(handler, buffer);
+                    LongIntHashMap map = IndexReader.read(handler, buffer);
                     if(cacheListener!=null)
                         cacheListener.onCache(Integer.valueOf(handler.name()),map);
                     onIndexClose();
@@ -141,6 +154,7 @@ public class IndexReader {
         public void onIndexClose() throws IOException{
                 handler.closeFileChannel(false);
                 // whole file
+                logger.info(String.format("load key success and close,%d ",handler.name()));
                 handler.dontNeed(0,0);
         }
     }

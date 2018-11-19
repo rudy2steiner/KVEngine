@@ -268,4 +268,9 @@ public class LogFileServiceImpl implements LogFileService{
         if(!file.isDirectory()) return 0;
         return  file.list().length ;
     }
+
+    @Override
+    public int maxRecordInSingleFile() {
+        return StoreConfig.SEGMENT_LOG_FILE_SIZE/StoreConfig.VALUE_SIZE;
+    }
 }

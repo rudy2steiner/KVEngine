@@ -62,11 +62,19 @@ public interface LogFileService {
      *
      * 预计的文件数量
      **/
+    @Deprecated
     int expectedSize();
     /**
      * 目录下文件数量
      **/
+    @Deprecated
     int size();
+
+    /***
+     *
+     * 单个log 文件所能存放的最大记录数
+     **/
+    int maxRecordInSingleFile();
 
 
 

@@ -45,6 +45,16 @@ public class IOHandlerLRUCache extends Service {
             }
         return null;
     }
+    /***
+     * @return  io handler  or null
+     *
+     **/
+    public IOHandler getHandler(int id){
+        if(id<ioHandlers.length){
+            return ioHandlers[id];
+        }
+        return null;
+    }
 
     /**
      * log 文件数量

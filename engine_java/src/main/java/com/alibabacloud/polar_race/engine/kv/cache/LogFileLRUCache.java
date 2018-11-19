@@ -6,6 +6,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.BufferHolder;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
@@ -34,6 +35,11 @@ public class LogFileLRUCache extends Service {
     private ExecutorService loadServcie;
 //    private LogCacheMonitor logCacheMonitor;
     private IOHandlerLRUCache logHandlerCache;
+    long segmentSizeMask=StoreConfig.SEGMENT_LOG_FILE_SIZE-1;
+    long rightShift= Bytes.bitSpace(StoreConfig.SEGMENT_LOG_FILE_SIZE);
+    int  maxRecordInSingleLog=StoreConfig.SEGMENT_LOG_FILE_SIZE/StoreConfig.VALUE_SIZE;
+    int  maxRecordMask=maxRecordInSingleLog-1;
+    int leftShift=Bytes.bitSpace(maxRecordInSingleLog);
     public LogFileLRUCache(LogFileService logFileService,IOHandlerLRUCache logHandlerCache,CacheController cacheController,ExecutorService loadService,LogBufferAllocator logBufferAllocator){
         this.logFileService=logFileService;
         this.logHandlerCache=logHandlerCache;
@@ -78,13 +84,15 @@ public class LogFileLRUCache extends Service {
     /**
      * 根据key and offset 取value
      **/
-    public  void readValueIfCacheMiss(long expectedKey,long offset,ByteBuffer buffer) throws EngineException{
-        long fileId=sortedLogFiles.floor(offset);
-        long offsetInFile = offset - fileId;
+    public  void readValueIfCacheMiss(long expectedKey,int offset,ByteBuffer buffer) throws EngineException{
+//        long fileId=sortedLogFiles.floor(offset);
+//        long offsetInFile = offset - fileId;
         //cache miss,direct io
             IOHandler handler=null;
             try {
-                handler = logHandlerCache.get(fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
+                long fileId=offset>>>leftShift;
+                long offsetInFile=(offset&maxRecordMask)*StoreConfig.LOG_ELEMENT_SIZE;
+                handler = logHandlerCache.getHandler((int)fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
                 if(handler==null) throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
                 buffer.limit(StoreConfig.VALUE_SIZE);
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;

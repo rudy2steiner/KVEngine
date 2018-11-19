@@ -9,6 +9,8 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.index.IndexHashAppender;
 import com.alibabacloud.polar_race.engine.kv.index.IndexReader;
+import com.carrotsearch.hppc.LongIntHashMap;
+import com.carrotsearch.hppc.LongIntMap;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import org.slf4j.Logger;
@@ -23,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(IndexLRUCache.class);
-    private LoadingCache<Integer, LongLongHashMap> lru;
+    private Map<Integer, LongIntHashMap> lru;
     private Map<Integer, IOHandler> indexHandlerMap;
     private IndexReader indexReader;
     private LogFileService indexFileService;
@@ -36,11 +38,12 @@ public class IndexLRUCache extends Service {
     private LogBufferAllocator bufferAllocator;
     private CountDownLatch loadComplete;
     private int n;
-    private long defaultValue=-1l;
+    private int defaultValue=-1;
     public IndexLRUCache(CacheController cacheController , LogFileService indexFileService, ExecutorService indexLoadThreadPool, LogBufferAllocator bufferAllocator, CountDownLatch latch){
         this.cacheController=cacheController;
         this.maxCache=cacheController.maxCacheIndex();
         this.indexHandlerMap =new HashMap(128);
+        this.lru=new HashMap<>(cacheController.maxHashBucketSize()*2);
         this.indexFileService=indexFileService;
         this.indexReader=new IndexReader(indexFileService);
         this.byteBuffers=new ByteBuffer[cacheController.maxHashBucketSize()];
@@ -63,10 +66,6 @@ public class IndexLRUCache extends Service {
                 for (int i = 0; i < maxConcurrencyLoad; i++) {
                     byteBuffers[i] = bufferAllocator.allocate(cacheController.cacheIndexReadBufferSize(),true);
                 }
-                this.lru = CacheBuilder.newBuilder()
-                        .maximumSize(maxCache)
-                        .removalListener(new IndexRemoveListener())
-                        .build(new IndexMapLoad(maxConcurrencyLoad));
                 indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers).subList(0,maxConcurrencyLoad), initCacheIndexHandler(), new IndexCacheListener(lru,loadComplete,cacheController.maxHashBucketSize()));
             }
     }
@@ -105,61 +104,19 @@ public class IndexLRUCache extends Service {
      * @param key
      * @return  fileId for the key or -1
      */
-    public long getOffset(long key) throws EngineException{
+    public int getOffset(long key) throws EngineException{
         if(!this.isStarted()) throw new EngineException(RetCodeEnum.CORRUPTION,"not started");
          int bucketId=IndexHashAppender.hash(key)&n;
-         try {
-             LongLongHashMap longLongMap = lru.get(bucketId);
+         LongIntMap longLongMap = lru.get(bucketId);
              if(longLongMap!=null) {
                 return longLongMap.getOrDefault(key,defaultValue);
                 //to do read
              }else {
                  logger.info(String.format("cache miss %d int %d",key,bucketId));
              }
-         }catch (ExecutionException e){
-             logger.info("get exception ",e);
-             throw  new EngineException(RetCodeEnum.CORRUPTION,"get exception");
-         }
          return -1;
     }
 
-    public class IndexRemoveListener implements RemovalListener<Integer,LongLongHashMap>{
-        private int removeCount=0;
-        @Override
-        public void onRemoval(RemovalNotification<Integer, LongLongHashMap> removalNotification) {
-            if(++removeCount%1000==0)
-                logger.info(String.format("%d cache miss total,remove %d",removeCount,removalNotification.getKey()));
-        }
-    }
-
-    public class IndexMapLoad extends CacheLoader<Integer,LongLongHashMap>{
-        private Semaphore semaphore;
-        private Object lock=new Object();
-        public IndexMapLoad(int maxConcurrency){
-               this.semaphore=new Semaphore(maxConcurrency);
-        }
-        @Override
-        public LongLongHashMap load(Integer bucketId) throws Exception {
-            this.semaphore.acquire();
-            ByteBuffer byteBuffer;
-            int index;
-            synchronized (lock) {
-                while (true) {
-                    index = bufferHolder.getAndIncrement()%byteBuffers.length;
-                    if(byteBuffers[index] != null) {
-                        byteBuffer=byteBuffers[index];
-                        byteBuffers[index]=null;
-                        break;
-                    }
-                }
-            }
-            LongLongHashMap map= IndexReader.read(indexHandlerMap.get(bucketId),byteBuffer);
-            // release buffer
-            byteBuffers[index]=byteBuffer;
-            this.semaphore.release();
-            return map;
-        }
-    }
 
 
 }
