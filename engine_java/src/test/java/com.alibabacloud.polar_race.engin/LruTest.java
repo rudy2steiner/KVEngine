@@ -3,23 +3,29 @@ package com.alibabacloud.polar_race.engin;
 import com.alibabacloud.polar_race.engine.common.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
+import com.alibabacloud.polar_race.engine.kv.index.Index;
+import com.alibabacloud.polar_race.engine.kv.partition.LexigraphicalPartition;
+import com.alibabacloud.polar_race.engine.kv.partition.Range;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.rocksdb.HashSkipListMemTableConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import zzz_koloboke_compile.shaded.org.$slf4j$.helpers.FormattingTuple;
+
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.LongStream;
 
 
 @Ignore
@@ -188,6 +194,69 @@ public class LruTest {
 
         logger.info("key 0 value");
     }
+
+    @Test
+    public void lexigraphicalCompare(){
+        Random random=new Random();
+        long start=System.currentTimeMillis();
+        int  size=60000000;
+        int initPartitionCapacity=1010000;
+        LexigraphicalPartition partition=new LexigraphicalPartition(Long.MIN_VALUE,Long.MAX_VALUE,64,initPartitionCapacity);
+        //long[] arr=new long[size];
+        int slotId;
+        long value;
+        Range range=null;
+        Index[] unsortIndex=new Index[initPartitionCapacity];
+        while(--size>0){
+            value=random.nextLong();
+            slotId=partition.partition(value);
+            range=partition.getPartition(slotId);
+            range.add(value);
+
+            if(size%1000000==0)
+                logger.info(String.format("%d partition %s,%d",value,range.toString(), range.contain(value)));
+        }
+        logger.info(String.format("stop %d ms",System.currentTimeMillis()-start));
+
+        // sort 135
+        //
+        long[] keys=range.getSlot();
+        int i=0;
+        for(long key:keys){
+             unsortIndex[i++]=new Index(key,(int)key);
+        }
+        start=System.currentTimeMillis();
+        Arrays.sort(unsortIndex, 0, range.getSize(), new Comparator<Index>() {
+            @Override
+            public int compare(Index o1, Index o2) {
+               long diff=o1.getKey()-o2.getKey();
+               if(diff==0) return 0;
+               if(diff>0) return 1;
+               else return -1;
+            }
+        });
+
+        logger.info(String.format("generic sort stop %d ms",System.currentTimeMillis()-start));
+        start=System.currentTimeMillis();
+        Arrays.sort(keys,0,range.getSize());
+        logger.info(String.format("sort stop %d ms",System.currentTimeMillis()-start));
+        sample(range.getSlot(),0,range.getSize(),10000);
+        NavigableMap<Long,Integer> navigableMap;
+        SortedMap<Long,Integer> sortedMap;
+        ConcurrentSkipListMap skipListMap;
+       // HashSkipListMemTableConfig;
+        //SkipList skipList;
+        //Arrays.binarySearch()
+    }
+
+    public void sample(long[] array,int start,int end,int mode){
+        for(int i=start;i<end;i++){
+            if(i%mode==0){
+                logger.info(""+array[i]);
+            }
+        }
+    }
+
 
 
 

@@ -65,6 +65,14 @@ public class Bytes {
         return bit-1;
     }
 
+    /**
+     * compare unsigned 8 byte of the long, lexicographical
+     **/
+    public static int compareUnsigned(long left,long right){
+            if(left==right) return 0;
+        return (left + Long.MIN_VALUE) < (right + Long.MIN_VALUE) ? -1 : 1;
+    }
+
 
 
 }

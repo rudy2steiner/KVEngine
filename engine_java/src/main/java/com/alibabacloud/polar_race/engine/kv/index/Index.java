@@ -8,30 +8,27 @@ package com.alibabacloud.polar_race.engine.kv.index;
  *
  * */
 public class Index {
-    /***
-     * file id:
-     * range 0~250000
-     **/
-    private int fileId;
-    /**
-     *
-     * offset in the file
-     **/
-    private long offsetInFile;
 
-    public int getFileId() {
-        return fileId;
+    private long key;
+    private int  offset;
+    public Index(long key,int offset){
+        this.key=key;
+        this.offset=offset;
     }
 
-    public void setFileId(int fileId) {
-        this.fileId = fileId;
+    public int getOffset() {
+        return offset;
     }
 
-    public long getOffsetInFile() {
-        return offsetInFile;
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
-    public void setOffsetInFile(long offsetInFile) {
-        this.offsetInFile = offsetInFile;
+    public long getKey() {
+        return key;
+    }
+
+    public void setKey(long key) {
+        this.key = key;
     }
 }
