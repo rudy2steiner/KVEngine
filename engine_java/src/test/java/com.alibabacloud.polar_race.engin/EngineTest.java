@@ -263,7 +263,7 @@ public class EngineTest {
      * to do concurrent iterate
      *
      **/
-    @Ignore
+
     @Test
     public void iterate(){
         long start=System.currentTimeMillis()-1;
@@ -289,7 +289,7 @@ public class EngineTest {
         @Override
         public void visit(byte[] key, byte[] value) {
             count++;
-            if(count%1==0)
+            if(count%10000==0)
                 logger.info(String.format("count %d ,%d,k:%s ,v:%d,%s",count,Thread.currentThread().getId(),Bytes.bytes2long(key,0),value.length,new String(value)));
         }
     }

@@ -102,6 +102,7 @@ public class WALogger extends Service implements WALog<Put> {
 
 
 
+
     @Override
     public void iterate(AbstractVisitor visitor) throws IOException {
         List<Long> logNames= logFileService.allLogFiles();

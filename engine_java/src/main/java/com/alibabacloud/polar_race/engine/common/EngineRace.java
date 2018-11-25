@@ -23,7 +23,7 @@ public class EngineRace extends AbstractEngine {
 	
 	@Override
 	public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) throws EngineException {
-
+		engine.range(lower,upper,visitor);
 	}
 	
 	@Override

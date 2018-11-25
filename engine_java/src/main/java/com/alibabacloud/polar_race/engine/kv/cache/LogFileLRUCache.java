@@ -84,24 +84,29 @@ public class LogFileLRUCache extends Service {
     /**
      * 根据key and offset 取value
      **/
-    public  void readValueIfCacheMiss(long expectedKey,int offset,ByteBuffer buffer) throws EngineException{
+    public synchronized void readValueIfCacheMiss(long expectedKey,int offset,ByteBuffer buffer) throws EngineException{
 //        long fileId=sortedLogFiles.floor(offset);
 //        long offsetInFile = offset - fileId;
         //cache miss,direct io
             IOHandler handler=null;
             try {
-                long fileId=offset>>>leftShift;
-                long offsetInFile=(offset&maxRecordMask)*StoreConfig.LOG_ELEMENT_SIZE;
-                handler = logHandlerCache.getHandler((int)fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
+
+                int fileId=offset>>>leftShift;
+                int segmentOffset=offset&maxRecordMask;
+                long offsetInFile=segmentOffset*StoreConfig.LOG_ELEMENT_SIZE;
+                handler = logHandlerCache.getHandler(fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
+                if(expectedKey==-5272454155755210983l) {
+                    logger.info("hook");
+                }
                 if(handler==null) throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
                 buffer.limit(StoreConfig.VALUE_SIZE);
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
                     //skip to value offset, 对同一个文件的并发读
-                    synchronized (handler) {
-                        handler.position(valueOffset);
-                        handler.read(buffer);
-                    }
+                    //synchronized (handler) {
+                        //handler.position(valueOffset);
+                        handler.read(valueOffset,buffer);
+                    //}
                 }else {
                     throw new EngineException(RetCodeEnum.INCOMPLETE,String.format("%d missing in file %d",expectedKey,fileId));
                 }

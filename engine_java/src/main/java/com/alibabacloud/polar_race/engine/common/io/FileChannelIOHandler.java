@@ -49,10 +49,12 @@ public class FileChannelIOHandler implements IOHandler {
           write(position,ByteBuffer.wrap(data));
     }
 
+    /***
+     * 并发问题
+     **/
     @Override
     public int read(long position, ByteBuffer toBuffer) throws IOException {
-                fileChannel.position(position);
-                return read(toBuffer);
+        return fileChannel.read(toBuffer,position);
     }
 
     @Override

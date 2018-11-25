@@ -210,10 +210,8 @@ public class KVEngineTest {
                         values = engine.read(keyBytes);
                     }catch (Exception e){
                         notFound++;
-                        if(notFound%10000==0) {
-                            logger.info("read exception,ignore ", e);
-                        }
-                        i++;
+                        logger.info("read exception,ignore ", e);
+                        //i++;
                         continue;
                     }
                     keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
@@ -221,8 +219,8 @@ public class KVEngineTest {
                     value=Bytes.bytes2long(values,keyOffset);
                     if(value!=key){
                         failed++;
-                        if(failed%10000==0)
-                            logger.error(String.format("%d,%d %d %s",tid,key,value,new String(values)));
+                        //if(failed%10==0)
+                           logger.error(String.format("%d,%d %d %s",tid,key,value,new String(values)));
                     }else{
                         success++;
                         if(success%10000==0)

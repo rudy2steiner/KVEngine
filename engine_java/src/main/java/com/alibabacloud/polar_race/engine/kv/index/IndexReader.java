@@ -55,6 +55,8 @@ public class IndexReader {
                 value = byteBuffer.getLong();
                 segmentNo=(int)(value>>>rightShift);
                 segmentOffset=(int)(value&segmentSizeMask)/StoreConfig.LOG_ELEMENT_SIZE;
+                if(segmentOffset>=maxRecordInSingleLog)
+                    logger.info("exception");
                 intValue=(segmentNo<<leftShift)+segmentOffset;
                 //logger.info(String.format("segment %d,segment offset %d,int value %d",segmentNo,segmentOffset,intValue));
                 oldValue=map.put(key, intValue);
