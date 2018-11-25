@@ -1,13 +1,18 @@
 package com.alibabacloud.polar_race.engine.kv.event;
 
 import com.alibabacloud.polar_race.engine.common.Service;
+import com.alibabacloud.polar_race.engine.common.io.CloseFileTask;
+import com.alibabacloud.polar_race.engine.common.io.CloseHandler;
+import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.thread.NamedThreadFactory;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TaskBus extends Service {
+public class TaskBus extends Service implements CloseHandler {
     private final static Logger logger= LoggerFactory.getLogger(TaskBus.class);
     private AtomicInteger submitCount=new AtomicInteger(0);
     private ExecutorService executorService;
@@ -47,5 +52,8 @@ public class TaskBus extends Service {
         }
     }
 
-
+    @Override
+    public void close(IOHandler handler) {
+        submit(new CloseFileTask(handler));
+    }
 }

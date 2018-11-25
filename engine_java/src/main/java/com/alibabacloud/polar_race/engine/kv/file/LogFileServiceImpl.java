@@ -1,9 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.file;
 
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
-import com.alibabacloud.polar_race.engine.common.io.BufferedIOHandler;
-import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
-import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.io.*;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
@@ -26,11 +24,11 @@ public class LogFileServiceImpl implements LogFileService{
     private List<Long> sortedLogFiles;
     private int  logWritableSize;
     private int  logTailerAndIndexSize;
-    private TaskBus handlerCloseEventProcessor;
+    private CloseHandler handlerCloseEventProcessor;
     private volatile long fileTotalSpace;
     private long lastWriteFile;
-    final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
-    public LogFileServiceImpl(String dir, TaskBus eventBus){
+    public final static AtomicInteger closeHandlerCounter=new AtomicInteger(0);
+    public LogFileServiceImpl(String dir, CloseHandler eventBus){
         this.dir=dir;
         this.handlerCloseEventProcessor=eventBus;
         scanFiles();
@@ -209,37 +207,16 @@ public class LogFileServiceImpl implements LogFileService{
 
     @Override
     public void asyncCloseFileChannel(IOHandler handler) {
-        handlerCloseEventProcessor.submit(new CloseFileTask(handler));
+        handlerCloseEventProcessor.close(handler);
     }
 
 
     /**
      * async close the handler
      **/
-   public class CloseFileTask implements Runnable {
-        private IOHandler handler;
-
-        public CloseFileTask(IOHandler handler){
-            this.handler=handler;
-        }
-        @Override
-        public void run() {
-            try {
-                long start=System.currentTimeMillis();
-                int closed=closeHandlerCounter.incrementAndGet();
-                if(closed%100000==0){
-                    logger.info(String.format("closed %d io handler,and close this %s now,time %d ms",closed,handler.name(),System.currentTimeMillis()-start));
-//                    handler.closeFileChannel(true);
-                    logger.info(Memory.memory().toString());
-                }
-                handler.closeFileChannel(true);
-                // don't cache
-                handler.dontNeed(0,0);
-            }catch (IOException e){
-                logger.info(String.format("asyncClose %s exception,ignore",handler.name()),e);
-            }
-        }
-    }
+//   public class CloseFileTask implements Runnable {
+//
+//    }
 
     @Override
     public int mapInitSize(int expectSize, float loadFactor)

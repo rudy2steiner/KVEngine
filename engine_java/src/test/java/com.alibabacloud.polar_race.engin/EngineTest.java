@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+
 /**                  w    r
  * rocksdb  64*1w   25s
  *          64*10w  848s   233s
@@ -21,10 +23,11 @@ import java.util.Random;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     int concurrency=64;
-    private long numPerThreadWrite=500000;
+    private long numPerThreadWrite=10000;
 
     private long keyValueOffset=-16000000;  // default
     private byte[] values;
+    private long[] keys;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random random;
     private static String root="/export/wal000";
@@ -50,6 +53,22 @@ public class EngineTest {
         }catch (EngineException e){
             logger.info("engine start error",e);
         }
+        initKeyArray();
+    }
+
+    @Test
+    public void initKeyArray(){
+        long lower=Long.MIN_VALUE;
+        long upper=Long.MAX_VALUE;
+        int totalKey=concurrency*(int)numPerThreadWrite;
+        long step=upper/(totalKey/2);
+        keys=new long[totalKey];
+        long key=lower;
+        for(int i=0;i<totalKey;i++){
+           keys[i]=key;
+           key+=step;
+        }
+        logger.info("key set init");
     }
     @After
     public void close(){
@@ -524,6 +543,40 @@ public class EngineTest {
             }
             logger.info(String.format("thread %d exit",id));
 
+        }
+    }
+
+    /***
+     * 校验 单增，没有遗漏key,且是在这个范围
+     *
+     **/
+    public class RangeThread implements Runnable{
+
+        private long lower;
+        private long upper;
+        private int expectedKeyCount;
+        public RangeThread(long lower,long upper,int expectedKeyCount){
+            this.lower=lower;
+            this.upper=upper;
+            this.expectedKeyCount=expectedKeyCount;
+        }
+        @Override
+        public void run() {
+            byte[] lowerByte=new byte[8];
+            byte[] upperByte=new byte[8];
+            Bytes.long2bytes(lower,lowerByte,0);
+            Bytes.long2bytes(upper,upperByte,0);
+            CountDownLatch visitLatch=new CountDownLatch(1);
+            try{
+             engine.range(lowerByte, upperByte, new AbstractVisitor() {
+                 @Override
+                 public void visit(byte[] key, byte[] value) {
+
+                 }
+             });
+            }catch (EngineException e){
+                e.printStackTrace();
+            }
         }
     }
     public class GetRangKeyThread implements Runnable{

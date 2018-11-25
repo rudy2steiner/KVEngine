@@ -1,6 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.io.CloseHandler;
 import com.alibabacloud.polar_race.engine.kv.buffer.DoubleBuffer;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
@@ -16,8 +17,8 @@ public class IndexHashAppender  extends Service {
     private int buckBufferSize ;
     private WalIndexLogger indexLogger;
     private String indexDir;
-    private TaskBus ioCloseProcessor;
-    public IndexHashAppender(String indexDir, int capacity, int buckBufferSize, TaskBus ioCloseProcessior){
+    private CloseHandler ioCloseProcessor;
+    public IndexHashAppender(String indexDir, int capacity, int buckBufferSize, CloseHandler ioCloseProcessior){
         this.indexDir=indexDir;
         this.capacity=capacity;
         this.buckBufferSize=buckBufferSize;

@@ -1,10 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
+import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
+import com.alibabacloud.polar_race.engine.common.io.CloseHandler;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.event.IndexLogEvent;
@@ -14,24 +15,24 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WalIndexLogger {
+public class WalIndexLogger extends Service {
     private final static Logger logger= LoggerFactory.getLogger(WalIndexLogger.class);
     private int consumeTimeout=100;
     private String dir;
     private int buckSize;
     private LogFileService fileService;
     private Map<Long, IOHandler> handlerMap;
-    private TaskBus ioHandlerCloseProcessor;
-    public WalIndexLogger(String dir, int buckSize, TaskBus eventBus){
+    private CloseHandler ioHandlerCloseProcessor;
+    public WalIndexLogger(String dir, int buckSize, CloseHandler closeHandler){
         this.dir=dir;
         this.buckSize=buckSize;
-        this.ioHandlerCloseProcessor=eventBus;
+        this.ioHandlerCloseProcessor=closeHandler;
         this.fileService=new LogFileServiceImpl(dir,ioHandlerCloseProcessor);
         this.handlerMap=new HashMap<>(buckSize*2);
 
     }
 
-    public void start() throws Exception{
+    public void onStart() throws Exception{
         IOHandler handler;
         for(int i=0;i<buckSize;i++){
             handler=fileService.ioHandler(String.valueOf(i)+ StoreConfig.LOG_INDEX_FILE_SUFFIX);
@@ -60,7 +61,7 @@ public class WalIndexLogger {
      * stop
      *
      **/
-    public void stop() throws InterruptedException{
+    public void onStop() throws InterruptedException{
 //         if(writer!=null){
 //             writer.stop(true);
 //         }

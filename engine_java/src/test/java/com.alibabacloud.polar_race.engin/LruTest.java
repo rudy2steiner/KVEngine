@@ -211,8 +211,7 @@ public class LruTest {
             value=random.nextLong();
             slotId=partition.partition(value);
             range=partition.getPartition(slotId);
-            range.add(value);
-
+            range.add(new Index(value,(int)value));
             if(size%1000000==0)
                 logger.info(String.format("%d partition %s,%d",value,range.toString(), range.contain(value)));
         }
@@ -220,11 +219,11 @@ public class LruTest {
 
         // sort 135
         //
-        long[] keys=range.getSlot();
-        int i=0;
-        for(long key:keys){
-             unsortIndex[i++]=new Index(key,(int)key);
-        }
+        Index[] keys=range.getSlot();
+//        int i=0;
+//        for(Index key:keys){
+//             unsortIndex[i++]=new Index(key,(int)key);
+//        }
         start=System.currentTimeMillis();
         Arrays.sort(unsortIndex, 0, range.getSize(), new Comparator<Index>() {
             @Override
@@ -249,10 +248,10 @@ public class LruTest {
         //Arrays.binarySearch()
     }
 
-    public void sample(long[] array,int start,int end,int mode){
+    public void sample(Index[] array,int start,int end,int mode){
         for(int i=start;i<end;i++){
             if(i%mode==0){
-                logger.info(""+array[i]);
+                logger.info(""+array[i].getKey());
             }
         }
     }

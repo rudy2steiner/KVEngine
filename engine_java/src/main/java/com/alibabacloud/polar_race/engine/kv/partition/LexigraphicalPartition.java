@@ -8,7 +8,7 @@ package com.alibabacloud.polar_race.engine.kv.partition;
  **/
 public class LexigraphicalPartition implements Partition {
     private long low,high;
-    private Range[] slots;
+    private Range[] partitions;
     private int partitionNum;
     private int partitionCapacity;
     public LexigraphicalPartition(long low,long high,int partitionNum){
@@ -18,7 +18,7 @@ public class LexigraphicalPartition implements Partition {
         this.low=low;
         this.high=high;
         this.partitionNum=partitionNum;
-        this.slots=new Range[partitionNum];
+        this.partitions =new Range[partitionNum];
         this.partitionCapacity=partitionCapacity;
         partitionInit();
     }
@@ -39,13 +39,14 @@ public class LexigraphicalPartition implements Partition {
 
     /**
      * postitive 范围内的partition
+     * @return negative
      **/
     private int negativePartition(long low,long high,int indexStart){
         long negativeStep=low/(partitionNum/2);
         for(long i=high;i>low&&i<=0;i+=negativeStep){
-            slots[--indexStart]=new Range(Math.max(i+negativeStep,low),i,partitionCapacity);
+            partitions[--indexStart]=new Range(Math.max(i+negativeStep,low),i,partitionCapacity);
         }
-        slots[partitionNum-1].setHigh(-1);
+        partitions[partitionNum-1].setHigh(-1);
         return indexStart;
     }
     /**
@@ -55,21 +56,21 @@ public class LexigraphicalPartition implements Partition {
         long positiveStep=high/(partitionNum/2);
         long remain=high%(partitionNum/2);
         for(long i=high;i>remain&&i>=0;i-=positiveStep){
-            slots[--indexStart]=new Range(Math.max(0,i-positiveStep),i,partitionCapacity);
+            partitions[--indexStart]=new Range(Math.max(0,i-positiveStep),i,partitionCapacity);
         }
-        slots[0].setLow(0);
+        partitions[0].setLow(0);
     }
 
     /**
      * @return  slot id
      **/
     @Override
-    public int partition(long value) {
-        return binarySearch(value);
+    public int partition(long key) {
+        return binarySearch(key);
     }
 
     public Range getPartition(int partitionId){
-        return slots[partitionId];
+        return partitions[partitionId];
     }
 
     /**
@@ -77,12 +78,12 @@ public class LexigraphicalPartition implements Partition {
      * @return  slot id
      **/
     private int binarySearch(long value){
-         int low=0,high=slots.length-1;
+         int low=0,high= partitions.length-1;
          int mid;
          int flag;
          while(low<high){
               mid=(high-low)/2+low;
-              flag=slots[mid].contain(value);
+              flag= partitions[mid].contain(value);
               if(flag==0) return mid;
               if(flag<0) high=mid-1;
               if(flag>0) low=mid+1;
