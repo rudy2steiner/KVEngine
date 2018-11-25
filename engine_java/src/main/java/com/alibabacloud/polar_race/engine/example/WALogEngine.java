@@ -37,7 +37,7 @@ public class WALogEngine extends AbstractEngine {
             logger.info("wal exception",e);
             throw  new EngineException(RetCodeEnum.CORRUPTION,e.getMessage());
         }
-        logger.info("started memory occupy"+Memory.memory().toString());
+        logger.info("started memory occupy "+Memory.memory().toString());
     }
 
     @Override

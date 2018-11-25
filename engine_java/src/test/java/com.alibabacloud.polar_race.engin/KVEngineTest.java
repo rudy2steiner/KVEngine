@@ -52,14 +52,22 @@ public class KVEngineTest {
     public void initKeyArray(){
         long lower=Long.MIN_VALUE;
         long upper=Long.MAX_VALUE;
-        int totalKey=concurrency*(int)numPerThreadWrite;
+        int totalKey=concurrency*numPerThreadWrite;
         long step=upper/(totalKey/2);
-        keys=new long[totalKey];
-        long key=lower;
-        for(int i=0;i<totalKey;i++){
+        keys=new long[totalKey+1];
+        long key=0;
+        int i=0;
+        for(;i<totalKey/2;i++){
             keys[i]=key;
             key+=step;
         }
+        // start from mini long
+        key=lower;
+        for(;i<totalKey;i++){
+            keys[i]=key;
+            key+=step;
+        }
+        keys[totalKey]=-1;
         logger.info("key set init");
     }
 
@@ -71,12 +79,12 @@ public class KVEngineTest {
     }
 
     @Test
-    public void startRangePut(){
+    public void startRangeKVPut(){
         logger.info(new String(values));
         long start=System.currentTimeMillis();
-        Thread[] t=new Thread[(int)concurrency];
+        Thread[] t=new Thread[concurrency];
         for (int i = 0; i < concurrency; i++) {
-            t[i]=new Thread(new RangePutThread(i*numPerThreadWrite,(i+1)*numPerThreadWrite,numPerThreadWrite),"write"+i);
+            t[i]=new Thread(new RangePutThread(i*numPerThreadWrite,Math.min(concurrency*numPerThreadWrite,(i+1)*numPerThreadWrite),numPerThreadWrite,i),"write"+i);
             t[i].start();
         }
         try {
@@ -90,6 +98,45 @@ public class KVEngineTest {
         logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
+    @Test
+    public void startGetKV(){
+        //logger.info(new String(values));
+        long start=System.currentTimeMillis();
+        Thread[] t=new Thread[concurrency];
+        for (int i = 0; i < concurrency; i++) {
+            t[i]=new Thread(new RangeGetKVThread(i*numPerThreadWrite,Math.min(concurrency*numPerThreadWrite,(i+1)*numPerThreadWrite),numPerThreadWrite,i),"write"+i);
+            t[i].start();
+        }
+        try {
+            for (int i = 0; i < concurrency; i++) {
+                t[i].join();
+            }
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        long end=System.currentTimeMillis();
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+    }
+
+    @Test
+    public void startRangeIterate(){
+        //logger.info(new String(values));
+        long start=System.currentTimeMillis();
+        Thread[] t=new Thread[concurrency];
+        for (int i = 0; i < concurrency; i++) {
+            t[i]=new Thread(new RangeIterateThread(i*numPerThreadWrite,Math.min(concurrency*numPerThreadWrite,(i+1)*numPerThreadWrite),numPerThreadWrite,i),"write"+i);
+            t[i].start();
+        }
+        try {
+            for (int i = 0; i < concurrency; i++) {
+                t[i].join();
+            }
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        long end=System.currentTimeMillis();
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+    }
     public class RangePutThread implements Runnable{
         private int start;
         private int end;
@@ -181,11 +228,13 @@ public class KVEngineTest {
                         if(success%10000==0)
                             logger.info(String.format("%d,%d %d",tid,key,value));
                     }
-                    i++;
             }
-            logger.info(String.format("[%d,%d] write finish",start,end));
+            logger.info(String.format("[%d,%d] read kv finish,success %d",start,end,success));
         }
     }
+
+
+
 
     public class RangeIterateThread implements Runnable{
         private int start;
@@ -226,12 +275,16 @@ public class KVEngineTest {
                         value=Bytes.bytes2long(values,keyOffset);
                         if(value!=key){
                             failed++;
-                            logger.error(String.format("%d %d %s",key,value,new String(values)));
+                            // offset error
+                            logger.error(String.format("tid %d,offset error,%d %d %s",tid,key,value,new String(values)));
                         }else{
+                            if(keys[index]!=key){
+                                throw new IllegalArgumentException("unexpected kv");
+                            }
                             success++;
                             if(success%10000==0)
-                                logger.info(String.format("%d %d",key,value));
-                            
+                                logger.info(String.format("tid %d,%d %d,successed %d",tid,key,value,success));
+
                         }
                         index++;
                     }
