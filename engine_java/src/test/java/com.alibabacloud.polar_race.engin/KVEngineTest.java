@@ -184,6 +184,7 @@ public class KVEngineTest {
         private int end;
         private int totalKey;
         private byte[] keyBytes;
+        private byte[] vals;
         private int tid;
         public RangeGetKVThread(int start,int end,int totalkey,int id){
             this.start=start;
@@ -202,12 +203,14 @@ public class KVEngineTest {
             int notFound=0;
             int success=0;
             int failed=0;
+            boolean hasValue=false;
             long value;
+
             for(int i=start;i<end;i++){
                     key=keys[i];
                     Bytes.long2bytes(key, keyBytes, 0);
                     try {
-                        values = engine.read(keyBytes);
+                        vals = engine.read(keyBytes);
                     }catch (Exception e){
                         notFound++;
                         logger.info("read exception,ignore ", e);
@@ -216,11 +219,11 @@ public class KVEngineTest {
                     }
                     keyOffset = Math.abs((int) (key % VALUES_MAX_LENGTH));
                     keyOffset = keyOffset < VALUES_MAX_LENGTH - 8 ? keyOffset : VALUES_MAX_LENGTH - 8;
-                    value=Bytes.bytes2long(values,keyOffset);
+                    value=Bytes.bytes2long(vals,keyOffset);
                     if(value!=key){
                         failed++;
                         //if(failed%10==0)
-                           logger.error(String.format("%d,%d %d %s",tid,key,value,new String(values)));
+                           logger.error(String.format("%d,%d %d %s",tid,key,value,hasValue?new String(values):""));
                     }else{
                         success++;
                         if(success%10000==0)

@@ -32,7 +32,7 @@ public class LogFileLRUCache extends Service {
     private int maxCacheLog;
 //    private LogBufferAllocator logBufferAllocator;
     private WalReader logReader;
-    private ExecutorService loadServcie;
+    private ExecutorService loadService;
 //    private LogCacheMonitor logCacheMonitor;
     private IOHandlerLRUCache logHandlerCache;
     long segmentSizeMask=StoreConfig.SEGMENT_LOG_FILE_SIZE-1;
@@ -46,7 +46,7 @@ public class LogFileLRUCache extends Service {
         this.sortedLogFiles=new TreeSet();
         this.cacheController=cacheController;//new KVCacheController(logFileService);
         this.maxCacheLog =cacheController.maxCacheLog();
-        this.loadServcie=loadService;
+        this.loadService =loadService;
 //        this.logBufferAllocator=logBufferAllocator;
         this.logReader=new WalReader(logFileService);
     }
@@ -84,7 +84,7 @@ public class LogFileLRUCache extends Service {
     /**
      * 根据key and offset 取value
      **/
-    public synchronized void readValueIfCacheMiss(long expectedKey,int offset,ByteBuffer buffer) throws EngineException{
+    public  void readValueIfCacheMiss(long expectedKey,int offset,ByteBuffer buffer) throws EngineException{
 //        long fileId=sortedLogFiles.floor(offset);
 //        long offsetInFile = offset - fileId;
         //cache miss,direct io
@@ -92,21 +92,22 @@ public class LogFileLRUCache extends Service {
             try {
 
                 int fileId=offset>>>leftShift;
+                long filename=((long) fileId)<<rightShift;
                 int segmentOffset=offset&maxRecordMask;
                 long offsetInFile=segmentOffset*StoreConfig.LOG_ELEMENT_SIZE;
-                handler = logHandlerCache.getHandler(fileId);//logFileService.ioHandler(fileId + StoreConfig.LOG_FILE_SUFFIX,"r");
-                if(expectedKey==-5272454155755210983l) {
-                    logger.info("hook");
-                }
+                handler = logHandlerCache.getHandler(fileId);//logFileService.ioHandler(filename + StoreConfig.LOG_FILE_SUFFIX,"r");////logHandlerCache.getHandler(fileId);//
                 if(handler==null) throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
                 buffer.limit(StoreConfig.VALUE_SIZE);
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
                     //skip to value offset, 对同一个文件的并发读
-                    //synchronized (handler) {
+                    if(filename!=Long.valueOf(handler.name()).longValue()){
+                        logger.info("hook");
+                    }
+                    synchronized (handler) {
                         //handler.position(valueOffset);
                         handler.read(valueOffset,buffer);
-                    //}
+                    }
                 }else {
                     throw new EngineException(RetCodeEnum.INCOMPLETE,String.format("%d missing in file %d",expectedKey,fileId));
                 }
@@ -202,10 +203,10 @@ public class LogFileLRUCache extends Service {
 //        int logSize=logs.expectedSize();
 //           initLoad=logSize>initLoad?initLoad:logSize;
 //        if(concurrency>0) {
-//            if(loadServcie==null)
-//                loadServcie = Executors.newFixedThreadPool(concurrency);
+//            if(loadService==null)
+//                loadService = Executors.newFixedThreadPool(concurrency);
 //            for (int i=0;i<initLoad;i++){
-//                loadServcie.submit(new LogLoadCacheTask(logReader,logs.get(i),cacheController,logCacheMonitor,this));
+//                loadService.submit(new LogLoadCacheTask(logReader,logs.get(i),cacheController,logCacheMonitor,this));
 //            }
 //        }
 
@@ -217,7 +218,7 @@ public class LogFileLRUCache extends Service {
      **/
     @Deprecated
     public void loadCache(long logFileName){
-        loadServcie.submit(new LogLoadCacheTask(logReader,logFileName,cacheController,null,this));
+        loadService.submit(new LogLoadCacheTask(logReader,logFileName,cacheController,null,this));
     }
 
 }
