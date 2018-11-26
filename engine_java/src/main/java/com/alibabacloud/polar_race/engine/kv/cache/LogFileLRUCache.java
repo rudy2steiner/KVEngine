@@ -91,7 +91,6 @@ public class LogFileLRUCache extends Service {
             IOHandler handler=null;
             try {
                 int fileId=offset>>>leftShift;
-                long filename=((long) fileId)<<rightShift;
                 int segmentOffset=offset&maxRecordMask;
                 long offsetInFile=segmentOffset*StoreConfig.LOG_ELEMENT_SIZE;
                 handler = logHandlerCache.getHandler(fileId);//logFileService.ioHandler(filename + StoreConfig.LOG_FILE_SUFFIX,"r");////logHandlerCache.getHandler(fileId);//
@@ -100,9 +99,6 @@ public class LogFileLRUCache extends Service {
                 long valueOffset=offsetInFile+StoreConfig.LOG_ELEMENT_LEAST_SIZE;
                 if(handler.length()>=valueOffset+StoreConfig.VALUE_SIZE){
                     //skip to value offset, 对同一个文件的并发读
-                    if(filename!=Long.valueOf(handler.name()).longValue()){
-                        logger.info("hook");
-                    }
                     synchronized (handler) {
                         //handler.position(valueOffset);
                         handler.read(valueOffset,buffer);

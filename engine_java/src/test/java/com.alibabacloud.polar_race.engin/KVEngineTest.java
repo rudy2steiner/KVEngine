@@ -20,7 +20,7 @@ import java.util.Random;
 public class KVEngineTest {
     private final static Logger logger= LoggerFactory.getLogger(KVEngineTest.class);
     int concurrency=64;
-    private int numPerThreadWrite=100000;
+    private int numPerThreadWrite=500000;
     private byte[] values;
     private long[] keys;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
