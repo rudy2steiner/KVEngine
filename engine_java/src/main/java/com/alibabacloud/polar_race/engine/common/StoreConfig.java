@@ -25,7 +25,7 @@ public class StoreConfig {
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
     public final static int  MAXIMUM_BUFFER_CAPACITY =256*1024*1024;
-    public final static int  batchSyncSize =32;
+    public final static int  batchSyncSize =28;
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;

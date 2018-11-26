@@ -36,7 +36,8 @@
    -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintGCDateStamps 
    -Xloggc:/export/test_gc.log 
    
-   
+   -server -Xms2660m -Xmx2660m  -XX:NewSize=900m -XX:MaxNewSize=900m -XX:MaxDirectMemorySize=256m -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:-UseBiasedLocking -XX:+PrintGCDetails  -XX:+PrintGCDateStamps
+   -Xloggc:/export/test_gc.log  
  -------------
  清理cache 
  

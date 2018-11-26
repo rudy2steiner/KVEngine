@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 public class EngineTest {
     private final static Logger logger= LoggerFactory.getLogger(EngineTest.class);
     int concurrency=64;
-    private long numPerThreadWrite=10000;
+    private long numPerThreadWrite=100000;
 
     private long keyValueOffset=-16000000;  // default
     private byte[] values;

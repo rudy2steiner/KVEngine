@@ -90,7 +90,6 @@ public class LogFileLRUCache extends Service {
         //cache miss,direct io
             IOHandler handler=null;
             try {
-
                 int fileId=offset>>>leftShift;
                 long filename=((long) fileId)<<rightShift;
                 int segmentOffset=offset&maxRecordMask;

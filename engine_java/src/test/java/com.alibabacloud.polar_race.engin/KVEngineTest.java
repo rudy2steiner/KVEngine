@@ -20,7 +20,7 @@ import java.util.Random;
 public class KVEngineTest {
     private final static Logger logger= LoggerFactory.getLogger(KVEngineTest.class);
     int concurrency=64;
-    private int numPerThreadWrite=10000;
+    private int numPerThreadWrite=100000;
     private byte[] values;
     private long[] keys;
     private String template="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -45,11 +45,12 @@ public class KVEngineTest {
         }catch (EngineException e){
             logger.info("engine start error",e);
         }
-        initKeyArray();
+
     }
 
-    @Test
+
     public void initKeyArray(){
+        long start=System.currentTimeMillis();
         long lower=Long.MIN_VALUE;
         long upper=Long.MAX_VALUE;
         int totalKey=concurrency*numPerThreadWrite;
@@ -68,7 +69,7 @@ public class KVEngineTest {
             key+=step;
         }
         keys[totalKey]=-1;
-        logger.info("key set init");
+        logger.info("key set init,take time:"+(System.currentTimeMillis()-start));
     }
 
 
@@ -81,6 +82,7 @@ public class KVEngineTest {
     @Test
     public void startRangeKVPut(){
         logger.info(new String(values));
+        initKeyArray();
         long start=System.currentTimeMillis();
         Thread[] t=new Thread[concurrency];
         for (int i = 0; i < concurrency; i++) {
@@ -95,12 +97,13 @@ public class KVEngineTest {
             e.printStackTrace();
         }
         long end=System.currentTimeMillis();
-        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,(long)numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
     @Test
     public void startGetKV(){
         //logger.info(new String(values));
+        initKeyArray();
         long start=System.currentTimeMillis();
         Thread[] t=new Thread[concurrency];
         for (int i = 0; i < concurrency; i++) {
@@ -115,7 +118,7 @@ public class KVEngineTest {
             e.printStackTrace();
         }
         long end=System.currentTimeMillis();
-        logger.info(String.format("time elapsed %d ms,qps %d",end-start,numPerThreadWrite*concurrency*1000/(end-start)));
+        logger.info(String.format("time elapsed %d ms,qps %d",end-start,(long)numPerThreadWrite*concurrency*1000/(end-start)));
     }
 
     @Test
