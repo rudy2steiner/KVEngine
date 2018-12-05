@@ -11,8 +11,8 @@ public class FileChannelIOHandler implements IOHandler {
     private final static Logger logger= LoggerFactory.getLogger(FileChannelIOHandler.class);
     private File file;
     private String fileName;
-    private RandomAccessFile randomAccessFile;
-    private FileChannel fileChannel;
+    protected RandomAccessFile randomAccessFile;
+    protected FileChannel fileChannel;
     private long length;
     private  static int writeCount=0;
     /**
