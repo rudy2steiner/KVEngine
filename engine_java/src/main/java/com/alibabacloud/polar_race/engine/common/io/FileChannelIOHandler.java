@@ -1,15 +1,20 @@
 package com.alibabacloud.polar_race.engine.common.io;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 public class FileChannelIOHandler implements IOHandler {
+    private final static Logger logger= LoggerFactory.getLogger(FileChannelIOHandler.class);
     private File file;
     private String fileName;
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
     private long length;
+    private  static int writeCount=0;
     /**
      * @param mode random access in 'r' ,'rw'
      *
@@ -29,8 +34,9 @@ public class FileChannelIOHandler implements IOHandler {
     @Override
     public void append(ByteBuffer buffer) throws IOException {
         int remain=buffer.remaining();
-        while(buffer.hasRemaining())
-            this.fileChannel.write(buffer);
+        while(buffer.hasRemaining()) {
+             this.fileChannel.write(buffer);
+        }
         updateLength(length,remain);
     }
 

@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,5 +34,12 @@ public class NativeIOTest {
         nativeIO.dropFileFromCache(testFile);
         testFile.delete();
         nativeIO.dropFileFromCache(new File("file.that.does.not.exist"));
+    }
+
+    @Test
+    public void mappedByteBufferTest(){
+        MappedByteBuffer byteBuffer;
+
+
     }
 }
