@@ -9,6 +9,7 @@ public class FileChannelIOHandler implements IOHandler {
     private String fileName;
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
+    private long length;
     /**
      * @param mode random access in 'r' ,'rw'
      *
@@ -19,19 +20,38 @@ public class FileChannelIOHandler implements IOHandler {
         this.fileName=file.getName();
         this.randomAccessFile=new RandomAccessFile(file,mode);
         this.fileChannel=randomAccessFile.getChannel();
+        try {
+            this.length = fileChannel.size();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
     @Override
     public void append(ByteBuffer buffer) throws IOException {
+        int remain=buffer.remaining();
         while(buffer.hasRemaining())
             this.fileChannel.write(buffer);
+        updateLength(length,remain);
+    }
+
+    /**
+     * @param position 指定问位置写入
+     * @param add   写入大小
+     **/
+    private void updateLength(long position,int add ){
+            long writeFinalPosition=position+add;
+            length=writeFinalPosition>length?writeFinalPosition:length;
     }
 
     @Override
     public void write(long position, ByteBuffer buffer) throws IOException {
+            int remain=buffer.remaining();
             if(buffer.hasRemaining()){
                 this.fileChannel.position(position);
-                append(buffer);
+                while(buffer.hasRemaining())
+                    this.fileChannel.write(buffer);
             }
+            updateLength(position,remain);
     }
 
     @Override
@@ -104,7 +124,7 @@ public class FileChannelIOHandler implements IOHandler {
 
     @Override
     public long length() throws IOException {
-        return fileChannel.size();
+        return length;
     }
 
     @Override
@@ -145,5 +165,6 @@ public class FileChannelIOHandler implements IOHandler {
     @Override
     public void truncate(long size) throws IOException {
         fileChannel.truncate(size);
+        this.length=size;
     }
 }

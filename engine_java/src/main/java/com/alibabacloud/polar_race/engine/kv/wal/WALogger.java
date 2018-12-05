@@ -172,7 +172,7 @@ public class WALogger extends Service implements WALog<Put> {
         }else{
             logger.info("log and index cache engine start ignore");
         }
-        infoLogAndHashIndex();
+        statisticsLogAndHashIndex();
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
             logger.info(" index and log cache finish");
@@ -188,7 +188,7 @@ public class WALogger extends Service implements WALog<Put> {
     /**
      * 统计文件下索引和日志数量及占用空间
      **/
-    public void infoLogAndHashIndex(){
+    public void statisticsLogAndHashIndex(){
         int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
         long indexTotal=indexFileService.addByteSize(0l);
         long logTotal=logFileService.lastWriteLogName(true);// 不准确
@@ -267,7 +267,7 @@ public class WALogger extends Service implements WALog<Put> {
              logHandlerLRUCache.stop();
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
-         infoLogAndHashIndex();
+         statisticsLogAndHashIndex();
          logger.info("asyncClose wal logger,close time elapsed "+(System.currentTimeMillis()-start));
     }
 
