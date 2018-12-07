@@ -12,7 +12,6 @@ import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.*;
-
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -42,6 +41,7 @@ public class WALogger extends Service implements WALog<Put> {
     private LogBufferAllocator bufferAllocator;
     private TaskBus fileChannelCloseProcessor;
     private IOHandlerLRUCache logHandlerLRUCache;
+    //private DirectAccessFileCache  directAccessFileCache;
     private AtomicInteger readCounter=new AtomicInteger(0);
     private IndexService indexService;
     private CommitLogService commitLogService;
@@ -169,6 +169,8 @@ public class WALogger extends Service implements WALog<Put> {
             // 依据store 的状态，看是否需要加载缓存
             logHandlerLRUCache=new IOHandlerLRUCache(logFileService);
             logHandlerLRUCache.start();
+//            directAccessFileCache=new DirectAccessFileCache(logFileService);
+//            directAccessFileCache.start();
             indexService=new KVIndexService(indexDir,walDir,cacheController,fileChannelCloseProcessor,bufferAllocator,logFileService,
                                            indexFileService,logHandlerLRUCache,commonExecutorService);
             ((KVIndexService) indexService).start();
@@ -277,6 +279,9 @@ public class WALogger extends Service implements WALog<Put> {
          this.fileChannelCloseProcessor.stop();
          if(!Null.isEmpty(logHandlerLRUCache))
              logHandlerLRUCache.stop();
+//         if(!Null.isEmpty(directAccessFileCache)){
+//             directAccessFileCache.stop();
+//         }
          this.timer.shutdownNow();
          logger.info(Memory.memory().toString());
          statisticsLogAndHashIndex();

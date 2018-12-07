@@ -34,6 +34,11 @@ public class LogFileServiceImpl implements LogFileService{
         scanFiles();
     }
 
+    @Override
+    public String dir() {
+        return dir;
+    }
+
     public void scanFiles(){
         fileTotalSpace=0;
         this.sortedLogFiles =allLogFiles();

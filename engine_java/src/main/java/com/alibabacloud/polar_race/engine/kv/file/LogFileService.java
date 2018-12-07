@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 public interface LogFileService {
+    String dir();
     String nextLogName(Cell cell);
     String nextLogName(IOHandler handler);
     String nextLogName();

@@ -103,7 +103,7 @@ public class IndexLogReader extends Service {
            this.start=start;
            this.end=end;
            this.readOffset= StoreConfig.SEGMENT_LOG_FILE_SIZE-logFileService.tailerAndIndexSize();
-           this.buffer=ByteBuffer.allocateDirect(logFileService.tailerAndIndexSize());
+           this.buffer=ByteBuffer.allocate(logFileService.tailerAndIndexSize());
            this.visitor=visitor;
         }
         @Override
@@ -113,9 +113,9 @@ public class IndexLogReader extends Service {
                     //logger.info("start process wal "+files.get(i));
                     handler = logHandlerCache.get(files.get(i));//logFileService.ioHandler(files.get(i) + StoreConfig.LOG_FILE_SUFFIX);
                     if(handler==null) throw new IllegalArgumentException("log handler not found");
-                    handler.position(readOffset);
+                    //handler.position(readOffset);
                     buffer.clear();
-                    handler.read(buffer);
+                    handler.read(readOffset,buffer);
                     readPost(buffer,files.get(i));
                     //logger.info("finish process wal "+files.get(i));
                     //handler.closeFileChannel(false);

@@ -35,6 +35,7 @@ public class BufferedIOHandler implements IOHandler {
     public void append(ByteBuffer buffer) throws IOException {
         if(buf.remaining()>=buffer.remaining()){
             buf.put(buffer);
+
         }else{
             int remain= buf.remaining();
             ByteBuffer  slice= buffer.slice();

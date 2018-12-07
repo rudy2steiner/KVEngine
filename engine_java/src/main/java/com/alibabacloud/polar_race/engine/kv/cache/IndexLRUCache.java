@@ -64,7 +64,7 @@ public class IndexLRUCache extends Service {
                     indexHandlerMap.put(fid.intValue(), indexFileService.ioHandler(fid + StoreConfig.LOG_INDEX_FILE_SUFFIX));
                 }
                 for (int i = 0; i < maxConcurrencyLoad; i++) {
-                    byteBuffers[i] = bufferAllocator.allocate(cacheController.cacheIndexReadBufferSize(),true);
+                    byteBuffers[i] = bufferAllocator.allocate(cacheController.cacheIndexReadBufferSize(),false);
                 }
                 indexReader.concurrentLoadIndex(indexLoadThreadPool, maxConcurrencyLoad, Arrays.asList(byteBuffers).subList(0,maxConcurrencyLoad), initCacheIndexHandler(), new IndexCacheListener(lru,loadComplete,cacheController.maxHashBucketSize()));
             }
