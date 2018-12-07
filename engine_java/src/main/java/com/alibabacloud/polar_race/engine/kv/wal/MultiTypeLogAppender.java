@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.event.Event;
 import com.alibabacloud.polar_race.engine.kv.LogEvent;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -37,6 +38,8 @@ public class MultiTypeLogAppender extends Service {
     private  static Disruptor<LogEvent<Event>> disruptor;
     private  static RingBuffer<LogEvent<Event>> ringBuffer;
     private MultiTypeEventHandler eventHandler;
+    private ThreadLocal<Cell> cells=new ThreadLocal<>();
+    private ThreadLocal<Put>  puts=new ThreadLocal<>();
     public MultiTypeLogAppender(IOHandler handler, LogFileService fileService , int ringBufferSize){
         this.ringBufferSize=ringBufferSize>0? Files.tableSizeFor(ringBufferSize):DEFAULT_RING_BUFFER_SIZE;
         this.disruptor = new Disruptor(EVENT_FACTORY, this.ringBufferSize, executor,ProducerType.MULTI,new LiteTimeoutBlockingWaitStrategy(5,TimeUnit.MILLISECONDS));
@@ -51,21 +54,44 @@ public class MultiTypeLogAppender extends Service {
      *
      **/
     public long append(Put event) throws Exception{
-        translator.publish(event);
-        long txId=event.txId();
+        return 0;
+    }
+
+    /**
+     *
+     * @param key
+     * @param  value
+     *
+     * */
+    public long append(byte[] key,byte[] value) throws Exception{
+        Cell cell=cells.get();
+        if(cell==null){
+            cell=new Cell(null,null);
+            cells.set(cell);
+        }
+        cell.setKey(key);
+        cell.setValue(value);
+        Put put=puts.get();
+        if(put==null){
+            put=new Put(null);
+            puts.set(put);
+        }
+            put.set(cell);
+        translator.publish(put);
+        long txId=put.txId();
         SyncEvent syncEvent=syncs.get();
-                  if(syncEvent==null){
-                      syncEvent=new SyncEvent();
-                      syncs.set(syncEvent);
-                  }
-                  syncEvent.set(txId);
+        if(syncEvent==null){
+            syncEvent=new SyncEvent();
+            syncs.set(syncEvent);
+        }
+        syncEvent.set(txId);
         translator.publish(syncEvent);
-                 syncEvent.get(StoreConfig.MAX_TIMEOUT);
+        syncEvent.get(StoreConfig.MAX_TIMEOUT);
         if(syncEvent.value()%1000000==0) {
-            onAppendFinish(syncEvent, event);
+            onAppendFinish(syncEvent, put);
         }
         // help gc
-        event.value().free();
+        put.value().free();
         syncEvent.free();
         return txId;
     }

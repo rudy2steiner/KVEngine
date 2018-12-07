@@ -10,9 +10,8 @@ import java.io.IOException;
  * write ahead logging
  *
  **/
-public interface WALog<T> extends Lifecycle {
+public interface WALog<T> extends Lifecycle,KVLogger {
     long log(T cell) throws Exception;
-
     @Deprecated
     void iterate(AbstractVisitor visitor) throws IOException;
     void range(byte[] lower,byte[] upper,AbstractVisitor visitor);

@@ -45,43 +45,59 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
     @Override
     public void onEvent(LogEvent<Event> eventLogEvent, long sequence, boolean endOfBatch) throws Exception {
         if(eventLogEvent.getValue().type()== EventType.SYNC){
-            syncEvent=(SyncEvent) eventLogEvent.getValue();
-            //  已经flush 完成
-            if(syncEvent.value()<=flushedMaxTxId) {syncEvent.done(flushedMaxTxId);return;}
-            syncEvents[syncIndex++]=syncEvent;
-            if(syncIndex<StoreConfig.batchSyncSize) return;
-            else flushAndAck(true);
+            onSyncEvent((SyncEvent) eventLogEvent.getValue());
         }else {
-            put=(Put) eventLogEvent.getValue();
-            tryRollLog(put);
-            long offsetInFile=handler.length();
-            // offset in file
-            long offset=fileId+offsetInFile;
-            put.value().setOffset(offset);
-            //logger.info(String.format("handler %d %d",Bytes.bytes2long(put.value().getKey(),0),put.value().getOffset()));
-            Bytes.short2bytes(put.value().size(),shortByte,0);
-            handler.append(shortByte);
-            handler.append(put.value().getKey());
-            handler.append(put.value().getValue());
-            // put value index
-            valueIndexBuffer.put(put.value().getKey());
-            valueIndexBuffer.putLong(offset);
-            //valueIndexBuffer.putInt(put.value().getTxId());
-            processedMaxTxId=put.value().getTxId();
-
+            onKVEvent((Put)eventLogEvent.getValue());
         }
         // need flush
     }
 
 
     /**
+     * @param  event put event
+     **/
+    public void onKVEvent(Put event) throws Exception{
+        put=event;
+        tryRollLog(put.value().size());
+        long offsetInFile=handler.length();
+        // offset in file
+        long offset=fileId+offsetInFile;
+        put.value().setOffset(offset);
+        //logger.info(String.format("handler %d %d",Bytes.bytes2long(put.value().getKey(),0),put.value().getOffset()));
+        Bytes.short2bytes(put.value().size(),shortByte,0);
+        handler.append(shortByte);
+        handler.append(put.value().getKey());
+        handler.append(put.value().getValue());
+        // put value index
+        valueIndexBuffer.put(put.value().getKey());
+        valueIndexBuffer.putLong(offset);
+        //valueIndexBuffer.putInt(put.value().getTxId());
+        processedMaxTxId=put.value().getTxId();
+    }
+
+    public void onSyncEvent(SyncEvent sync) throws IOException{
+        //  已经flush 完成
+        if(sync.value()<=flushedMaxTxId) {sync.done(flushedMaxTxId);return;}
+        syncEvents[syncIndex++]=sync;
+        if(syncIndex<StoreConfig.batchSyncSize) return;
+        else flushAndAck(true);
+    }
+
+    /**
+     * @return  sync index
+     * */
+    public int getSyncIndex() {
+        return syncIndex;
+    }
+
+    /**
      *
      * roll to next log file
-     *
+     * @param logSize will write content byte size,not include length header of log protocol
      **/
-    public void tryRollLog(Put put) throws IOException {
+    public void tryRollLog(int logSize) throws IOException {
         long remain= logFileService.logWritableSize()-handler.length();
-        if(remain>=put.value().size()+StoreConfig.LOG_KV_RECORD_LEAST_LEN) return;
+        if(remain>=logSize+StoreConfig.LOG_KV_RECORD_LEAST_LEN) return;
         EMPTY_BUFFER.clear();
         if(remain>=StoreConfig.LOG_KV_RECORD_LEAST_LEN) {
             EMPTY_BUFFER.putShort((short) 0);

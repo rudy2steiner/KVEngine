@@ -12,6 +12,7 @@ import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.*;
+import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -44,6 +45,7 @@ public class WALogger extends Service implements WALog<Put> {
     private AtomicInteger readCounter=new AtomicInteger(0);
     private IndexService indexService;
     private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
+
     private Status storeStatus;
     public WALogger(String dir){
         this.rootDir=dir;
@@ -96,12 +98,13 @@ public class WALogger extends Service implements WALog<Put> {
     }
     @Override
     public long log(Put event) throws Exception{
-           appender.append(event);
-           return event.txId();
+        throw new UnsupportedOperationException("not supported");
     }
 
-
-
+    @Override
+    public long log(byte[] key, byte[] value) throws Exception {
+        return  appender.append(key,value);
+    }
 
     @Override
     public void iterate(AbstractVisitor visitor) throws IOException {

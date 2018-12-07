@@ -39,6 +39,12 @@ public class WALogImpl  extends Service implements WALog<Cell> {
     }
 
     @Override
+    public long log(byte[] key, byte[] value) throws Exception {
+
+        return 0;
+    }
+
+    @Override
     public void iterate(AbstractVisitor visitor) throws IOException {
         List<Long> logNames=fileService.allLogFiles();
         LogParser parser;

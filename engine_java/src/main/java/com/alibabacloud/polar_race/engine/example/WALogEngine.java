@@ -16,8 +16,7 @@ import org.slf4j.LoggerFactory;
 public class WALogEngine extends AbstractEngine {
     private final static Logger logger= LoggerFactory.getLogger(WALogEngine.class);
     private WALog walLogger;
-    private ThreadLocal<Cell> cells=new ThreadLocal<>();
-    private ThreadLocal<Put>  puts=new ThreadLocal<>();
+
     public WALogEngine(){
 
     }
@@ -52,20 +51,7 @@ public class WALogEngine extends AbstractEngine {
     @Override
     public void write(byte[] key, byte[] value) throws EngineException {
         try {
-            Cell cell=cells.get();
-                if(cell==null){
-                   cell=new Cell(null,null);
-                   cells.set(cell);
-                }
-                cell.setKey(key);
-                cell.setValue(value);
-            Put put=puts.get();
-                if(put==null){
-                    put=new Put(null);
-                    puts.set(put);
-                }
-            put.set(cell);
-            walLogger.log(put);
+            walLogger.log(key,value);
         }catch (Exception e){
             logger.error("write error",e);
             throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());
