@@ -25,7 +25,7 @@ public class StoreConfig {
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
     public final static int  MAXIMUM_BUFFER_CAPACITY =256*1024*1024;
-    public final static int  batchSyncSize =26;
+    public final static int  batchSyncSize =8;
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;
@@ -46,5 +46,9 @@ public class StoreConfig {
      *  失败 太多，直接cache 线程加载到缓存
      * */
     public final static int  CACHE_LOG_MISS_LIMIT=5;
-
+    /***
+     *  time elapsed 75355 ms,qps 84931, write buffer 128k,batch size 16,10w per thread
+     *   time elapsed 74864 ms,qps 85488 ,write buffer 128k,batch size 8,10w per thread
+     *   time elapsed 75707 ms,qps 84536 ,write buffer 128k,batch size 4,10w per thread
+     **/
 }

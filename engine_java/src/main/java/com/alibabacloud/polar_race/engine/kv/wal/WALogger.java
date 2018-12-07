@@ -12,7 +12,7 @@ import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.*;
-import com.alibabacloud.polar_race.engine.kv.event.Cell;
+
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -44,6 +44,7 @@ public class WALogger extends Service implements WALog<Put> {
     private IOHandlerLRUCache logHandlerLRUCache;
     private AtomicInteger readCounter=new AtomicInteger(0);
     private IndexService indexService;
+    private CommitLogService commitLogService;
     private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
 
     private Status storeStatus;
@@ -64,6 +65,7 @@ public class WALogger extends Service implements WALog<Put> {
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
         this.storeStatus=Status.START;
+
     }
 
 
@@ -103,7 +105,8 @@ public class WALogger extends Service implements WALog<Put> {
 
     @Override
     public long log(byte[] key, byte[] value) throws Exception {
-        return  appender.append(key,value);
+        //return  appender.append(key,value);
+        return commitLogService.log(key,value);
     }
 
     @Override
@@ -183,8 +186,10 @@ public class WALogger extends Service implements WALog<Put> {
             logger.info(" index and log cache timeout,continue");
         }
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
-        this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
-        this.appender.start();
+//        this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
+//        this.appender.start();
+        this.commitLogService=new CommitLogService(handler,logFileService);
+        this.commitLogService.start();
         onStartFinish();
     }
 
@@ -262,7 +267,11 @@ public class WALogger extends Service implements WALog<Put> {
     public void onStop() throws Exception {
         long start=System.currentTimeMillis();
          logger.info(Memory.memory().toString());
-         this.appender.stop();
+         if(appender!=null)
+            this.appender.stop();
+         if(commitLogService!=null){
+             commitLogService.stop();
+         }
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
          this.fileChannelCloseProcessor.stop();

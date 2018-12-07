@@ -39,15 +39,15 @@ public class SyncEvent implements Event<Long> , recyclable {
     }
 
     public synchronized Long get(long timeout) throws InterruptedException,TimeoutException{
-        startTimestamp=System.currentTimeMillis();
+        startTimestamp=System.nanoTime();
        if(!isDone()){
             wait(timeout);
             // wake up or timeout
             if(!isDone()){
-                throw new TimeoutException(String.format("%d timeout after %d",txId,System.currentTimeMillis()-startTimestamp));
+                throw new TimeoutException(String.format("%d timeout after %d",txId,System.nanoTime()-startTimestamp));
             }
        }
-       finishTimestamp=System.currentTimeMillis();
+       finishTimestamp=System.nanoTime();
        return txId;
     }
 
