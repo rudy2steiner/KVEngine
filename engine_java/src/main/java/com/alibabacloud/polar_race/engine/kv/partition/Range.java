@@ -1,10 +1,11 @@
 package com.alibabacloud.polar_race.engine.kv.partition;
 
+
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
 import com.alibabacloud.polar_race.engine.kv.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -17,7 +18,7 @@ public class Range implements NavigableArray{
     private final static Logger logger= LoggerFactory.getLogger(Range.class);
     private long low;
     private long high;
-    private volatile Index[] slot;
+    private KeyValueArray partition;
     private static final int DEFAULT_INIT_LENGTH=1024;
     private volatile int initSize;
     private AtomicReference<Status> status=new AtomicReference<>();
@@ -28,14 +29,14 @@ public class Range implements NavigableArray{
     public Range(long low,long high,int initSize){
         this.low=low;
         this.high=high;
-        this.slot=new Index[initSize];
+        this.partition=new KeyValueArray(initSize);
         this.initSize=initSize;
         this.status.set(Status.NORMAL);
     }
     public Range(Index[] indexs,long low,long high){
         this.low=low;
         this.high=high;
-        this.slot=new Index[initSize];
+        this.partition=new KeyValueArray(initSize);
         this.initSize=initSize;
         this.status.set(Status.NORMAL);
     }
@@ -43,47 +44,20 @@ public class Range implements NavigableArray{
     public long getLow() {
         return low;
     }
-
-    public void add(Index value){
-       int i= index.getAndIncrement();
-       if(i>=initSize){
-           ensureCapacity();
-       }
-       slot[i]=value;
-    }
-
-    public int getSize(){
-       return index.get();
-    }
-
-    public Index[] getSlot(){
-        return slot;
-    }
-
     /**
-     * 扩容
-     *
+     * put index
      **/
-    public  synchronized void ensureCapacity(){
-        if(this.status.compareAndSet(Status.NORMAL,Status.MOVING)){
-            logger.info("enlarge for "+toString());
-            int newLength=(int)(slot.length*1.2);
-            Index[] copy = new Index[newLength];
-            System.arraycopy(slot, 0, copy, 0,
-                    Math.min(slot.length, newLength));
-            slot=copy;
-            // update new length
-            initSize=newLength;
-            this.status.compareAndSet(Status.MOVING,Status.NORMAL);
-            //notifyAll();
-        }else{
-//            try {
-//               // wait();
-//            }catch (InterruptedException e){
-//                e.printStackTrace();
-//            }
-        }
+    public void add(Index value){
+       partition.put(value.getKey(),value.getOffset());
     }
+
+    public void add(long key,int value){
+        partition.put(key,value);
+    }
+    public int getSize(){
+       return partition.getSize();
+    }
+
     public void setLow(long low) {
         this.low = low;
     }
@@ -91,7 +65,6 @@ public class Range implements NavigableArray{
     public long getHigh() {
         return high;
     }
-
     public void setHigh(long high) {
         this.high = high;
     }
@@ -100,6 +73,7 @@ public class Range implements NavigableArray{
 
     /**
      * @return  0 表示contain or -1 表示小于，1 表示大于
+     * 左闭又开
      **/
     public int contain(long key){
          if(Bytes.compareUnsigned(key,low)<0) return -1;
@@ -107,7 +81,7 @@ public class Range implements NavigableArray{
          return 0;
     }
     /**
-     * >=
+     * <=
      *
      **/
     @Override
@@ -115,7 +89,7 @@ public class Range implements NavigableArray{
         return binarySearch(key,true);
     }
     /**
-     * <=
+     * >=
      *
      **/
     @Override
@@ -123,33 +97,47 @@ public class Range implements NavigableArray{
         return binarySearch(key,false);
     }
 
+    /**
+     * @return  实际存储的最小key
+     *
+     **/
+    public long lowerKey(){
+        return partition.getKey(0);
+    }
 
+    /**
+     * @return  s实际存储的最大key
+     **/
+    public long upperKey(){
+        return partition.getKey(partition.getSize()-1);
+    }
     /***
      * 找到了，直接返回
+     * @param ceiling 范围检查标记
      *
      **/
     private int binarySearch(long key,boolean ceiling){
         //
-        if(slot[0].getKey()==key){
+        if(lowerKey()==key){
            return 0;
         }
-        if(slot[index.get()-1].getKey()==key){
-           return index.get()-1;
+        if(upperKey()==key){
+           return partition.getSize()-1;
         }
-        int low=0,high=index.get()-1;
+        int low=0,high=partition.getSize()-1;
         int mid=-1;
         int compare=-1;
         while(low<=high){
             mid= (high-low)/2+low;
             //slotKey=slot[mid].getKey();
-            compare=Bytes.compareUnsigned(slot[mid].getKey(),key);
+            compare=Bytes.compareUnsigned(partition.getKey(mid),key);
             if(compare==0) return mid; // found
-            if(compare<0) low=mid+1;
-            else high=mid-1;
+            if(compare<0) low=mid+1;// a < b,向右搜索
+            else high=mid-1;    // 向左搜索
         }
         // 防止超出范围key search
         if(compare<0&&ceiling){
-            return Math.min(mid+1,index.get()-1);
+            return Math.min(mid+1,partition.getSize()-1);
         }
         if(compare>0&&!ceiling){
             return Math.max(mid-1,0);
@@ -157,21 +145,48 @@ public class Range implements NavigableArray{
         return mid;
     }
 
+    /**
+     * sort all the index in the partition
+     **/
+    public void sort(){
+       partition.quickSort(partition.getKeys(),partition.getValues(),0,partition.getSize()-1);
+    }
+
     @Override
-    public void iterate(int start, int end, RangeIterator iterator) {
+    public void iterate(long lower, long upper, RangeIterator iterator) {
         Index index;
-        for(int i=start;i<end;i++){
-            index=slot[i];
-            iterator.visit(index.getKey(),index.getOffset());
+        int start=floor(lower);
+        int end=ceiling(upper);
+        if(upper==upperKey()){
+            //exclude upper
+            end--;
+        }
+        for(int i=start;i<=end;i++){
+            // filter out of date key
+            iterator.visit(partition.getKey(i),partition.getValue(i));
         }
     }
 
     @Override
-    public String toString() {
-        return "["+low+","+high+"]";
+    public void iterate(long lower, RangeIterator iterator) {
+        Index index;
+        int start=floor(lower);
+        int end=getSize();
+        for(int i=start;i<end;i++){
+            //index=slot[i];
+            // filter out of date key
+            iterator.visit(partition.getKey(i),partition.getValue(i));
+        }
     }
 
-    enum Status{
+
+
+    @Override
+    public String toString() {
+        return "["+low+","+high+")";
+    }
+
+    public enum Status{
         NORMAL,MOVING
     }
 }

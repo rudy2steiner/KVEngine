@@ -2,12 +2,16 @@ package com.alibabacloud.polar_race.engine.kv.index;
 
 
 
+
 /***
  *
  *  index for a record
- *
+ *  sort 过程中去重逻辑：
+ *  记录重复的key,及其最大的offset,
+ *  和重复index 的Set,
+ *  遍历，设置过期标志位
  * */
-public class Index {
+public class Index  {
 
     private long key;
     private int  offset;
@@ -31,4 +35,6 @@ public class Index {
     public void setKey(long key) {
         this.key = key;
     }
+
+
 }

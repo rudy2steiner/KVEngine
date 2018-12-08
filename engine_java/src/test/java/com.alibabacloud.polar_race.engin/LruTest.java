@@ -4,6 +4,7 @@ import com.alibabacloud.polar_race.engine.common.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -11,6 +12,7 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.Index;
 import com.alibabacloud.polar_race.engine.kv.partition.LexigraphicalPartition;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
+import com.alibabacloud.polar_race.engine.kv.partition.RangeIterator;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
@@ -62,7 +64,7 @@ public class LruTest {
     }
 
     LogFileService fileService;
-    @Before
+    //@Before
     public void beforeAction(){
         TaskBus closeHandlerProcessor=new TaskBus(1);
         fileService=new LogFileServiceImpl(root,closeHandlerProcessor);
@@ -200,52 +202,37 @@ public class LruTest {
         Random random=new Random();
         long start=System.currentTimeMillis();
         int  size=60000000;
+        int  maxSize=60000000;
         int initPartitionCapacity=1010000;
         LexigraphicalPartition partition=new LexigraphicalPartition(Long.MIN_VALUE,Long.MAX_VALUE,64,initPartitionCapacity);
         //long[] arr=new long[size];
         int slotId;
         long value;
         Range range=null;
-        Index[] unsortIndex=new Index[initPartitionCapacity];
         while(--size>0){
             value=random.nextLong();
             slotId=partition.partition(value);
             range=partition.getPartition(slotId);
-            range.add(new Index(value,(int)value));
+            range.add(value,(int)value);
             if(size%1000000==0)
                 logger.info(String.format("%d partition %s,%d",value,range.toString(), range.contain(value)));
         }
         logger.info(String.format("stop %d ms",System.currentTimeMillis()-start));
 
-        // sort 135
-        //
-        Index[] keys=range.getSlot();
-//        int i=0;
-//        for(Index key:keys){
-//             unsortIndex[i++]=new Index(key,(int)key);
-//        }
         start=System.currentTimeMillis();
-        Arrays.sort(unsortIndex, 0, range.getSize(), new Comparator<Index>() {
+        partition.sort();
+        logger.info(String.format("partition sort finish %d ms",System.currentTimeMillis()-start));
+        long[] orderKey=new long[maxSize];
+        start=System.currentTimeMillis();
+        partition.iterate(0,-1, new RangeIterator() {
+            int i=0;
             @Override
-            public int compare(Index o1, Index o2) {
-               long diff=o1.getKey()-o2.getKey();
-               if(diff==0) return 0;
-               if(diff>0) return 1;
-               else return -1;
+            public void visit(long key, int offset) {
+                orderKey[i++]=key;
             }
         });
-
-        logger.info(String.format("generic sort stop %d ms",System.currentTimeMillis()-start));
-        start=System.currentTimeMillis();
-        Arrays.sort(keys,0,range.getSize());
-        logger.info(String.format("sort stop %d ms",System.currentTimeMillis()-start));
-        sample(range.getSlot(),0,range.getSize(),10000);
-        NavigableMap<Long,Integer> navigableMap;
-        SortedMap<Long,Integer> sortedMap;
-        ConcurrentSkipListMap skipListMap;
-       // HashSkipListMemTableConfig;
-        //SkipList skipList;
-        //Arrays.binarySearch()
+        ascendingIncrease(orderKey,maxSize);
+        logger.info(String.format("iterate  finish %d ms",System.currentTimeMillis()-start));
     }
 
     public void sample(Index[] array,int start,int end,int mode){
@@ -253,6 +240,55 @@ public class LruTest {
             if(i%mode==0){
                 logger.info(""+array[i].getKey());
             }
+        }
+    }
+
+
+    /***
+     * 校验严格单调递增
+     **/
+    public void ascendingIncrease(Index[]/*sorted */ keys,int size){
+        Index last=new Index(Long.MIN_VALUE,0);
+        for(int k=0;k<size;k++){
+            if(keys[k].getKey()<=last.getKey()){
+                logger.info(String.format("%d %d",keys[k].getKey(),last.getKey()));
+            }
+            last=keys[k];
+        }
+    }
+
+    /**
+     * for long array 单调检查
+     **/
+    public void ascendingIncrease(long[]/*sorted */ keys,int size){
+        long last=Long.MIN_VALUE;
+        for(int k=0;k<size;k++){
+            if(keys[k]<=last){
+                logger.info(String.format("%d %d",keys[k],last));
+            }
+            last=keys[k];
+        }
+    }
+    @Test
+    public void nullIndex(){
+         int size=60000000;
+         Random random=new Random();
+         KeyValueArray keyValueArray=new KeyValueArray(size);
+         long key;
+         int value;
+          for(int i=0;i<size;i++){
+              key=random.nextLong();
+              value=random.nextInt();
+              keyValueArray.put(key,value);
+          }
+        long start=System.currentTimeMillis();
+        keyValueArray.quickSort(keyValueArray.getKeys(),keyValueArray.getValues(),0,size-1);
+        logger.info(String.format("partition sort finish %d ms",System.currentTimeMillis()-start));
+        ascendingIncrease(keyValueArray.getKeys(),size);
+        try {
+            Thread.sleep(50000);
+        }catch (InterruptedException e){
+            e.printStackTrace();
         }
     }
 

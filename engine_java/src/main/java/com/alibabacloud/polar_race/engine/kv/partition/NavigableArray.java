@@ -7,12 +7,14 @@ package com.alibabacloud.polar_race.engine.kv.partition;
  **/
 public interface NavigableArray {
     /**
-     * @return  Returns the least key greater than or equal to the given key,
+     * @return  the least key greater than or equal to the given key,
+     * 大于等于key 的最小位置
      **/
     int ceiling(long key);
 
     /**
-     * Returns the greatest key less than or equal,
+     * @return the greatest key less than or equal,
+     * 小于等于key 的最大位置
      * */
     int floor(long key);
 
@@ -20,7 +22,11 @@ public interface NavigableArray {
      *
      * 子区间, start inclusive,end exclusive
      **/
-    void iterate(int start,int end,RangeIterator iterator);
-
+    void iterate(long lower,long upper,RangeIterator iterator);
+    /**
+     *
+     * 子区间, start inclusive,end exclusive
+     **/
+    void iterate(long lower,RangeIterator iterator);
 
 }
