@@ -17,7 +17,7 @@ public interface KVParser {
      void parse(AbstractVisitor visitor,ByteBuffer to, ByteBuffer from) throws IOException;
 
      /**
-      *  to ensure log format complete
+      *  to ensure put format complete
       **/
      IOHandler doRecover(AbstractVisitor visitor, ByteBuffer to, ByteBuffer from) throws IOException;
 

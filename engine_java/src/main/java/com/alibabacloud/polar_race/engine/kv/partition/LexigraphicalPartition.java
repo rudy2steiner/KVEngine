@@ -1,6 +1,8 @@
 package com.alibabacloud.polar_race.engine.kv.partition;
 
 
+import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,13 +128,13 @@ public class LexigraphicalPartition implements Partition {
      * @param upper not inclusive
      *
      **/
-    public void iterate(long lower,long upper ,RangeIterator iterator){
+    public void iterate(long lower, long upper , AbstractVisitor iterator) throws EngineException {
           int startPartitionId=binarySearch(lower);
           int endPartitionId=binarySearch(upper);
             Range range;
           if(startPartitionId==endPartitionId){
                range=getPartition(startPartitionId);
-               range.iterate(lower,iterator);
+               range.iterate(lower,upper,iterator);
           }else if(startPartitionId<endPartitionId){
               range=getPartition(startPartitionId);
               range.iterate(lower,iterator);

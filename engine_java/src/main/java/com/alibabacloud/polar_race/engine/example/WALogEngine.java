@@ -6,11 +6,7 @@ import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
-import com.alibabacloud.polar_race.engine.kv.event.Cell;
 import com.alibabacloud.polar_race.engine.kv.wal.PartitionWALogger;
-import com.alibabacloud.polar_race.engine.kv.wal.WALog;
-import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
-import com.alibabacloud.polar_race.engine.kv.event.Put;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +48,7 @@ public class WALogEngine extends AbstractEngine {
     @Override
     public void write(byte[] key, byte[] value) throws EngineException {
         try {
-            walLogger.log(key,value);
+            walLogger.put(key,value);
         }catch (Exception e){
             logger.error("write error",e);
             throw  new EngineException(RetCodeEnum.IO_ERROR,e.getMessage());

@@ -39,7 +39,7 @@ public class WALogImpl  extends Service implements WALog<Cell> {
     }
 
     @Override
-    public long log(byte[] key, byte[] value) throws Exception {
+    public long put(byte[] key, byte[] value) throws Exception {
 
         return 0;
     }

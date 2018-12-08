@@ -8,7 +8,7 @@ import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IOHandlerLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
-import com.alibabacloud.polar_race.engine.kv.partition.RangeIterator;
+import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
@@ -114,7 +114,7 @@ public class KVIndexService extends Service implements IndexService {
     }
 
     @Override
-    public void range(long lower, long upper, RangeIterator iterator) {
+    public void range(long lower, long upper, AbstractVisitor iterator) {
 
     }
     @Override

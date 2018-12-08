@@ -19,7 +19,7 @@ public interface CacheController {
      **/
     int maxOldBuffer();
     /**
-     *  最大cache log 的数量
+     *  最大cache put 的数量
      **/
      int maxCacheLog();
 
@@ -30,11 +30,11 @@ public interface CacheController {
 
     /**
      *
-     *  初始化LRU  cache log 的并行度
+     *  初始化LRU  cache put 的并行度
      * */
     int  cacheLogInitLoadConcurrency();
     /**
-     *  每个cache log 的大小
+     *  每个cache put 的大小
      **/
     int cacheLogSize();
 

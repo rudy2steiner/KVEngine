@@ -50,7 +50,7 @@ public class LogEventHander implements EventHandler<LogEvent<Cell>> {
         handler.flushBuffer();
        // handler.flush();
         String nextLogName=logFileService.nextLogName(cellLogEvent.getValue());
-        // roll to next log file
+        // roll to next put file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
     }
 

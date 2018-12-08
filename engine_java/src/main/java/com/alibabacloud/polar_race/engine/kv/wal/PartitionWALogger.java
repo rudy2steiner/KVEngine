@@ -3,6 +3,7 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
@@ -24,7 +25,6 @@ import java.util.concurrent.*;
  *
  **/
 public class PartitionWALogger  extends Service implements WALog<Put> {
-
     private final static Logger logger= LoggerFactory.getLogger(PartitionWALogger.class);
     private ExecutorService commonExecutorService;
     private LexigraphicalPartition partitioner;
@@ -54,7 +54,7 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
     public void bufferAllocateControl(){
         int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
         int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+2* StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
-        logger.info(String.format("max cache log file direct %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
+        logger.info(String.format("max cache put file direct %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
         this.bufferAllocator=new LogBufferAllocator(partitionLogFileService,maxDirectCacheLog,maxHeapCacheLog,cacheController.maxDirectBuffer(),cacheController.maxOldBuffer());
     }
 
@@ -86,8 +86,8 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
     }
 
     @Override
-    public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) {
-
+    public void range(byte[] lower, byte[] upper, AbstractVisitor visitor) throws EngineException {
+           partitioner.iterate(Bytes.bytes2long(lower,0),Bytes.bytes2long(upper,0),visitor);
     }
 
     @Override
@@ -97,9 +97,9 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
     }
 
     @Override
-    public long log(byte[] key, byte[] value) throws Exception {
+    public long put(byte[] key, byte[] value) throws Exception {
         int partitionId=partitioner.partition(Bytes.bytes2long(key,0));
-       return partitionWALoggers[partitionId].log(key,value);
+       return partitionWALoggers[partitionId].put(key,value);
     }
 
     /**

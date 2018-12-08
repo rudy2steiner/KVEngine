@@ -38,7 +38,7 @@ public class MemoryTest {
                8*1024*1024;
 
         byte[] buf = new byte[bufferSize];
-        String[] args={"/export/kv_test.log.2018-12-02.log","/export/log_copy.log"};
+        String[] args={"/export/kv_test.put.2018-12-02.put","/export/log_copy.put"};
         DirectRandomAccessFile fin =
                 new DirectRandomAccessFile(new File(args[0]), "r", bufferSize);
 

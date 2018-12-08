@@ -163,7 +163,7 @@ public class LogCacheMonitor extends Service implements CacheListener<BufferHold
                  onLoad.add(event.value().longValue());
                  logLRU.loadCache(event.value());
                  if(cacheLoadCount++%1000==0){
-                     logger.info(String.format("log file load task scheduled %d",event.value()));
+                     logger.info(String.format("put file load task scheduled %d",event.value()));
                  }
              }
         }

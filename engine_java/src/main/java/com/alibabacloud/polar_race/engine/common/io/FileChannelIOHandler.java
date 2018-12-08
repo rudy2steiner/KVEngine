@@ -31,6 +31,10 @@ public class FileChannelIOHandler implements IOHandler {
             e.printStackTrace();
         }
     }
+
+    public FileChannel getFileChannel(){
+        return fileChannel;
+    }
     @Override
     public void append(ByteBuffer buffer) throws IOException {
         int remain=buffer.remaining();

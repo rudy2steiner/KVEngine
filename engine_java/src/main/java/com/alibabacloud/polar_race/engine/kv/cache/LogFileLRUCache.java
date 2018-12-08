@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /***
- * no cache log file
+ * no cache put file
  **/
 public class LogFileLRUCache extends Service {
     private final static Logger logger= LoggerFactory.getLogger(LogFileLRUCache.class);
@@ -70,7 +70,7 @@ public class LogFileLRUCache extends Service {
              }
              if(len!=StoreConfig.KEY_VALUE_SIZE) {
                  logger.info(String.format("file %d,offset %d,key %d,len %d ", fileId, offsetInFile, expectedKey, len));
-                 throw  new EngineException(RetCodeEnum.CORRUPTION,"log error");
+                 throw  new EngineException(RetCodeEnum.CORRUPTION,"put error");
              }
              slice.limit(slice.position()+StoreConfig.VALUE_SIZE);
              buffer.put(slice);
@@ -149,7 +149,7 @@ public class LogFileLRUCache extends Service {
     public void onStop() throws Exception {
         //logBufferAllocator.close();
 //        logCacheMonitor.close();
-        logger.info("log cache on stop!");
+        logger.info("put cache on stop!");
     }
 
     public class LogFileRemoveListener implements RemovalListener<Long,BufferHolder> {
@@ -175,13 +175,13 @@ public class LogFileLRUCache extends Service {
 
 
     /**
-     * log cache buffer pool
+     * put cache buffer pool
      **/
     public BufferHolder getLogBufferHolder(){
 //         BufferHolder holder= logBufferAllocator.allocateDirectLogCache();
 //         if(holder==null) holder=logBufferAllocator.allocateHeapLogCache();
 //         if(holder==null) {
-//             throw new IllegalArgumentException("allocate log buffer failed");
+//             throw new IllegalArgumentException("allocate put buffer failed");
 //         }
          return null;
     }
@@ -209,7 +209,7 @@ public class LogFileLRUCache extends Service {
 
 
     /**
-     * load the log to cache
+     * load the put to cache
      **/
     @Deprecated
     public void loadCache(long logFileName){

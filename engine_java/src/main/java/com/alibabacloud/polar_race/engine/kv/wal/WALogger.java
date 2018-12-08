@@ -42,7 +42,6 @@ public class WALogger extends Service implements WALog<Put> {
     private LogBufferAllocator bufferAllocator;
     private TaskBus fileChannelCloseProcessor;
     private IOHandlerLRUCache logHandlerLRUCache;
-    //private DirectAccessFileCache  directAccessFileCache;
     private AtomicInteger readCounter=new AtomicInteger(0);
     private IndexService indexService;
     private CommitLogService commitLogService;
@@ -60,7 +59,7 @@ public class WALogger extends Service implements WALog<Put> {
         this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
         this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);
-        this.bufferAllocateControl(bufferAllocator);
+        this.bufferAllocator=bufferAllocator;
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
@@ -68,18 +67,6 @@ public class WALogger extends Service implements WALog<Put> {
 
 
     }
-
-
-    /**
-     * 控制整体项目的缓存
-     **/
-    public void bufferAllocateControl(LogBufferAllocator bufferAllocator){
-//        int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
-//        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+2* StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
-//        logger.info(String.format("max cache log file direct %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
-        this.bufferAllocator=bufferAllocator;
-    }
-
 
     /**
      *  查看是否异常退出，并恢复日志完整性
@@ -105,9 +92,9 @@ public class WALogger extends Service implements WALog<Put> {
     }
 
     @Override
-    public long log(byte[] key, byte[] value) throws Exception {
+    public long put(byte[] key, byte[] value) throws Exception {
         //return  appender.append(key,value);
-        return commitLogService.log(key,value);
+        return commitLogService.put(key,value);
     }
 
     @Override
@@ -165,7 +152,7 @@ public class WALogger extends Service implements WALog<Put> {
             storeStatus=Status.NORMAL_EXIT;
             nextLogName= logFileService.nextLogName();
         }
-        // ensure hash bucket task is finished,possible optimize,log 文件已存在，加载索引
+        // ensure hash bucket task is finished,possible optimize,put 文件已存在，加载索引
         if(logFileService.allLogFiles().size()>0) {
             // 依据store 的状态，看是否需要加载缓存
             logHandlerLRUCache=new IOHandlerLRUCache(logFileService);
@@ -179,14 +166,14 @@ public class WALogger extends Service implements WALog<Put> {
             //indexLRUCache.start();
             logFileLRUCache.start();
         }else{
-            logger.info("log and index cache engine start ignore");
+            logger.info("put and index cache engine start ignore");
         }
         statisticsLogAndHashIndex();
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
-            logger.info(" index and log cache finish");
+            logger.info(" index and put cache finish");
         }else{
-            logger.info(" index and log cache timeout,continue");
+            logger.info(" index and put cache timeout,continue");
         }
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
 //        this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
@@ -203,7 +190,7 @@ public class WALogger extends Service implements WALog<Put> {
         int  indexFiles=indexFileService.allSortedFiles(StoreConfig.LOG_INDEX_FILE_SUFFIX).size();
         long indexTotal=indexFileService.addByteSize(0l);
         long logTotal=logFileService.lastWriteLogName(true);// 不准确
-        logger.info(String.format("index file %d,total size %d ;log file total %d",indexFiles,indexTotal,logTotal));
+        logger.info(String.format("index file %d,total size %d ;put file total %d",indexFiles,indexTotal,logTotal));
     }
 
 
@@ -235,9 +222,9 @@ public class WALogger extends Service implements WALog<Put> {
         }
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
-            logger.info(" index and log cache finish");
+            logger.info(" index and put cache finish");
         }else{
-            logger.info(" index and log cache timeout,continue");
+            logger.info(" index and put cache timeout,continue");
         }
     }
 

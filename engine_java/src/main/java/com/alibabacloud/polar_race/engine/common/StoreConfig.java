@@ -25,11 +25,15 @@ public class StoreConfig {
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
     public final static int  MAXIMUM_BUFFER_CAPACITY =256*1024*1024;
+    /**
+     *  hash bucket
+     **/
     public final static int  HASH_BUCKET_SIZE =8; // 2^n
-    public final static int  PARTITIONS =12;
+    public final static int  PARTITIONS =12;         //wal 分区数
     public final static int  batchSyncSize_FLUCTUATE =1;
     public final static int  batchSyncSize =6;
     public final static int  MINI_batchSyncSize =5;
+
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;

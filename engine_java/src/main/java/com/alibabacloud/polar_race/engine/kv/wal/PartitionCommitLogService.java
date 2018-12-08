@@ -8,7 +8,7 @@ import com.alibabacloud.polar_race.engine.kv.partition.Range;
 
 
 /***
- *  multi partition  commit log
+ *  multi partition  commit put
  **/
 public class PartitionCommitLogService extends Service {
     private CommitLogService commitLogService;

@@ -3,7 +3,6 @@ package com.alibabacloud.polar_race.engin;
 import com.alibabacloud.polar_race.engine.common.collection.LongLongMap;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
@@ -12,22 +11,17 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.Index;
 import com.alibabacloud.polar_race.engine.kv.partition.LexigraphicalPartition;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
-import com.alibabacloud.polar_race.engine.kv.partition.RangeIterator;
+import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.rocksdb.HashSkipListMemTableConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import zzz_koloboke_compile.shaded.org.$slf4j$.helpers.FormattingTuple;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.LongStream;
 
 
 @Ignore
@@ -224,7 +218,7 @@ public class LruTest {
         logger.info(String.format("partition sort finish %d ms",System.currentTimeMillis()-start));
         long[] orderKey=new long[maxSize];
         start=System.currentTimeMillis();
-        partition.iterate(0,-1, new RangeIterator() {
+        partition.iterate(0,-1, new AbstractVisitor() {
             int i=0;
             @Override
             public void visit(long key, int offset) {

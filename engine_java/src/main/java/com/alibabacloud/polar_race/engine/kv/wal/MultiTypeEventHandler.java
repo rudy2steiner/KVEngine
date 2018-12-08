@@ -92,8 +92,8 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
 
     /**
      *
-     * roll to next log file
-     * @param logSize will write content byte size,not include length header of log protocol
+     * roll to next put file
+     * @param logSize will write content byte size,not include length header of put protocol
      **/
     public void tryRollLog(int logSize) throws IOException {
         long remain= logFileService.logWritableSize()-handler.length();
@@ -113,7 +113,7 @@ public class MultiTypeEventHandler implements EventHandler<LogEvent<Event>>,Time
         //flushAndAck(false);
         ackSyncEvent();
         String nextLogName=logFileService.nextLogName(handler);
-        // roll to next log file
+        // roll to next put file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
         fileId=Long.valueOf(handler.name());
     }

@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
-import com.alibabacloud.polar_race.engine.kv.partition.RangeIterator;
+import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -17,7 +17,7 @@ public interface IndexService {
      *
      *
      **/
-    void range(long lower, long upper, RangeIterator iterator);
+    void range(long lower, long upper, AbstractVisitor iterator);
 
     /**
      * partition index

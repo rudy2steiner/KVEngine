@@ -1,9 +1,12 @@
 package com.alibabacloud.polar_race.engine.kv.partition;
 
 
+import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
+import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
 import com.alibabacloud.polar_race.engine.kv.index.Index;
+import com.alibabacloud.polar_race.engine.kv.index.SequentialIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,6 +22,7 @@ public class Range implements NavigableArray{
     private long low;
     private long high;
     private KeyValueArray partition;
+    private SequentialIndexService indexService;
     private static final int DEFAULT_INIT_LENGTH=1024;
     private volatile int initSize;
     private AtomicReference<Status> status=new AtomicReference<>();
@@ -30,15 +34,31 @@ public class Range implements NavigableArray{
         this.low=low;
         this.high=high;
         this.partition=new KeyValueArray(initSize);
-        this.initSize=initSize;
+        //this.initSize=partition.getSize();
         this.status.set(Status.NORMAL);
     }
+
     public Range(Index[] indexs,long low,long high){
         this.low=low;
         this.high=high;
         this.partition=new KeyValueArray(initSize);
         this.initSize=initSize;
         this.status.set(Status.NORMAL);
+    }
+
+    /**
+     * 初始化 partition 用于range
+     **/
+    public void setPartition(KeyValueArray partition){
+          this.partition=partition;
+          this.status.set(Status.NORMAL);
+    }
+
+    /**
+     * 初始化 partition 用于range
+     **/
+    public void setIndexService(SequentialIndexService indexService){
+        this.indexService=indexService;
     }
 
     public long getLow() {
@@ -153,7 +173,7 @@ public class Range implements NavigableArray{
     }
 
     @Override
-    public void iterate(long lower, long upper, RangeIterator iterator) {
+    public void iterate(long lower, long upper, AbstractVisitor iterator) throws EngineException {
         Index index;
         int start=floor(lower);
         int end=ceiling(upper);
@@ -161,22 +181,16 @@ public class Range implements NavigableArray{
             //exclude upper
             end--;
         }
-        for(int i=start;i<=end;i++){
-            // filter out of date key
-            iterator.visit(partition.getKey(i),partition.getValue(i));
-        }
+        indexService.range(start,end,iterator);
+
     }
 
     @Override
-    public void iterate(long lower, RangeIterator iterator) {
+    public void iterate(long lower, AbstractVisitor iterator) throws EngineException{
         Index index;
         int start=floor(lower);
         int end=getSize();
-        for(int i=start;i<end;i++){
-            //index=slot[i];
-            // filter out of date key
-            iterator.visit(partition.getKey(i),partition.getValue(i));
-        }
+        indexService.rangeFromStart(start,iterator);
     }
 
 

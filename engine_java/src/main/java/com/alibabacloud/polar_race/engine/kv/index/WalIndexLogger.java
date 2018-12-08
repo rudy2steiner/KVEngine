@@ -53,7 +53,7 @@ public class WalIndexLogger extends Service {
             handler.append(event.value().get(true));
             event.value().state(true,false);
         }else{
-            logger.info("index log thread handler not init");
+            logger.info("index put thread handler not init");
             throw new EngineException(RetCodeEnum.IO_ERROR,"io handler not found");
         }
     }

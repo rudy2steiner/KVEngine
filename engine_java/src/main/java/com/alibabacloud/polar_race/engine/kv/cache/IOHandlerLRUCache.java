@@ -8,6 +8,7 @@ import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.List;
 
 
@@ -20,6 +21,7 @@ public class IOHandlerLRUCache extends Service {
     private IOHandler[] ioHandlers;
     private LogFileService logFileService;
     private List<Long> files;
+    private TransferStat[] transferStats;
     public IOHandlerLRUCache(LogFileService logFileService){
         this.logFileService=logFileService;
         this.files=logFileService.allLogFiles();
@@ -59,7 +61,7 @@ public class IOHandlerLRUCache extends Service {
     }
 
     /**
-     * log 文件数量
+     * put 文件数量
      **/
     public int size(){
         return files.size();
@@ -72,5 +74,53 @@ public class IOHandlerLRUCache extends Service {
     @Override
     public void onStop() throws Exception {
         this.ioHandlers = null;
+    }
+    /**
+     * invoke before tansfer
+     *
+     **/
+    public void prepareToTransfer(){
+        short maxRecords=(short) (logFileService.logWritableSize()/StoreConfig.LOG_ELEMENT_SIZE);
+        logFileService.maxRecordInSingleFile();
+        transferStats=new TransferStat[files.size()];
+        for(int i=0;i<files.size();i++){
+            transferStats[i]=new TransferStat(maxRecords);
+        }
+    }
+    /**
+     * transfer
+     * @return  某个文件是否转移完成
+     *
+     **/
+    public boolean transfer(int sequenceId,int position){
+        return transferStats[sequenceId].tranfer(position);
+    }
+
+    /***
+     * 用于统计文件的 整理进度
+     **/
+    public class TransferStat{
+        short transfer=0;
+        BitSet bitSet;
+        private short maxRecords;
+        public TransferStat(short maxRecords){
+                this.maxRecords=maxRecords;
+        }
+        /**
+         * return true,if the file tranfer finish and ready to delete
+         **/
+        public boolean tranfer(int position){
+            transfer++;
+           bitSet.set(position/StoreConfig.LOG_ELEMENT_SIZE);
+           if(transfer==maxRecords){
+               for(int i=0;i<maxRecords;i++){
+                   if(!bitSet.get(i)){
+                    return false;
+                   }
+               }
+               return true;
+           }
+           return false;
+        }
     }
 }

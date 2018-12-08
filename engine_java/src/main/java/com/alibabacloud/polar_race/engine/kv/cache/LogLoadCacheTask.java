@@ -32,7 +32,7 @@ public class LogLoadCacheTask implements Runnable{
             //lru.put(fileName,holder);
             //logCacheListener.onCache(fileName,holder);
         }catch (Exception  e){
-            logger.info("read log to cache failed",e);
+            logger.info("read put to cache failed",e);
         }
     }
 

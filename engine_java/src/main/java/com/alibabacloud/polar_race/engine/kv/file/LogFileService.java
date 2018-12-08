@@ -38,7 +38,7 @@ public interface LogFileService {
     List<Long> allLogFiles();
     List<Long> allSortedFiles(String suffix);
     /**
-     * log 文件尾部和index块的总大小
+     * put 文件尾部和index块的总大小
      **/
     int  tailerAndIndexSize();
 

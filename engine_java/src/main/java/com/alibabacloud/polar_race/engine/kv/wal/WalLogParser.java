@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * read last log and index write index at the tail
+ * read last put and index write index at the tail
  *
  **/
 public class WalLogParser implements KVParser {
@@ -97,13 +97,13 @@ public class WalLogParser implements KVParser {
     }
 
     /**
-     *  log value end mark should append
+     *  put value end mark should append
      *
      **/
     public void logTailerAndIndex(ByteBuffer  indexBuffer,int maxValueLength) throws IOException{
            if(handler.length()!=maxValueLength){
                // 随机kill 可能写一半，丢弃
-               logger.info(" last log file, partial write");
+               logger.info(" last put file, partial write");
            }
         long remain= logFileService.logWritableSize()-handler.length();
            if(remain>0) {

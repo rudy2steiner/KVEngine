@@ -51,7 +51,7 @@ public class DirectAccessFileCache extends Service {
     }
 
     /**
-     * log 文件数量
+     * put 文件数量
      **/
     public int size(){
         return files.size();

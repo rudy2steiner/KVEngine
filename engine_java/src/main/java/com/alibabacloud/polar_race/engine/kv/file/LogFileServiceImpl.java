@@ -172,7 +172,7 @@ public class LogFileServiceImpl implements LogFileService{
                      file.delete();
                      sortedLogFiles.remove(sortedLogFiles.size()-1);
                 }else{
-                    logger.info("last time shutdown gracefully,last log "+lastName);
+                    logger.info("last time shutdown gracefully,last put "+lastName);
                 }
             }
         }

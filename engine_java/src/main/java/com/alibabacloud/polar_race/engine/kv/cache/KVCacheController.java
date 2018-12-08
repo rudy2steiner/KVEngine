@@ -81,7 +81,7 @@ public class KVCacheController implements CacheController {
     public int cacheIndexSize() {
         // suppose 均匀分布在各桶
 
-        return 16*1024*1024; // 16Mb long log map
+        return 16*1024*1024; // 16Mb long put map
     }
 
     @Override

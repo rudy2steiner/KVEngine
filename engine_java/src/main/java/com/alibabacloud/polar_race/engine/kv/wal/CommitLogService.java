@@ -76,7 +76,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
     }
 
     @Override
-    public long log(byte[] key, byte[] value) throws Exception {
+    public long put(byte[] key, byte[] value) throws Exception {
         lock.lock();
         lastWriteTime=System.currentTimeMillis();
         long remain= logFileService.logWritableSize()-handler.length();
@@ -164,7 +164,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
     }
     /**
      *
-     * roll to next log file
+     * roll to next put file
      * @param remain
      **/
     public void tryRollLog(long remain) throws IOException {
@@ -183,7 +183,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
         //flushAndAck(false);
         ackSyncEvent();
         String nextLogName=logFileService.nextLogName(handler);
-        // roll to next log file
+        // roll to next put file
         handler=logFileService.bufferedIOHandler(nextLogName,handler);
         fileId=Long.valueOf(handler.name());
     }
