@@ -3,8 +3,8 @@ package com.alibabacloud.polar_race.engine.kv.wal;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
-import com.alibabacloud.polar_race.engine.common.thread.NamedThreadFactory;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -13,16 +13,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.Executors;
+import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class CommitLogService extends Service implements KVLogger, TimeoutHandler {
     private final static Logger logger= LoggerFactory.getLogger(CommitLogService.class);
-    public final static ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
+    public final  ByteBuffer EMPTY_BUFFER=ByteBuffer.allocate(StoreConfig.EMPTY_FILL_BUFFER_SIZE);
     private final ByteBuffer valueIndexBuffer;
-    private final static byte[]     shortByte=new byte[StoreConfig.SHORT_LEN];
+    private final  byte[]     shortByte=new byte[StoreConfig.SHORT_LEN];
     private IOHandler handler;
     private LogFileService logFileService;
     private SyncEvent[] syncEvents;
@@ -34,18 +34,21 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
     private ThreadLocal<SyncEvent> syncs=new ThreadLocal<>();
     private ReentrantLock lock=new ReentrantLock();
     private volatile  long lastWriteTime;
-    private ScheduledExecutorService scheduledExecutorService= Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("timeout"));
-    public CommitLogService(IOHandler handler, LogFileService logFileService){
+    private ScheduledExecutorService scheduledExecutorService;
+    private static final Random random=new Random(0);
+    private int batchSyncSize=StoreConfig.MINI_batchSyncSize+random.nextInt(StoreConfig.batchSyncSize_FLUCTUATE);
+    public CommitLogService(IOHandler handler, LogFileService logFileService,ScheduledExecutorService scheduledExecutorService){
         this.handler=handler;
         this.logFileService=logFileService;
         this.valueIndexBuffer=ByteBuffer.allocate(logFileService.tailerAndIndexSize());
-        this.syncEvents=new SyncEvent[StoreConfig.batchSyncSize];
+        this.syncEvents=new SyncEvent[batchSyncSize];
+        logger.info("batch size "+batchSyncSize);
         this.fileId=Long.valueOf(handler.name());
         // init value index buffer
         //this.valueIndexBuffer.put(StoreConfig.VERSION);
         this.valueIndexBuffer.position(StoreConfig.VALUE_INDEX_RECORD_SIZE);
         Bytes.short2bytes(StoreConfig.KEY_VALUE_SIZE,shortByte,0);
-
+        this.scheduledExecutorService=scheduledExecutorService;
     }
 
     @Override
@@ -102,7 +105,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
         syncEvent.set(txId);
         if(syncEvent.value()<=flushedMaxTxId) {syncEvent.done(flushedMaxTxId);lock.unlock();return txId;}
         syncEvents[syncIndex++]=syncEvent;
-        if(syncIndex<StoreConfig.batchSyncSize) {
+        if(syncIndex<batchSyncSize) {
             lock.unlock();
             try {
                 // possible bug, flush before block
@@ -224,9 +227,11 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
             timeoutAndNoEventCounter=0;
             logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
         }else{
+            //logger.info(Memory.memory().toString());
             timeoutAndNoEventCounter++;
             if(timeoutAndNoEventCounter%100000==0)
                 logger.info(Thread.currentThread().getId()+" timeout  and now write,consider asyncClose ");
         }
+
     }
 }

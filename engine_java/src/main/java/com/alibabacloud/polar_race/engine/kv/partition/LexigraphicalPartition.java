@@ -54,7 +54,7 @@ public class LexigraphicalPartition implements Partition {
      * @return negative
      **/
     private int negativePartition(long low,long high,int indexStart){
-        long negativeStep=low/(partitionNum/2);  // step 是负数
+        long negativeStep=low/(partitionNum/2)-10;  // step 是负数
 
         for(long i=high;i>low&&i<=0;i+=negativeStep){
             partitions[--indexStart]=new Range(Math.max(i+negativeStep,low),i,partitionCapacity);
@@ -68,7 +68,7 @@ public class LexigraphicalPartition implements Partition {
      * postitive 范围内的partition
      **/
     private void positivePartition(long low,long high,int indexStart){
-        long positiveStep=high/(partitionNum/2);
+        long positiveStep=high/(partitionNum/2)+10; //little bigger
         long remain=high%(partitionNum/2);
         for(long i=high;i>remain&&i>=0;i-=positiveStep){
             partitions[--indexStart]=new Range(Math.max(0,i-positiveStep),i,partitionCapacity);
@@ -86,6 +86,11 @@ public class LexigraphicalPartition implements Partition {
 
     public Range getPartition(int partitionId){
         return partitions[partitionId];
+    }
+
+    @Override
+    public int size() {
+        return partitionNum;
     }
 
     /**

@@ -5,6 +5,7 @@ import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
+import com.alibabacloud.polar_race.engine.common.thread.NamedThreadFactory;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
@@ -45,10 +46,9 @@ public class WALogger extends Service implements WALog<Put> {
     private AtomicInteger readCounter=new AtomicInteger(0);
     private IndexService indexService;
     private CommitLogService commitLogService;
-    private ScheduledExecutorService timer=Executors.newScheduledThreadPool(1);
-
+    private ScheduledExecutorService timer=Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("timeout"));
     private Status storeStatus;
-    public WALogger(String dir){
+    public WALogger(String dir,ExecutorService commonExecutorService,LogBufferAllocator bufferAllocator){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
         this.indexDir=dir+StoreConfig.INDEX_CHILD_DIR;
@@ -60,11 +60,12 @@ public class WALogger extends Service implements WALog<Put> {
         this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
         this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);
-        this.bufferAllocateControl();
+        this.bufferAllocateControl(bufferAllocator);
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
         this.storeStatus=Status.START;
+
 
     }
 
@@ -72,11 +73,11 @@ public class WALogger extends Service implements WALog<Put> {
     /**
      * 控制整体项目的缓存
      **/
-    public void bufferAllocateControl(){
-        int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
-        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+2* StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
-        logger.info(String.format("max cache log file direct %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
-        this.bufferAllocator=new LogBufferAllocator(logFileService,maxDirectCacheLog,maxHeapCacheLog,cacheController.maxDirectBuffer(),cacheController.maxOldBuffer());
+    public void bufferAllocateControl(LogBufferAllocator bufferAllocator){
+//        int maxDirectCacheLog=cacheController.maxLogCacheDirectBuffer()/cacheController.cacheLogSize();
+//        int maxHeapCacheLog=cacheController.maxCacheLog()-maxDirectCacheLog+2* StoreConfig.MAX_CONCURRENCY_PRODUCER_AND_CONSUMER;
+//        logger.info(String.format("max cache log file direct %d, heap %d",maxDirectCacheLog,maxHeapCacheLog));
+        this.bufferAllocator=bufferAllocator;
     }
 
 
@@ -190,7 +191,7 @@ public class WALogger extends Service implements WALog<Put> {
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
 //        this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
 //        this.appender.start();
-        this.commitLogService=new CommitLogService(handler,logFileService);
+        this.commitLogService=new CommitLogService(handler,logFileService,timer);
         this.commitLogService.start();
         onStartFinish();
     }
@@ -232,11 +233,6 @@ public class WALogger extends Service implements WALog<Put> {
         if(redo) {
           replayLastLog();
         }
-//        if(startAsyncHashBucketTask()) {
-//            // 等hash 完成
-//            latch.await();
-//            indexLRUCache.iterateKey();
-//        }
         commonExecutorService.shutdown();
         if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
             logger.info(" index and log cache finish");
@@ -268,7 +264,7 @@ public class WALogger extends Service implements WALog<Put> {
     @Override
     public void onStop() throws Exception {
         long start=System.currentTimeMillis();
-         logger.info(Memory.memory().toString());
+
          if(appender!=null)
             this.appender.stop();
          if(commitLogService!=null){
@@ -276,14 +272,14 @@ public class WALogger extends Service implements WALog<Put> {
          }
         if(!Null.isEmpty(logFileLRUCache))
             this.logFileLRUCache.stop();
-         this.fileChannelCloseProcessor.stop();
+
          if(!Null.isEmpty(logHandlerLRUCache))
              logHandlerLRUCache.stop();
 //         if(!Null.isEmpty(directAccessFileCache)){
 //             directAccessFileCache.stop();
 //         }
          this.timer.shutdownNow();
-         logger.info(Memory.memory().toString());
+         //logger.info(Memory.memory().toString());
          statisticsLogAndHashIndex();
          logger.info("asyncClose wal logger,close time elapsed "+(System.currentTimeMillis()-start));
     }

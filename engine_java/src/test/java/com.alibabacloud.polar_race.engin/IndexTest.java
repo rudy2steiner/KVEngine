@@ -21,7 +21,7 @@ public class IndexTest {
     private String root="/export/wal000/";
     @Test
     public void KeyIndexIterate() throws Exception{
-        WALogger logger=new WALogger(root);
+        WALogger logger=new WALogger(root,null,null);
         logger.startAsyncHashTask();
 
     }
@@ -33,7 +33,7 @@ public class IndexTest {
     @Test
     public void IndexIterate() throws Exception{
 
-        WALogger logger=new WALogger(root);
+        WALogger logger=new WALogger(root,null,null);
         logger.startAsyncIndexCacheTask();
 
     }

@@ -7,6 +7,7 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.event.Cell;
+import com.alibabacloud.polar_race.engine.kv.wal.PartitionWALogger;
 import com.alibabacloud.polar_race.engine.kv.wal.WALog;
 import com.alibabacloud.polar_race.engine.kv.wal.WALogger;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class WALogEngine extends AbstractEngine {
     private final static Logger logger= LoggerFactory.getLogger(WALogEngine.class);
-    private WALog walLogger;
+    private PartitionWALogger walLogger;
 
     public WALogEngine(){
 
@@ -29,7 +30,7 @@ public class WALogEngine extends AbstractEngine {
                 if(!path.endsWith("/")){
                     realPath+="/";
                 }
-                this.walLogger = new WALogger(realPath);
+                this.walLogger = new PartitionWALogger(realPath);
                 this.walLogger.start();
             }else  throw new EngineException(RetCodeEnum.IO_ERROR,"path is empty");
         }catch (Exception e){

@@ -11,6 +11,7 @@ import java.io.IOException;
  *
  **/
 public interface WALog<T> extends Lifecycle,KVLogger {
+    @Deprecated
     long log(T cell) throws Exception;
     @Deprecated
     void iterate(AbstractVisitor visitor) throws IOException;

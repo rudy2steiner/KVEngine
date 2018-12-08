@@ -9,10 +9,10 @@ public class StoreConfig {
     public final static String INDEX_CHILD_DIR="index/";
     public final static String LOG_INDEX_FILE_SUFFIX=".index";
     public final static int  HASH_INDEX_QUEUE_SIZE=500;
-    public final static int  HASH_BUCKET_SIZE =128; // 2^n
     public final static double  HASH_BUCKET_LOAD_FACTOR =0.5;
     public final static int  HASH_WRITE_BUFFER_SIZE =256*1024;
     public final static int  HASH_CONCURRENCY =32;
+
     public final static int  LOAD_HASH_INDEX_TIMEOUT =2000;
     public final static int  HASH_LOAD_BUFFER_SIZE =256*1024;
     public final static int  FILE_WRITE_BUFFER_SIZE =128*1024;
@@ -25,7 +25,11 @@ public class StoreConfig {
     public final static int  K4_SIZE=4096;
     public final static int  KEY_INDEX_MAP_INIT_CAPACITY=100000;
     public final static int  MAXIMUM_BUFFER_CAPACITY =256*1024*1024;
-    public final static int  batchSyncSize =8;
+    public final static int  HASH_BUCKET_SIZE =8; // 2^n
+    public final static int  PARTITIONS =12;
+    public final static int  batchSyncSize_FLUCTUATE =1;
+    public final static int  batchSyncSize =6;
+    public final static int  MINI_batchSyncSize =5;
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
     public final static int  INT_LEN=4;
