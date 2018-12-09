@@ -224,7 +224,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
         long start=System.currentTimeMillis();
         if(flushAndAck(false)){
             timeoutAndNoEventCounter=0;
-            logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
+            logger.info(Thread.currentThread().getId()+" on handler timeout and flush elapse "+(System.currentTimeMillis()-start));
         }else{
 
             timeoutAndNoEventCounter++;

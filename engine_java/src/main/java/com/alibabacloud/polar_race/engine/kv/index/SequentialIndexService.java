@@ -11,12 +11,13 @@ import com.alibabacloud.polar_race.engine.common.utils.Bytes;
 import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
 import com.alibabacloud.polar_race.engine.kv.cache.IOHandlerLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
+import com.alibabacloud.polar_race.engine.kv.wal.IndexServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
 /**
  *  range kv index
@@ -35,32 +36,38 @@ public class SequentialIndexService extends Service implements IndexService {
     private int leftShift=Bytes.bitSpace(maxRecordInSingleLog);
     private IndexWalLogReader indexWalLogReader;
     private KeyValueArray indexArray;
-    private String orderLogSubDir="order/";
+    private String orderLogSubDir=StoreConfig.ORDERED_LOG_CHILD_DIR;
     private Range partition;
+    private IndexServiceManager indexServiceManager;
+    private List<IOHandler> batchTransferedHandler=new ArrayList<>(100);
     int perOrderLogFileMaxSize =StoreConfig.SEGMENT_LOG_FILE_SIZE-StoreConfig.SEGMENT_LOG_FILE_SIZE%StoreConfig.LOG_ELEMENT_SIZE;
-    public SequentialIndexService(LogFileService partitionWalLogFIleService, IOHandlerLRUCache partitionIOHandlerCache, Range partition){
+    public SequentialIndexService(LogFileService partitionWalLogFIleService, IOHandlerLRUCache partitionIOHandlerCache, Range partition, IndexServiceManager indexServiceManager){
         this.partitionWalLogFIleService=partitionWalLogFIleService;
         this.partitionIOHandlerCache=partitionIOHandlerCache;
         this.partition=partition;
+        this.indexServiceManager=indexServiceManager;
     }
 
     @Override
     public void onStart() throws Exception {
         //super.onStart();
-        loadKeyIndex();
+        loadIndex();
         // sequential put
+        // consider disk capacity
+        indexServiceManager.get(partition.getPartitionId()); // may blocking until disk enough
         orderWalog();
         partition.setPartition(indexArray);
         partition.setIndexService(this);
     }
 
     /**
+     * 加载索引到内存
      *
      **/
-    public void loadKeyIndex(){
+    public void loadIndex(){
+         long start=System.currentTimeMillis();
          List<Long>  logFiles=partitionWalLogFIleService.allLogFiles();
          // read last file and caculate  init parameters
-
          this.indexArray=new KeyValueArray(1000);
          this.indexWalLogReader=new IndexWalLogReader(partitionWalLogFIleService, partitionIOHandlerCache, logFiles, 0, logFiles.size() - 1, new IndexKeyVisitor());
          this.indexWalLogReader.run();
@@ -68,6 +75,7 @@ public class SequentialIndexService extends Service implements IndexService {
          //sortHelper.quickSort(keys,null,0,keySize-1);
          indexArray.quickSort(indexArray.getKeys(),indexArray.getValues(),0,indexArray.getSize()-1);
          indexArray.compact();
+         logger.info(String.format("partition %d load index finish, elapse %d",partition.getPartitionId(),System.currentTimeMillis()-start));
          // 遍历去重
          //ascendingIncrease(indexArray.getKeys(),indexArray.getValues(),indexArray.getSize()-1);
          // order put file
@@ -79,6 +87,7 @@ public class SequentialIndexService extends Service implements IndexService {
      *
      * */
     public void orderWalog() throws EngineException {
+         long start=System.currentTimeMillis();
          long[] keys=indexArray.getKeys();
          int[]  values=indexArray.getValues();
          int size=indexArray.getSize();
@@ -113,6 +122,11 @@ public class SequentialIndexService extends Service implements IndexService {
                     // transfer record action
                     if(partitionIOHandlerCache.transfer(fileId,(int)offsetInFile)){
                         // consider notify delete old file and to
+                        batchTransferedHandler.add(originIOHandler);
+                        if(batchTransferedHandler.size()==StoreConfig.BATCH_IOHANDLER){
+                            indexServiceManager.release(batchTransferedHandler);
+                            batchTransferedHandler.clear();
+                        }
                     }
                 } else {
                     logger.info(String.format("ignore duplicate %d,try to keep newest", key));
@@ -121,7 +135,7 @@ public class SequentialIndexService extends Service implements IndexService {
         }catch (IOException e){
             throw new EngineException(RetCodeEnum.IO_ERROR, e.getMessage());
         }
-
+        logger.info(String.format("partition %d transfer to ordered log finish, elapse %d",partition.getPartitionId(),System.currentTimeMillis()-start));
     }
 
     @Override
@@ -131,16 +145,6 @@ public class SequentialIndexService extends Service implements IndexService {
 
     @Override
     public void range(long lower, long upper, AbstractVisitor iterator) {
-
-    }
-
-    @Override
-    public void startPartition(CountDownLatch startLatch) throws Exception {
-
-    }
-
-    @Override
-    public void loadIndex(CountDownLatch loadLatch) throws Exception {
 
     }
 

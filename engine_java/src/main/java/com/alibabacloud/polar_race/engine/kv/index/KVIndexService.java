@@ -117,7 +117,7 @@ public class KVIndexService extends Service implements IndexService {
     public void range(long lower, long upper, AbstractVisitor iterator) {
 
     }
-    @Override
+
     public void loadIndex(CountDownLatch loadLatch) throws Exception {
         indexLRUCache=new IndexLRUCache(cacheController,indexFileService, commonExecutorService,logBufferAllocator,loadLatch);
         indexLRUCache.start();

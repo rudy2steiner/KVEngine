@@ -1,12 +1,17 @@
 package com.alibabacloud.polar_race.engine.common;
 
+import com.alibabacloud.polar_race.engine.kv.event.ReadType;
+
 public class StoreConfig {
     public final static int  SEGMENT_LOG_FILE_SIZE =2*1024*1024;
+    public final static long  G=1024*1024*1024; // 256G
+
     public final static long  MAX_LOG_SPACE_SIZE=(64*4*+1)+1024*1024*1024; // 256G
     public final static int  EMPTY_FILL_BUFFER_SIZE =8*1024;
     public final static String LOG_FILE_SUFFIX=".wal";
     public final static String VALUE_CHILD_DIR="wal/";
     public final static String INDEX_CHILD_DIR="index/";
+    public final static String ORDERED_LOG_CHILD_DIR ="order/"; //顺序日志存储子目录
     public final static String LOG_INDEX_FILE_SUFFIX=".index";
     public final static int  HASH_INDEX_QUEUE_SIZE=500;
     public final static double  HASH_BUCKET_LOAD_FACTOR =0.5;
@@ -33,6 +38,9 @@ public class StoreConfig {
     public final static int  batchSyncSize_FLUCTUATE =1;
     public final static int  batchSyncSize =6;
     public final static int  MINI_batchSyncSize =5;
+    public final static int  BATCH_IOHANDLER =100;
+    public final static long  ORDER_LOG_TRANSFER_DISK_SIZE =50*G;
+
 
     public final static int  LOG_KV_RECORD_LEAST_LEN=2;
     public final static int  LONG_LEN=8;
@@ -50,6 +58,7 @@ public class StoreConfig {
     public final static int  LOG_ELEMENT_SIZE=VALUE_SIZE+KEY_SIZE+SHORT_LEN;
     public final static long   STORE_TIMEOUT=1200;  //second
 
+    public final static ReadType startType=ReadType.KV;
     /**
      *  失败 太多，直接cache 线程加载到缓存
      * */

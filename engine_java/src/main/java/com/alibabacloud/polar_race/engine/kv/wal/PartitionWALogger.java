@@ -35,6 +35,7 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
     private TaskBus fileChannelCloseProcessor;
     private KVCacheController cacheController;
     private LogBufferAllocator bufferAllocator;
+    private IndexServiceManager indexServiceManager;
     public PartitionWALogger(String parent){
         this.parentDir=parent;
         this.partitioner=new LexigraphicalPartition(Long.MIN_VALUE,Long.MAX_VALUE, StoreConfig.PARTITIONS,1);
@@ -47,6 +48,7 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                 Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                 60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
+        this.indexServiceManager=new IndexServiceManager(parentDir);
     }
 
     /**
@@ -66,10 +68,20 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
         CountDownLatch startLatch=new CountDownLatch(partitioner.size());
         for(int i=0;i<partitioner.size();i++){
               partitionDir=parentDir+String.format("%d/",i);
-              partitionWALoggers[i]=new WALogger(partitionDir,commonExecutorService,bufferAllocator,partitioner.getPartition(i));
-              new Thread(new BootStrapWALoggerTask(i,startLatch)).start();
+              partitionWALoggers[i]=new WALogger(partitionDir,commonExecutorService,bufferAllocator,partitioner.getPartition(i),indexServiceManager);
+
         }
-        startLatch.await();
+        indexServiceManager.start(); // for sequence index service
+        for (int i=0;i<partitioner.size();i++){
+            new Thread(new BootStrapWALoggerTask(i,startLatch)).start();
+        }
+        startLatch.await(); // 直到启动完成
+        commonExecutorService.shutdown(); // close thread pool
+        if(commonExecutorService.awaitTermination(1, TimeUnit.SECONDS)){
+            logger.info(" index and put cache finish");
+        }else{
+            logger.info(" index and put cache timeout,continue");
+        }
         logger.info(Memory.memory().toString());
         logger.info("start all partition ");
     }
@@ -116,7 +128,7 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
         @Override
         public void run() {
             try {
-                partitionWALoggers[partitionId].start();
+                partitionWALoggers[partitionId].start(); // bocking until finish
             }catch (Exception e){
                 e.printStackTrace();
             }finally {
@@ -132,5 +144,6 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
         for(WALogger partition:partitionWALoggers){
             partition.stop();
         }
+        partitioner.close();
     }
 }

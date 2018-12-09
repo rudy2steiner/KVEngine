@@ -59,7 +59,7 @@ public class LexigraphicalPartition implements Partition {
         long negativeStep=low/(partitionNum/2)-10;  // step 是负数
 
         for(long i=high;i>low&&i<=0;i+=negativeStep){
-            partitions[--indexStart]=new Range(Math.max(i+negativeStep,low),i,partitionCapacity);
+            partitions[--indexStart]=new Range(indexStart,Math.max(i+negativeStep,low),i,partitionCapacity);
         }
         //partitions[partitionNum-1].setHigh(-1);
         // Long.Max 作为负数划分的左界
@@ -73,7 +73,7 @@ public class LexigraphicalPartition implements Partition {
         long positiveStep=high/(partitionNum/2)+10; //little bigger
         long remain=high%(partitionNum/2);
         for(long i=high;i>remain&&i>=0;i-=positiveStep){
-            partitions[--indexStart]=new Range(Math.max(0,i-positiveStep),i,partitionCapacity);
+            partitions[--indexStart]=new Range(indexStart,Math.max(0,i-positiveStep),i,partitionCapacity);
         }
         partitions[0].setLow(0);
     }
@@ -148,6 +148,15 @@ public class LexigraphicalPartition implements Partition {
               logger.info("lexigraphical bug");
           }
 
+    }
+
+    /**
+     *
+     **/
+    public void close(){
+        for(Range r:partitions){
+            r.close();
+        }
     }
 
 

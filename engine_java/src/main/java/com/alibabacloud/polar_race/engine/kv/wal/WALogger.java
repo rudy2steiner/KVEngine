@@ -13,11 +13,13 @@ import com.alibabacloud.polar_race.engine.common.utils.Null;
 import com.alibabacloud.polar_race.engine.kv.*;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.*;
+import com.alibabacloud.polar_race.engine.kv.event.ReadType;
 import com.alibabacloud.polar_race.engine.kv.event.TaskBus;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.IndexService;
+import com.alibabacloud.polar_race.engine.kv.index.KVIndexService;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
 import com.alibabacloud.polar_race.engine.kv.index.SequentialIndexService;
 import org.slf4j.Logger;
@@ -48,8 +50,10 @@ public class WALogger extends Service implements WALog<Put> {
     private CommitLogService commitLogService;
     private ScheduledExecutorService timer=Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("timeout"));
     private Status storeStatus;
-    private Range partiton;
-    public WALogger(String dir,ExecutorService commonExecutorService,LogBufferAllocator bufferAllocator,Range partiton){
+    private Range partition;
+    private IndexServiceManager indexServiceManager;
+    private ReadType startType=StoreConfig.startType; //default kv
+    public WALogger(String dir,ExecutorService commonExecutorService,LogBufferAllocator bufferAllocator,Range partition,IndexServiceManager indexServiceManager){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
         this.indexDir=dir+StoreConfig.INDEX_CHILD_DIR;
@@ -59,16 +63,14 @@ public class WALogger extends Service implements WALog<Put> {
         Files.makeDirIfNotExist(indexDir);
         this.fileChannelCloseProcessor=new TaskBus(StoreConfig.WRITE_HANDLER_CLOSE_PROCESSOR);
         this.logFileService =new LogFileServiceImpl(walDir,fileChannelCloseProcessor);
+        this.indexServiceManager=indexServiceManager;
+        this.indexServiceManager.put(partition.getPartitionId(),logFileService); // register
         this.indexFileService=new LogFileServiceImpl(indexDir,fileChannelCloseProcessor);
         this.cacheController=new KVCacheController(logFileService);
         this.bufferAllocator=bufferAllocator;
-        this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
-                                                     Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
-                                        60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
-        this.partiton=partiton;
+        this.commonExecutorService = commonExecutorService;
+        this.partition=partition;
         this.storeStatus=Status.START;
-
-
     }
 
     /**
@@ -160,13 +162,7 @@ public class WALogger extends Service implements WALog<Put> {
             // 依据store 的状态，看是否需要加载缓存
             logHandlerLRUCache=new IOHandlerLRUCache(logFileService);
             logHandlerLRUCache.start();
-//            directAccessFileCache=new DirectAccessFileCache(logFileService);
-//            directAccessFileCache.start();
-//            indexService=new KVIndexService(indexDir,walDir,cacheController,fileChannelCloseProcessor,bufferAllocator,logFileService,
-//                                           indexFileService,logHandlerLRUCache,commonExecutorService);
-//            ((KVIndexService) indexService).start();
-            indexService=new SequentialIndexService(logFileService,logHandlerLRUCache,partiton);
-            ((SequentialIndexService) indexService).start();
+            startIndexService();
             logFileLRUCache=new LogFileLRUCache(logFileService,logHandlerLRUCache,cacheController, commonExecutorService,bufferAllocator);
             //indexLRUCache.start();
             logFileLRUCache.start();
@@ -174,18 +170,28 @@ public class WALogger extends Service implements WALog<Put> {
             logger.info("put and index cache engine start ignore");
         }
         statisticsLogAndHashIndex();
-        commonExecutorService.shutdown();
-        if(commonExecutorService.awaitTermination(10, TimeUnit.SECONDS)){
-            logger.info(" index and put cache finish");
-        }else{
-            logger.info(" index and put cache timeout,continue");
-        }
+
         handler= logFileService.bufferedIOHandler(nextLogName,StoreConfig.FILE_WRITE_BUFFER_SIZE);
 //        this.appender=new MultiTypeLogAppender(handler, logFileService,StoreConfig.DISRUPTOR_BUFFER_SIZE);
 //        this.appender.start();
         this.commitLogService=new CommitLogService(handler,logFileService,timer);
         this.commitLogService.start();
         onStartFinish();
+    }
+
+    /**
+     * 启动index service
+     *
+     **/
+    private void startIndexService() throws Exception{
+        if(startType==ReadType.KV) {
+            indexService=new KVIndexService(indexDir,walDir,cacheController,fileChannelCloseProcessor,bufferAllocator,logFileService,
+                                           indexFileService,logHandlerLRUCache,commonExecutorService);
+            ((KVIndexService) indexService).start();  // blocking until start finish or timeout
+        }else {
+            indexService = new SequentialIndexService(logFileService, logHandlerLRUCache, partition, indexServiceManager);
+            ((SequentialIndexService) indexService).start(); // current thread
+        }
     }
 
     /**
@@ -256,7 +262,6 @@ public class WALogger extends Service implements WALog<Put> {
     @Override
     public void onStop() throws Exception {
         long start=System.currentTimeMillis();
-
          if(appender!=null)
             this.appender.stop();
          if(commitLogService!=null){

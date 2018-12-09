@@ -184,6 +184,11 @@ public class KeyValueArray {
         quickSort(keys,values,j+1,hi);
     }
 
+    public void close(){
+        keys=null;
+        values=null;
+    }
+
 
 
 }

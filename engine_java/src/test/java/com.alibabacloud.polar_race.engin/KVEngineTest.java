@@ -261,7 +261,7 @@ public class KVEngineTest {
         public void run() {
             byte[] lowerByte=new byte[8];
             byte[] upperByte=new byte[8];
-            Bytes.long2bytes(keys[start],lowerByte,0);
+            Bytes.long2bytes(keys[start],lowerByte,0); // 全量
             Bytes.long2bytes(keys[end],upperByte,0);
             try {
                 engine.range(lowerByte, upperByte, new AbstractVisitor() {

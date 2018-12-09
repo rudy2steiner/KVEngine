@@ -27,12 +27,14 @@ public class Range implements NavigableArray{
     private volatile int initSize;
     private AtomicReference<Status> status=new AtomicReference<>();
     private AtomicInteger index=new AtomicInteger(0);
-    public Range(long low,long high){
-        this(low,high,DEFAULT_INIT_LENGTH);
+    private int partitionId;
+    public Range(int partitionId,long low,long high){
+        this(partitionId,low,high,DEFAULT_INIT_LENGTH);
     }
-    public Range(long low,long high,int initSize){
+    public Range(int partitionId,long low,long high,int initSize){
         this.low=low;
         this.high=high;
+        this.partitionId=partitionId;
         this.partition=new KeyValueArray(initSize);
         //this.initSize=partition.getSize();
         this.status.set(Status.NORMAL);
@@ -44,6 +46,11 @@ public class Range implements NavigableArray{
         this.partition=new KeyValueArray(initSize);
         this.initSize=initSize;
         this.status.set(Status.NORMAL);
+    }
+
+
+    public int getPartitionId() {
+        return partitionId;
     }
 
     /**
@@ -202,5 +209,9 @@ public class Range implements NavigableArray{
 
     public enum Status{
         NORMAL,MOVING
+    }
+
+    public void close(){
+        this.partition.close();
     }
 }

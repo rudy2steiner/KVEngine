@@ -23,13 +23,4 @@ public class KVRangeIndexService implements IndexService {
 
     }
 
-    @Override
-    public void startPartition(CountDownLatch startLatch) throws Exception {
-
-    }
-
-    @Override
-    public void loadIndex(CountDownLatch loadLatch) throws Exception {
-
-    }
 }
