@@ -4,7 +4,6 @@ import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
-import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.event.SyncEvent;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
@@ -227,7 +226,7 @@ public class CommitLogService extends Service implements KVLogger, TimeoutHandle
             timeoutAndNoEventCounter=0;
             logger.info(Thread.currentThread().getId()+" on handler timeout and flush "+(System.currentTimeMillis()-start));
         }else{
-            //logger.info(Memory.memory().toString());
+
             timeoutAndNoEventCounter++;
             if(timeoutAndNoEventCounter%100000==0)
                 logger.info(Thread.currentThread().getId()+" timeout  and now write,consider asyncClose ");

@@ -18,7 +18,8 @@ import com.alibabacloud.polar_race.engine.kv.event.Put;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.IndexService;
-import com.alibabacloud.polar_race.engine.kv.index.KVIndexService;
+import com.alibabacloud.polar_race.engine.kv.partition.Range;
+import com.alibabacloud.polar_race.engine.kv.index.SequentialIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -47,7 +48,8 @@ public class WALogger extends Service implements WALog<Put> {
     private CommitLogService commitLogService;
     private ScheduledExecutorService timer=Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("timeout"));
     private Status storeStatus;
-    public WALogger(String dir,ExecutorService commonExecutorService,LogBufferAllocator bufferAllocator){
+    private Range partiton;
+    public WALogger(String dir,ExecutorService commonExecutorService,LogBufferAllocator bufferAllocator,Range partiton){
         this.rootDir=dir;
         this.walDir =dir+StoreConfig.VALUE_CHILD_DIR;
         this.indexDir=dir+StoreConfig.INDEX_CHILD_DIR;
@@ -63,6 +65,7 @@ public class WALogger extends Service implements WALog<Put> {
         this.commonExecutorService = new ThreadPoolExecutor(Math.min(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                                      Math.max(cacheController.cacheIndexInitLoadConcurrency(),cacheController.cacheLogInitLoadConcurrency()),
                                         60, TimeUnit.SECONDS,new LinkedBlockingQueue<>());
+        this.partiton=partiton;
         this.storeStatus=Status.START;
 
 
@@ -159,9 +162,11 @@ public class WALogger extends Service implements WALog<Put> {
             logHandlerLRUCache.start();
 //            directAccessFileCache=new DirectAccessFileCache(logFileService);
 //            directAccessFileCache.start();
-            indexService=new KVIndexService(indexDir,walDir,cacheController,fileChannelCloseProcessor,bufferAllocator,logFileService,
-                                           indexFileService,logHandlerLRUCache,commonExecutorService);
-            ((KVIndexService) indexService).start();
+//            indexService=new KVIndexService(indexDir,walDir,cacheController,fileChannelCloseProcessor,bufferAllocator,logFileService,
+//                                           indexFileService,logHandlerLRUCache,commonExecutorService);
+//            ((KVIndexService) indexService).start();
+            indexService=new SequentialIndexService(logFileService,logHandlerLRUCache,partiton);
+            ((SequentialIndexService) indexService).start();
             logFileLRUCache=new LogFileLRUCache(logFileService,logHandlerLRUCache,cacheController, commonExecutorService,bufferAllocator);
             //indexLRUCache.start();
             logFileLRUCache.start();

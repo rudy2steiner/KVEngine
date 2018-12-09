@@ -2,6 +2,8 @@ package com.alibabacloud.polar_race.engine.common.utils;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class KeyValueArray {
@@ -29,6 +31,44 @@ public class KeyValueArray {
         values[size++]=value;
     }
 
+
+    /**
+     * 根据 value 标记，将无效的key移除
+     **/
+    public void compact(){
+        if(size<=0) return;
+      int newSize=0;
+      int i=0;
+      while(i<size&&values[i]>0) {newSize++;i++;}
+      int k=i;
+      while(k<size) {
+          int copyStart=0;
+          int copyEnd=0;
+          boolean findFirst = true;
+          for (; k < size; k++) {
+              if (findFirst && values[k] >=0) {
+                  copyStart = k;
+                  copyEnd=k+1;
+                  findFirst = false;
+              }
+              if (!findFirst && values[k] < 0) {
+                  copyEnd = k;
+                  k++;
+                  findFirst=true;
+                  break;
+              }
+          }
+          if(!findFirst&&k==size) copyEnd=size;
+          int len = copyEnd - copyStart;
+          // check len
+          if(len>0) {
+              System.arraycopy(values, copyStart, values, newSize, len);
+              System.arraycopy(keys, copyStart, keys, newSize, len);
+              newSize += len;
+          }
+      }
+      size=newSize;
+    }
 
 
     /**

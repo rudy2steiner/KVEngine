@@ -1,5 +1,6 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
+import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.io.CloseHandler;
@@ -8,7 +9,6 @@ import com.alibabacloud.polar_race.engine.kv.cache.CacheController;
 import com.alibabacloud.polar_race.engine.kv.cache.IOHandlerLRUCache;
 import com.alibabacloud.polar_race.engine.kv.cache.IndexLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
-import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;

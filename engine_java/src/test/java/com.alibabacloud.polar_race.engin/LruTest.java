@@ -11,7 +11,6 @@ import com.alibabacloud.polar_race.engine.kv.file.LogFileServiceImpl;
 import com.alibabacloud.polar_race.engine.kv.index.Index;
 import com.alibabacloud.polar_race.engine.kv.partition.LexigraphicalPartition;
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
-import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 import com.carrotsearch.hppc.LongLongHashMap;
 import com.google.common.cache.*;
 import gnu.trove.map.hash.TLongLongHashMap;
@@ -217,14 +216,14 @@ public class LruTest {
         partition.sort();
         logger.info(String.format("partition sort finish %d ms",System.currentTimeMillis()-start));
         long[] orderKey=new long[maxSize];
-        start=System.currentTimeMillis();
-        partition.iterate(0,-1, new AbstractVisitor() {
-            int i=0;
-            @Override
-            public void visit(long key, int offset) {
-                orderKey[i++]=key;
-            }
-        });
+//        start=System.currentTimeMillis();
+//        partition.iterate(0,-1, new AbstractVisitor() {
+//            int i=0;
+//            @Override
+//            public void visit(long key, int offset) {
+//                orderKey[i++]=key;
+//            }
+//        });
         ascendingIncrease(orderKey,maxSize);
         logger.info(String.format("iterate  finish %d ms",System.currentTimeMillis()-start));
     }
@@ -284,6 +283,39 @@ public class LruTest {
         }catch (InterruptedException e){
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void compactTest(){
+        int size=100;
+        KeyValueArray keyValueArray=new KeyValueArray(size);
+        Random random=new Random();
+        for(int i=0;i<size;i++){
+            keyValueArray.put(i,random.nextBoolean()?i:-1);
+        }
+        logger.info(Arrays.toString(keyValueArray.getKeys()));
+        logger.info(Arrays.toString(keyValueArray.getValues()));
+
+        int count=0;
+        List<Long> expect=new ArrayList<>();
+        for(int i=0;i<size;i++){
+            if(keyValueArray.getValue(i)>=0){count++;expect.add(keyValueArray.getKey(i));}
+        }
+        long[] expectArray=new long[count];
+        for(int i=0;i<count;i++){
+            expectArray[i]=expect.get(i);
+        }
+        keyValueArray.compact();
+        int newSize=keyValueArray.getSize();
+        long[] compactKeys=new long[newSize];
+        int[] compactValue=new int[newSize];
+
+        logger.info(Arrays.toString(expectArray));
+
+        System.arraycopy(keyValueArray.getKeys(),0,compactKeys,0,newSize);
+        System.arraycopy(keyValueArray.getValues(),0,compactValue,0,newSize);
+        logger.info(Arrays.toString(compactKeys));
+        logger.info(Arrays.toString(compactValue));
     }
 
 

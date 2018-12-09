@@ -1,7 +1,7 @@
 package com.alibabacloud.polar_race.engine.kv.index;
 
+import com.alibabacloud.polar_race.engine.common.AbstractVisitor;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
-import com.alibabacloud.polar_race.engine.kv.partition.AbstractVisitor;
 
 import java.util.concurrent.CountDownLatch;
 

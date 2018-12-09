@@ -5,6 +5,7 @@ import com.alibabacloud.polar_race.engine.common.Service;
 import com.alibabacloud.polar_race.engine.common.StoreConfig;
 import com.alibabacloud.polar_race.engine.common.exceptions.EngineException;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.Memory;
 import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.KVCacheController;
 import com.alibabacloud.polar_race.engine.kv.event.Put;
@@ -60,16 +61,16 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
 
     @Override
     public void onStart() throws Exception {
-        //super.onStart();
         // partitionId
         String partitionDir;
         CountDownLatch startLatch=new CountDownLatch(partitioner.size());
         for(int i=0;i<partitioner.size();i++){
               partitionDir=parentDir+String.format("%d/",i);
-              partitionWALoggers[i]=new WALogger(partitionDir,commonExecutorService,bufferAllocator);
+              partitionWALoggers[i]=new WALogger(partitionDir,commonExecutorService,bufferAllocator,partitioner.getPartition(i));
               new Thread(new BootStrapWALoggerTask(i,startLatch)).start();
         }
         startLatch.await();
+        logger.info(Memory.memory().toString());
         logger.info("start all partition ");
     }
 
