@@ -189,7 +189,7 @@ public class WALogger extends Service implements WALog<Put> {
                                            indexFileService,logHandlerLRUCache,commonExecutorService);
             ((KVIndexService) indexService).start();  // blocking until start finish or timeout
         }else {
-            indexService = new SequentialIndexService(logFileService, logHandlerLRUCache, partition, indexServiceManager);
+            indexService = new SequentialIndexService(logFileService, logHandlerLRUCache, partition, indexServiceManager,commonExecutorService);
             ((SequentialIndexService) indexService).start(); // current thread
         }
     }

@@ -177,4 +177,9 @@ public class FileChannelIOHandler implements IOHandler {
         fileChannel.truncate(size);
         this.length=size;
     }
+
+    @Override
+    public boolean delete() {
+        return this.file.delete();
+    }
 }

@@ -81,11 +81,11 @@ public class IndexServiceManager extends Service{
                     return; //有足够空间
                 } else {
                     partitionSemaphore[partitionId] = new SyncEvent((long) partitionId);
-                    partitionSemaphore[partitionId].get(StoreConfig.MAX_TIMEOUT);
+                    partitionSemaphore[partitionId].get(StoreConfig.MAX_TIMEOUT*10);
                 }
             } else {
                 partitionSemaphore[partitionId] = new SyncEvent((long) partitionId);
-                partitionSemaphore[partitionId].get(StoreConfig.MAX_TIMEOUT);
+                partitionSemaphore[partitionId].get(StoreConfig.MAX_TIMEOUT*10);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -97,12 +97,17 @@ public class IndexServiceManager extends Service{
      * batch delete and try launch transfer
      *
      **/
-    public  void release(List<IOHandler> handlers){
+    public  void release(int partitionId,List<IOHandler> handlers){
         long totalSize=0;
         try {
             for (IOHandler h : handlers) {
                 // delete
-                totalSize += h.length();
+                if(h.delete()){
+                    totalSize += h.length();
+                }else{
+                    logger.info(String.format("partition %d ,%s delete failure",partitionId,h.name()));
+                }
+
             }
             if(launchIndex<list.size()) {
                 synchronized (this) {

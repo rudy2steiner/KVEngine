@@ -3,7 +3,7 @@ import com.alibabacloud.polar_race.engine.kv.partition.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class KeyValueArray {
@@ -12,7 +12,8 @@ public class KeyValueArray {
     private int  values[];
     private int size =0;
     private int capacity;
-    private AtomicReference<Range.Status> status=new AtomicReference<>();
+    private Random random=new Random();
+    private AtomicReference<Range.Status> status=new AtomicReference<>(Range.Status.NORMAL);
     public KeyValueArray(int capacity){
           keys=new long[capacity];
           values=new int[capacity];
@@ -158,6 +159,8 @@ public class KeyValueArray {
      **/
     private  int partition(long[] keys,int[] values,int lo,int hi){
         int i=lo,j=hi+1;
+        int randomStart=lo+random.nextInt(hi-lo);
+        exch(keys,values,lo,randomStart);
         long pivot=keys[lo];
         while(true){
             while(keys[++i]<pivot){

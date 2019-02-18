@@ -1,1 +1,7 @@
 g++ -std=c++11 -o test -g -I.. test.cc -L../lib -lengine -lpthread -lrt -lz
+
+g++ -E start.cpp -o start.i   预处理,
+g++ -S start.cpp -o start.s   编译,汇编语言
+g++ -c start.cpp -o start.o   汇编,二进制
+
+g++    start.cpp -o start     预处理、编译、汇编、链接

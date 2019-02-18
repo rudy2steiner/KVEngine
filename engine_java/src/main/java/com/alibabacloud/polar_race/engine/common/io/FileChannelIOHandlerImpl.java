@@ -172,4 +172,9 @@ public class FileChannelIOHandlerImpl implements IOHandler {
     public void truncate(long size) throws IOException {
 
     }
+
+    @Override
+    public boolean delete() {
+        return false;
+    }
 }

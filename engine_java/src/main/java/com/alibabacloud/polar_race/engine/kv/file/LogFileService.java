@@ -71,6 +71,8 @@ public interface LogFileService {
     @Deprecated
     int size();
 
+
+
     /***
      *
      * 单个log 文件所能存放的最大记录数

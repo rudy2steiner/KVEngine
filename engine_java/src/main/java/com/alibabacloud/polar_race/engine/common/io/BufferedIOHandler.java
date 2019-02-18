@@ -179,4 +179,9 @@ public class BufferedIOHandler implements IOHandler {
     public void truncate(long size) throws IOException {
         handler.truncate(size);
     }
+
+    @Override
+    public boolean delete() {
+        return handler.delete();
+    }
 }

@@ -8,16 +8,26 @@ import com.alibabacloud.polar_race.engine.common.exceptions.RetCodeEnum;
 import com.alibabacloud.polar_race.engine.common.io.FileChannelIOHandler;
 import com.alibabacloud.polar_race.engine.common.io.IOHandler;
 import com.alibabacloud.polar_race.engine.common.utils.Bytes;
+import com.alibabacloud.polar_race.engine.common.utils.Files;
 import com.alibabacloud.polar_race.engine.common.utils.KeyValueArray;
+import com.alibabacloud.polar_race.engine.kv.buffer.BufferHolder;
+import com.alibabacloud.polar_race.engine.kv.buffer.LogBufferAllocator;
 import com.alibabacloud.polar_race.engine.kv.cache.IOHandlerLRUCache;
 import com.alibabacloud.polar_race.engine.kv.file.LogFileService;
 import com.alibabacloud.polar_race.engine.kv.wal.IndexServiceManager;
+import org.rocksdb.WBWIRocksIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.*;
+
 import com.alibabacloud.polar_race.engine.kv.partition.Range;
 /**
  *  range kv index
@@ -40,12 +50,19 @@ public class SequentialIndexService extends Service implements IndexService {
     private Range partition;
     private IndexServiceManager indexServiceManager;
     private List<IOHandler> batchTransferedHandler=new ArrayList<>(100);
+    private BlockingQueue<ByteBuffer> readBuffers=new ArrayBlockingQueue(10);
+    private BlockingQueue<ByteBuffer> bufferPool=new ArrayBlockingQueue(10);
+     private ExecutorService executorService;
+    private int batchReadSize=16;
     int perOrderLogFileMaxSize =StoreConfig.SEGMENT_LOG_FILE_SIZE-StoreConfig.SEGMENT_LOG_FILE_SIZE%StoreConfig.LOG_ELEMENT_SIZE;
-    public SequentialIndexService(LogFileService partitionWalLogFIleService, IOHandlerLRUCache partitionIOHandlerCache, Range partition, IndexServiceManager indexServiceManager){
-        this.partitionWalLogFIleService=partitionWalLogFIleService;
+    public SequentialIndexService(LogFileService partitionWalLogFileService, IOHandlerLRUCache partitionIOHandlerCache, Range partition, IndexServiceManager indexServiceManager,ExecutorService comm){
+        this.partitionWalLogFIleService=partitionWalLogFileService;
         this.partitionIOHandlerCache=partitionIOHandlerCache;
         this.partition=partition;
         this.indexServiceManager=indexServiceManager;
+        //this.executorService=Executors.newFixedThreadPool(batchReadSize);
+        Files.makeDirIfNotExist(partitionWalLogFIleService.dir()+orderLogSubDir);
+        Files.emptyDirIfExist(partitionWalLogFIleService.dir()+orderLogSubDir);
     }
 
     @Override
@@ -54,10 +71,24 @@ public class SequentialIndexService extends Service implements IndexService {
         loadIndex();
         // sequential put
         // consider disk capacity
-        indexServiceManager.get(partition.getPartitionId()); // may blocking until disk enough
-        orderWalog();
-        partition.setPartition(indexArray);
-        partition.setIndexService(this);
+        //indexServiceManager.get(partition.getPartitionId()); // may blocking until disk enough
+        partitionIOHandlerCache.prepareToTransfer(); // init transfer stat
+        executorService=Executors.newFixedThreadPool(batchReadSize);
+        int poolSize=10;
+        for(int i=0;i<poolSize;i++)
+            bufferPool.put(ByteBuffer.allocateDirect(StoreConfig.SEGMENT_LOG_FILE_SIZE));
+//         WriteThread    wr=new WriteThread(0);
+//         new Thread(wr).start();
+         orderWalog();
+         //wr.stop();
+         partition.setPartition(indexArray);
+         partition.setIndexService(this);
+         for(int i=0;i<poolSize;i++) {
+            ByteBuffer buffer= bufferPool.poll(10,TimeUnit.MILLISECONDS);
+            if(buffer!=null)
+                LogBufferAllocator.release(buffer);
+         }
+         //executorService.shutdownNow();
     }
 
     /**
@@ -68,17 +99,25 @@ public class SequentialIndexService extends Service implements IndexService {
          long start=System.currentTimeMillis();
          List<Long>  logFiles=partitionWalLogFIleService.allLogFiles();
          // read last file and caculate  init parameters
-         this.indexArray=new KeyValueArray(1000);
+         int keySize=maxKeySize();
+         this.indexArray=new KeyValueArray(keySize);
+         logger.info("index size "+indexArray.getSize());
          this.indexWalLogReader=new IndexWalLogReader(partitionWalLogFIleService, partitionIOHandlerCache, logFiles, 0, logFiles.size() - 1, new IndexKeyVisitor());
          this.indexWalLogReader.run();
          // sort key array, ready to transfer put to order
          //sortHelper.quickSort(keys,null,0,keySize-1);
-         indexArray.quickSort(indexArray.getKeys(),indexArray.getValues(),0,indexArray.getSize()-1);
+         //indexArray.quickSort(indexArray.getKeys(),indexArray.getValues(),0,indexArray.getSize()-1);
          indexArray.compact();
-         logger.info(String.format("partition %d load index finish, elapse %d",partition.getPartitionId(),System.currentTimeMillis()-start));
+         logger.info(String.format("partition %d load index finish,predict key size %d," +
+                 "key size %d, elapse %d ms",partition.getPartitionId(),keySize,indexArray.getSize(),System.currentTimeMillis()-start));
          // 遍历去重
          //ascendingIncrease(indexArray.getKeys(),indexArray.getValues(),indexArray.getSize()-1);
          // order put file
+    }
+
+    public int maxKeySize(){
+        long size=Long.valueOf(partitionWalLogFIleService.lastLogName());
+        return (int)(size/StoreConfig.LOG_ELEMENT_SIZE);
     }
 
     /***
@@ -97,45 +136,116 @@ public class SequentialIndexService extends Service implements IndexService {
         int fileWriteCount=0;
         FileChannelIOHandler originIOHandler;
         FileChannelIOHandler destIOHandler;
+        Random random=new Random();
         try {
-            destIOHandler=(FileChannelIOHandler) partitionWalLogFIleService.ioHandler(orderLogSubDir+orderLongFileSize+StoreConfig.LOG_FILE_SUFFIX);
-            for (int i = 0; i < size; i++) {
-                key = keys[i];
-                offset = values[i];
-                if (offset >=0) {
-                    int fileId = offset >>> leftShift;
-                    int segmentOffset = offset & maxRecordMask;
-                    long offsetInFile = segmentOffset * StoreConfig.LOG_ELEMENT_SIZE;
-                    originIOHandler = (FileChannelIOHandler) partitionIOHandlerCache.getHandler(fileId);//logFileService.ioHandler(filename + StoreConfig.LOG_FILE_SUFFIX,"r");////logHandlerCache.getHandler(fileId);//
-                    if (originIOHandler == null)
-                        throw new EngineException(RetCodeEnum.IO_ERROR, "io handler not found");
-                    // 随机读,顺序写
-                    originIOHandler.getFileChannel().transferTo(offsetInFile, StoreConfig.LOG_ELEMENT_SIZE, destIOHandler.getFileChannel());
-                    fileWriteCount+=StoreConfig.LOG_ELEMENT_SIZE;
-                    if(fileWriteCount== perOrderLogFileMaxSize){
-                        // roll put file
-                        orderLongFileSize+= perOrderLogFileMaxSize;
-                        // may need flush
-                        destIOHandler=(FileChannelIOHandler) partitionWalLogFIleService.ioHandler(orderLogSubDir+orderLongFileSize+StoreConfig.LOG_FILE_SUFFIX);
-                        fileWriteCount=0;
-                    }
-                    // transfer record action
-                    if(partitionIOHandlerCache.transfer(fileId,(int)offsetInFile)){
-                        // consider notify delete old file and to
-                        batchTransferedHandler.add(originIOHandler);
-                        if(batchTransferedHandler.size()==StoreConfig.BATCH_IOHANDLER){
-                            indexServiceManager.release(batchTransferedHandler);
-                            batchTransferedHandler.clear();
-                        }
-                    }
-                } else {
-                    logger.info(String.format("ignore duplicate %d,try to keep newest", key));
+            //destIOHandler=(FileChannelIOHandler) partitionWalLogFIleService.ioHandler(orderLogSubDir+orderLongFileSize+StoreConfig.LOG_FILE_SUFFIX);
+            ByteBuffer readBuffer=bufferPool.take();
+            for (int i = 0; i < size;) {
+                int realBatchSize=Math.min(batchReadSize,size-i);
+                CountDownLatch latch=new CountDownLatch(realBatchSize);
+                for (int k=0; k <realBatchSize ; k++) {
+                    //key = keys[k];
+                    offset = values[i+k];
+                    executorService.submit(new RandomRead(latch,readBuffer,offset,k));
                 }
+                i+=realBatchSize;
+                        if(latch.getCount()==0||latch.await(5,TimeUnit.MILLISECONDS)) {
+                            readBuffer.position(realBatchSize * StoreConfig.LOG_ELEMENT_SIZE);
+                            readBuffer.flip();
+                            readBuffer.clear(); // prepare to read
+                            fileWriteCount += batchReadSize * StoreConfig.LOG_ELEMENT_SIZE;
+                        }
             }
-        }catch (IOException e){
+        }catch (Exception e){
             throw new EngineException(RetCodeEnum.IO_ERROR, e.getMessage());
         }
         logger.info(String.format("partition %d transfer to ordered log finish, elapse %d",partition.getPartitionId(),System.currentTimeMillis()-start));
+    }
+
+    public class RandomRead implements Runnable {
+        private int offset;
+        private int batchRead;
+        private IOHandler handler;
+        private ByteBuffer readBuffer;
+        private CountDownLatch latch;
+        public RandomRead(CountDownLatch latch, ByteBuffer buffer, int offset,int batchRead){
+            this.offset=offset;
+            this.batchRead=batchRead;
+            this.readBuffer=buffer;
+            this.latch=latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                int fileId = offset >>> leftShift;
+               // logger.info("read "+fileId);
+                int segmentOffset = offset & maxRecordMask;
+                long offsetInFile = segmentOffset * StoreConfig.LOG_ELEMENT_SIZE;
+                handler = partitionIOHandlerCache.getHandler(fileId);//logFileService.ioHandler(filename + StoreConfig.LOG_FILE_SUFFIX,"r");////logHandlerCache.getHandler(fileId);//
+                if (handler == null) {
+                    logger.info("                    logger.info(io handler not found);");
+                    throw new EngineException(RetCodeEnum.IO_ERROR, "io handler not found");
+
+                }
+                // 随机读,顺序写
+                readBuffer.position(batchRead * StoreConfig.VALUE_SIZE);
+                readBuffer = readBuffer.slice();
+                readBuffer.limit(StoreConfig.VALUE_SIZE);
+                handler.read(offsetInFile+10, readBuffer);
+                //handler.closeFileChannel(false);
+            }catch (Exception e){
+                logger.info("read error",e);
+            }finally {
+                latch.countDown();
+            }
+        }
+    }
+
+    public class WriteThread implements Runnable{
+
+        long startOffset;
+        long writeSize=0;
+        private volatile boolean started=true;
+        IOHandler handler;
+        public WriteThread(long startOffset){
+            this.startOffset=startOffset;
+            this.writeSize=startOffset;
+            try {
+                this.handler = partitionWalLogFIleService.ioHandler(orderLogSubDir + writeSize + StoreConfig.LOG_FILE_SUFFIX);
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }
+        }
+        public void stop(){
+            this.started=false;
+        }
+        @Override
+        public void run() {
+            ByteBuffer readBuffer;
+            try {
+                while (true) {
+                    readBuffer = readBuffers.poll(1000, TimeUnit.MILLISECONDS);
+                    if (readBuffer == null) {
+                        if(started) {
+                    //        logger.info("no read buffer ,to write");
+                            continue;
+                        }else {
+                            break;
+                        }
+                    }
+                    writeSize+=readBuffer.remaining();
+                    //handler.append(readBuffer);
+                    bufferPool.put(readBuffer); //return
+                    if(writeSize>=perOrderLogFileMaxSize){
+                        handler.closeFileChannel(false);
+                        handler=partitionWalLogFIleService.ioHandler(orderLogSubDir + writeSize + StoreConfig.LOG_FILE_SUFFIX);
+                    }
+                }
+            }catch (Exception e){
+                logger.info("write error",e);
+            }
+        }
     }
 
     @Override
@@ -161,10 +271,11 @@ public class SequentialIndexService extends Service implements IndexService {
         int firstFileSequenceId=(int)(globalStartOffset/perOrderLogFileMaxSize);
         long lastFileSequenceId=(int)(globalEndOffset/perOrderLogFileMaxSize);
         ByteBuffer buffer=ByteBuffer.allocateDirect(perOrderLogFileMaxSize);
-        IOHandler ioHandler=partitionIOHandlerCache.getHandler(firstFileSequenceId);
+
         ByteBuffer value=ByteBuffer.allocate(StoreConfig.VALUE_SIZE);
         byte[]  key=new byte[8];
         try {
+            IOHandler ioHandler=orderIOHandler(firstFileSequenceId);
             if(firstFileSequenceId==lastFileSequenceId){
                 // read size
                 buffer.limit(offsetInFirstFile-offsetInFirstFile);
@@ -181,12 +292,12 @@ public class SequentialIndexService extends Service implements IndexService {
             int fileSequenceId=firstFileSequenceId+1;
             for (; fileSequenceId < lastFileSequenceId; fileSequenceId++) {
                 buffer.clear();
-                ioHandler=partitionIOHandlerCache.getHandler(fileSequenceId);
+                ioHandler=orderIOHandler(fileSequenceId);
                 ioHandler.read(buffer); // expect read full
                 start=invokeVisitor(buffer,key,value,start,visitor);
             }
             if(fileSequenceId==lastFileSequenceId&&offsetInLastFile!=0){
-                ioHandler=partitionIOHandlerCache.get(lastFileSequenceId);
+                ioHandler=orderIOHandler(lastFileSequenceId);
                 buffer.clear();
                 buffer.limit(offsetInLastFile);
                 ioHandler.read(buffer);
@@ -199,6 +310,13 @@ public class SequentialIndexService extends Service implements IndexService {
             logger.info("range error",e);
             throw new EngineException(RetCodeEnum.IO_ERROR,"in range error");
         }
+    }
+
+    /**
+     *
+     **/
+    private IOHandler orderIOHandler(long fileId) throws FileNotFoundException {
+        return partitionWalLogFIleService.ioHandler(orderLogSubDir+(fileId*perOrderLogFileMaxSize)+StoreConfig.LOG_FILE_SUFFIX);
     }
 
 
@@ -221,12 +339,12 @@ public class SequentialIndexService extends Service implements IndexService {
             int fileSequenceId=0;
             for (; fileSequenceId < lastFileSequenceId; fileSequenceId++) {
                 buffer.clear();
-                ioHandler=partitionIOHandlerCache.getHandler(fileSequenceId);
+                ioHandler=orderIOHandler(fileSequenceId);
                 ioHandler.read(buffer); // expect read full
                 start=invokeVisitor(buffer,key,value,start,visitor);
             }
             if(fileSequenceId==lastFileSequenceId&&offsetInLastFile!=0){
-                ioHandler=partitionIOHandlerCache.get(lastFileSequenceId);
+                ioHandler=orderIOHandler(lastFileSequenceId);
                 buffer.clear();
                 buffer.limit(offsetInLastFile);
                 ioHandler.read(buffer);
@@ -279,11 +397,11 @@ public class SequentialIndexService extends Service implements IndexService {
         public void visit(ByteBuffer buffer) throws Exception {
             // contain n index record
             while(buffer.remaining()>= StoreConfig.VALUE_INDEX_RECORD_SIZE) {
-                if(keySize>=keyCapacity){
-                    // to enlarge
-                    logger.info("out of key array capacity");
-                    throw new IllegalStateException("out of key array capacity");
-                }
+//                if(keySize>=keyCapacity){
+//                    // to enlarge
+//                    logger.info("out of key array capacity");
+//                    throw new IllegalStateException("out of key array capacity");
+//                }
                 key=buffer.getLong();
                 offset= buffer.getLong();
                 segmentNo=(int)(offset>>>rightShift);

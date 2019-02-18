@@ -72,8 +72,9 @@ public class PartitionWALogger  extends Service implements WALog<Put> {
 
         }
         indexServiceManager.start(); // for sequence index service
-        for (int i=0;i<partitioner.size();i++){
+        for (int i=0;i<3;i++){
             new Thread(new BootStrapWALoggerTask(i,startLatch)).start();
+            //new BootStrapWALoggerTask(i,startLatch).run();
         }
         startLatch.await(); // 直到启动完成
         commonExecutorService.shutdown(); // close thread pool

@@ -126,4 +126,9 @@ public class FileChannelDirectIOHandler implements IOHandler {
     public void close() throws IOException {
         directRandomAccessFile.close();
     }
+
+    @Override
+    public boolean delete() {
+        return false;
+    }
 }

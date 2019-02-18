@@ -105,6 +105,7 @@ public class IOHandlerLRUCache extends Service {
         private short maxRecords;
         public TransferStat(short maxRecords){
                 this.maxRecords=maxRecords;
+                this.bitSet=new BitSet(maxRecords);
         }
         /**
          * return true,if the file tranfer finish and ready to delete

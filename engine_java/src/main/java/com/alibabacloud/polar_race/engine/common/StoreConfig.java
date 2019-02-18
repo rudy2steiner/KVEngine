@@ -33,7 +33,7 @@ public class StoreConfig {
     /**
      *  hash bucket
      **/
-    public final static int  HASH_BUCKET_SIZE =8; // 2^n
+    public final static int  HASH_BUCKET_SIZE =16; // 2^n
     public final static int  PARTITIONS =12;         //wal 分区数
     public final static int  batchSyncSize_FLUCTUATE =1;
     public final static int  batchSyncSize =6;
@@ -58,7 +58,7 @@ public class StoreConfig {
     public final static int  LOG_ELEMENT_SIZE=VALUE_SIZE+KEY_SIZE+SHORT_LEN;
     public final static long   STORE_TIMEOUT=1200;  //second
 
-    public final static ReadType startType=ReadType.KV;
+    public final static ReadType startType=ReadType.RANGE;
     /**
      *  失败 太多，直接cache 线程加载到缓存
      * */
