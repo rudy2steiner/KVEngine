@@ -15,7 +15,12 @@ struct inflatable{
 int main(){
 
     inflatable a={"wangjin"};
+    inflatable b=a;
+    strcpy(b.name,"djkjfdkj");
     cout<<a.name<<endl;
+    cout<<b.name<<endl;
+    cout<<a.name<<endl;
+
     enum spectrum{red,orange,yellow,green,blue,vilote,indigo,ultraviolet};
     spectrum  color(red);
     cout<<color<<endl;
