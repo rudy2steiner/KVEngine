@@ -1,0 +1,2 @@
+all:
+	g++ -std=c++11 -o engine_test -g -I.. RandomString.cpp engine_test.cpp -L../lib -lengine -lpthread -lrt -lz
