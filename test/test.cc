@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string>
 #include "include/engine.h"
-
+#include <iostream>
 static const char kEnginePath[] = "/tmp/test_engine";
 static const char kDumpPath[] = "/tmp/test_dump";
 
@@ -45,6 +45,7 @@ int main() {
   ret = engine->Write("c++", "c++ ok!");
   std::string value;
   ret = engine->Read("aaa", &value);
+  assert (ret == kSucc);
   printf("Read aaa value: %s\n", value.c_str());
   
   ret = engine->Read("bbb", &value);

@@ -10,10 +10,12 @@ int main(){
 
     using namespace std;
     char charr1[20];
-    char charr2[20]="jaguar";
+    char charr2[]="jaguar";
     const char *charr3="sdfsdfsd";
     string str1;
     string str2="panther";
+    str1=str2;
+    cout<<"str1:"<<str1<<endl;
     cout<<"Enter a kind of feline：";
     cin>>charr1;
     cout<<"Enter another kind of feline:";

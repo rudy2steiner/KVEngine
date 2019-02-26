@@ -12,6 +12,7 @@
 #include <vector>
 #include <algorithm>
 #include "include/engine.h"
+#include "rand_string.h"
 
 using namespace polar_race;
 
@@ -73,8 +74,11 @@ unsigned kRandomIdxes[]{  23, 3658, 2143,  583, 1952, 2262, 3790, 1612};
 std::string random_str(RandNum_generator& rng, std::size_t strLen)
 {
     std::string rs(strLen, ' ');
+    RandomString rss;
+    char *chars=new char[9];
+    rss.randString(chars,8);
     for (auto idx : kRandomIdxes) {
-        rs[idx] = rng.nextNum();
+        rs[idx] =*chars++;//rng.nextNum();
     }
     return rs;
 }
@@ -82,7 +86,7 @@ std::string key_from_value(const std::string& val)
 {
     std::string key(8, ' ');
     for (unsigned i = 0; i < 8; ++i) {
-        key[i] = val[kRandomIdxes[i]];
+        key[i] =val[kRandomIdxes[i]];
     }
     return key;
 }
@@ -93,7 +97,7 @@ void Write(Engine* engine, threadsafe_vector<std::string>& keys, unsigned numWri
     for (unsigned i = 0; i < numWrite; ++i) {
         std::string val(random_str(rng, 4096));
         std::string key(key_from_value(val));
-        //std::cout<<"key:"<<key<<",value:"<<val<<std::endl;
+        //std::cout<<"key:"<<key<<std::endl;
         RetCode retCode=engine->Write(key, val);
         if(retCode==kSucc) {
             keys.add(key);
@@ -223,19 +227,17 @@ void test_with_kill(const std::string&, unsigned, unsigned);
 int main()
 {
     std::string dir("/tmp/test");
-
+    //removeDir(dir); // clear before start
     auto numThreads = std::thread::hardware_concurrency();
     unsigned numWrite =100;
     std::cout << "core:"<<numThreads << ",records: " << numWrite << std::endl;
-
     bool withKill = false;
     if (withKill)
         test_with_kill(dir, numThreads, numWrite);
     else
         test(dir, numThreads, numWrite);
 
-    removeDir(dir);
-
+    //removeDir(dir);
     return 0;
 }
 
